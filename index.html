@@ -153,7 +153,7 @@
       micSource.connect(analyser);
 
       const freqs = [528, 432, 963];
-      const stereoPositions = [-1, 0, 1];
+      const stereoPositions = [-0.8, 0, 0.8];
       const oscillators = [];
       const lfos = [];
       const gains = [];
@@ -180,7 +180,7 @@
 
         const gain = context.createGain();
         gain.gain.setValueAtTime(0, context.currentTime);
-        gain.gain.linearRampToValueAtTime(0.03, context.currentTime + 2.5);
+        gain.gain.linearRampToValueAtTime(0.15, context.currentTime + 2.5);
 
         const panNode = context.createStereoPanner();
         panNode.pan.value = stereoPositions[i];
