@@ -158,46 +158,50 @@
       const micSource = audioContext.createMediaStreamSource(micStream);
       micSource.connect(destination);
 
-// === Vibrato setup ===
-const vibrato = audioContext.createOscillator();
-vibrato.frequency.value = 0.4; // Slow pitch mod
+const createCrystalTone = (audioContext, destination) => {
+  // Fade-in/out control
+  const oscGain = audioContext.createGain();
+  oscGain.gain.setValueAtTime(0.0, audioContext.currentTime); // Start muted
+  oscGain.gain.linearRampToValueAtTime(0.05, audioContext.currentTime + 3); // Fade in over 3s
 
-const vibratoGain = audioContext.createGain();
-vibratoGain.gain.value = 2.5; // Hz deviation for shimmer
+  // Custom waveform (singing crystal-like)
+  const real = new Float32Array([0, 1, 0.2, 0.05, 0.02]);
+  const imag = new Float32Array(real.length); // No phase shift
+  const crystalWave = audioContext.createPeriodicWave(real, imag);
 
-vibrato.connect(vibratoGain);
+  const oscillator = audioContext.createOscillator();
+  oscillator.setPeriodicWave(crystalWave);
+  oscillator.frequency.setValueAtTime(528, audioContext.currentTime);
 
-// === Main 528Hz Oscillator ===
-oscillator = audioContext.createOscillator();
-oscillator.type = 'sine';
-oscillator.frequency.setValueAtTime(528, audioContext.currentTime);
+  // Micro-drift to simulate analog variance
+  const driftLFO = audioContext.createOscillator();
+  driftLFO.frequency.value = 0.15; // ultra-slow drift
+  const driftGain = audioContext.createGain();
+  driftGain.gain.value = 1.25; // +/- 1.25 Hz drift
 
-// Attach vibrato to main oscillator's pitch
-vibratoGain.connect(oscillator.frequency);
+  driftLFO.connect(driftGain).connect(oscillator.frequency);
 
-// === Harmonic Layer (264Hz triangle) ===
-const blendOsc = audioContext.createOscillator();
-blendOsc.type = 'triangle';
-blendOsc.frequency.setValueAtTime(264, audioContext.currentTime);
+  // Output control
+  oscillator.connect(oscGain).connect(destination);
 
-const blendGain = audioContext.createGain();
-blendGain.gain.value = 0.015; // Very soft texture
+  // Start everything
+  oscillator.start();
+  driftLFO.start();
 
-// === Output Volume Control ===
-oscGain = audioContext.createGain();
-oscGain.gain.value = 0.05;
+  // Auto fade-out after recording stops
+  const stopTone = () => {
+    const now = audioContext.currentTime;
+    oscGain.gain.cancelScheduledValues(now);
+    oscGain.gain.setValueAtTime(oscGain.gain.value, now);
+    oscGain.gain.linearRampToValueAtTime(0, now + 3); // fade out over 3s
+    setTimeout(() => {
+      oscillator.stop();
+      driftLFO.stop();
+    }, 3100);
+  };
 
-// Routing
-oscillator.connect(oscGain);
-blendOsc.connect(blendGain).connect(oscGain);
-
-// Send to recorder only (not live audio out)
-oscGain.connect(destination);
-
-// Start all
-oscillator.start();
-blendOsc.start();
-vibrato.start();
+  return stopTone;
+};
 
 
       audioStream = destination.stream;
