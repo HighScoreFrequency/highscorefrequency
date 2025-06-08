@@ -116,6 +116,7 @@
   </style>
 </head>
 <body>
+
   <div class="portal-wrapper">
     <div class="portal-image"></div>
     <div class="content">
@@ -124,7 +125,7 @@
 
       <div class="button-group">
         <button id="recordBtn">🟢 Start Recording</button>
-        <button id="stopBtn" disabled>🖚 Stop</button>
+        <button id="stopBtn" disabled>🔚 Stop</button>
         <button id="resetBtn" disabled>🔁 Reset</button>
       </div>
 
@@ -139,48 +140,27 @@
     let audioStream;
     let stopTonePlayback;
 
-    function createSolfeggioToneGrid(audioContext, destination, micStream) {
-      const micSource = audioContext.createMediaStreamSource(micStream);
-      const analyser = audioContext.createAnalyser();
-      analyser.fftSize = 512;
-      const dataArray = new Uint8Array(analyser.frequencyBinCount);
-      micSource.connect(analyser);
+    function createAngelicToneGrid(audioContext, destination) {
+      const freqs = [432, 528];
+      const oscillators = [], lfos = [], gains = [];
 
-      const freqs = [528, 432, 963];
-      const stereoPositions = [-0.7, 0, 0.7];
-      const oscillators = [], lfos = [], panners = [], gains = [];
-
-      freqs.forEach((freq, i) => {
-        const pan = audioContext.createStereoPanner();
-        pan.pan.value = stereoPositions[i];
-
+      freqs.forEach(freq => {
         const groupGain = audioContext.createGain();
         groupGain.gain.setValueAtTime(0, audioContext.currentTime);
-        groupGain.gain.linearRampToValueAtTime(0.008, audioContext.currentTime + 5);
+        groupGain.gain.linearRampToValueAtTime(0.015, audioContext.currentTime + 8);
 
-        const delay = audioContext.createDelay();
-        delay.delayTime.value = 0.15;
-        const delayGain = audioContext.createGain();
-        delayGain.gain.value = 0.3;
-
-        const highPass = audioContext.createBiquadFilter();
-        highPass.type = "highpass";
-        highPass.frequency.value = 180;
-
-        for (let j = 0; j < 2; j++) {
+        for (let i = 0; i < 4; i++) {
           const osc = audioContext.createOscillator();
-          osc.type = 'sine';
-          osc.frequency.value = freq + (j - 0.5) * 0.4;
+          osc.type = 'triangle';
+          osc.frequency.value = freq + (Math.random() - 0.5) * 0.5;
 
           const lfo = audioContext.createOscillator();
-          lfo.frequency.value = 0.1 + Math.random() * 0.2;
-
+          lfo.frequency.value = 0.05 + Math.random() * 0.05;
           const lfoGain = audioContext.createGain();
-          lfoGain.gain.value = 1;
-
+          lfoGain.gain.value = 0.4;
           lfo.connect(lfoGain).connect(osc.frequency);
-          osc.connect(groupGain);
 
+          osc.connect(groupGain);
           osc.start();
           lfo.start();
 
@@ -188,38 +168,21 @@
           lfos.push(lfo);
         }
 
-        groupGain.connect(pan).connect(highPass);
-        highPass.connect(destination);
-        highPass.connect(delay).connect(delayGain).connect(destination);
-
+        groupGain.connect(destination);
         gains.push(groupGain);
-        panners.push(pan);
       });
 
-      let frame;
-      const animate = () => {
-        analyser.getByteTimeDomainData(dataArray);
-        const avg = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
-        const voiceLevel = Math.abs(avg - 128) / 128;
-        lfos.forEach(lfo => {
-          lfo.frequency.setTargetAtTime(0.05 + voiceLevel * 0.2, audioContext.currentTime, 0.2);
-        });
-        frame = requestAnimationFrame(animate);
-      };
-      animate();
-
       return () => {
-        cancelAnimationFrame(frame);
         const now = audioContext.currentTime;
         gains.forEach(g => {
           g.gain.cancelScheduledValues(now);
           g.gain.setValueAtTime(g.gain.value, now);
-          g.gain.linearRampToValueAtTime(0, now + 5);
+          g.gain.linearRampToValueAtTime(0, now + 3);
         });
         setTimeout(() => {
           oscillators.forEach(o => o.stop());
           lfos.forEach(l => l.stop());
-        }, 5100);
+        }, 3100);
       };
     }
 
@@ -236,11 +199,9 @@
       const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const audioContext = new (window.AudioContext || window.webkitAudioContext)();
       const destination = audioContext.createMediaStreamDestination();
+      audioContext.createMediaStreamSource(micStream).connect(destination);
 
-      const micSource = audioContext.createMediaStreamSource(micStream);
-      micSource.connect(destination);
-
-      stopTonePlayback = createSolfeggioToneGrid(audioContext, destination, micStream);
+      stopTonePlayback = createAngelicToneGrid(audioContext, destination);
 
       audioStream = destination.stream;
       mediaRecorder = new MediaRecorder(audioStream);
