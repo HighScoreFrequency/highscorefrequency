@@ -16,6 +16,7 @@
       align-items: center;
       overflow: hidden;
     }
+
     .portal-wrapper {
       position: relative;
       width: 93vmin;
@@ -24,30 +25,56 @@
       justify-content: center;
       align-items: center;
     }
+
+    .portal-image {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 96%;
+      height: 96%;
+      background-image: url('https://github.com/HighScoreFrequency/highscorefrequency/blob/main/369portalactivation.png?raw=true');
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      animation: rotate 369s linear infinite;
+      z-index: 1;
+    }
+
     .content {
+      position: relative;
       z-index: 2;
       width: 90%;
       max-width: 500px;
       background: rgba(255, 255, 255, 0.85);
       padding: 30px;
       border-radius: 16px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
       text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
     }
+
     h2 {
       font-size: 32px;
       margin-bottom: 10px;
     }
+
     p {
       font-size: 18px;
       color: #444;
       margin-bottom: 30px;
     }
+
     .button-group {
       display: flex;
       justify-content: center;
       gap: 20px;
       flex-wrap: wrap;
     }
+
     button {
       background-color: #1a1a1a;
       color: white;
@@ -56,22 +83,41 @@
       font-size: 16px;
       cursor: pointer;
       border-radius: 6px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
+
+    button:hover:not(:disabled) {
+      transform: scale(1.05);
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.2);
+    }
+
+    button:disabled {
+      background-color: #aaa;
+      cursor: not-allowed;
+    }
+
     audio {
       margin-top: 30px;
       width: 100%;
       max-width: 400px;
     }
+
     a {
       display: inline-block;
       margin-top: 20px;
       text-decoration: none;
       color: #0070f3;
     }
+
+    @keyframes rotate {
+      from { transform: translate(-50%, -50%) rotate(0deg); }
+      to { transform: translate(-50%, -50%) rotate(-360deg); }
+    }
   </style>
 </head>
 <body>
   <div class="portal-wrapper">
+    <div class="portal-image"></div>
     <div class="content">
       <h2>🎙️ Voice Activation Portal</h2>
       <p>Speak your ritual phrase.<br>Playback will anchor it into your field.</p>
@@ -79,6 +125,7 @@
       <div class="button-group">
         <button id="recordBtn">🟢 Start Recording</button>
         <button id="stopBtn" disabled>🛑 Stop</button>
+        <button id="resetBtn" disabled>🔁 Reset</button>
       </div>
 
       <audio id="audioPlayback" controls style="display: none;"></audio>
@@ -88,71 +135,94 @@
 
   <script>
     let mediaRecorder;
-    let mixedStream;
     let recordedChunks = [];
+    let audioContext;
+    let oscillator;
+    let mediaStream;
 
-    const recordBtn = document.getElementById('recordBtn');
-    const stopBtn = document.getElementById('stopBtn');
-    const audioPlayback = document.getElementById('audioPlayback');
-    const downloadLink = document.getElementById('downloadLink');
+    async function startRecording() {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
-    async function getMixedStream() {
-      const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      oscillator = audioContext.createOscillator();
+      oscillator.type = "sine";
+      oscillator.frequency.setValueAtTime(528, audioContext.currentTime);
 
-      const audioCtx = new AudioContext();
-      const dest = audioCtx.createMediaStreamDestination();
+      const micSource = audioContext.createMediaStreamSource(stream);
+      const oscGain = audioContext.createGain();
+      oscGain.gain.value = 0.05;
 
-      // Connect microphone
-      const micSource = audioCtx.createMediaStreamSource(micStream);
+      oscillator.connect(oscGain).connect(audioContext.destination);
+      micSource.connect(audioContext.destination);
+
+      const dest = audioContext.createMediaStreamDestination();
       micSource.connect(dest);
+      oscillator.connect(dest);
 
-      // Load 528Hz background audio
-      const response = await fetch('https://cdn.pixabay.com/audio/2023/05/17/audio_ee00a6c8d7.mp3');
-      const arrayBuffer = await response.arrayBuffer();
-      const backgroundBuffer = await audioCtx.decodeAudioData(arrayBuffer);
-      const backgroundSource = audioCtx.createBufferSource();
-      backgroundSource.buffer = backgroundBuffer;
-      backgroundSource.loop = true;
-      backgroundSource.connect(dest);
-      backgroundSource.start();
-
-      return { stream: dest.stream, backgroundSource, audioCtx };
-    }
-
-    recordBtn.onclick = async () => {
-      const { stream, backgroundSource, audioCtx } = await getMixedStream();
-      mixedStream = stream;
-
+      mediaRecorder = new MediaRecorder(dest.stream);
       recordedChunks = [];
-      mediaRecorder = new MediaRecorder(mixedStream);
 
-      mediaRecorder.ondataavailable = e => {
-        if (e.data.size > 0) recordedChunks.push(e.data);
-      };
-
+      mediaRecorder.ondataavailable = e => recordedChunks.push(e.data);
       mediaRecorder.onstop = () => {
-        const blob = new Blob(recordedChunks, { type: 'audio/mp3' });
+        const blob = new Blob(recordedChunks, { type: 'audio/webm' });
         const url = URL.createObjectURL(blob);
+        const audio = document.getElementById("audioPlayback");
+        const link = document.getElementById("downloadLink");
 
-        audioPlayback.src = url;
-        audioPlayback.style.display = 'block';
-        downloadLink.href = url;
-        downloadLink.download = `highscore-frequency-${new Date().toISOString().split('T')[0]}.mp3`;
-        downloadLink.style.display = 'inline-block';
+        const date = new Date().toISOString().split('T')[0];
+        const filename = `highscore-frequency-${date}.webm`;
 
-        backgroundSource.stop();
-        audioCtx.close();
+        audio.src = url;
+        audio.style.display = 'block';
+
+        link.href = url;
+        link.download = filename;
+        link.style.display = 'inline-block';
       };
 
       mediaRecorder.start();
+      oscillator.start();
+
+      return stream;
+    }
+
+    const recordBtn = document.getElementById('recordBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const audioPlayback = document.getElementById('audioPlayback');
+    const downloadLink = document.getElementById('downloadLink');
+
+    recordBtn.onclick = async () => {
+      const ritual = confirm("Are you ready to imprint your voice into this reality?");
+      if (!ritual) return;
+
+      mediaStream = await startRecording();
+
       recordBtn.disabled = true;
       stopBtn.disabled = false;
     };
 
     stopBtn.onclick = () => {
       mediaRecorder.stop();
-      recordBtn.disabled = false;
+      oscillator.stop();
+      mediaStream.getTracks().forEach(track => track.stop());
+
       stopBtn.disabled = true;
+      recordBtn.disabled = false;
+      resetBtn.disabled = false;
+    };
+
+    resetBtn.onclick = () => {
+      audioPlayback.pause();
+      audioPlayback.currentTime = 0;
+      audioPlayback.src = '';
+      audioPlayback.style.display = 'none';
+
+      downloadLink.href = '';
+      downloadLink.download = '';
+      downloadLink.style.display = 'none';
+
+      resetBtn.disabled = true;
     };
   </script>
 </body>
