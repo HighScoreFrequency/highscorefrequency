@@ -180,7 +180,7 @@
 
         const gain = context.createGain();
         gain.gain.setValueAtTime(0, context.currentTime);
-        gain.gain.linearRampToValueAtTime(0.20, context.currentTime + 2.5);
+        gain.gain.linearRampToValueAtTime(0.28, context.currentTime + 2.5);
 
         const panNode = context.createStereoPanner();
         panNode.pan.value = stereoPositions[i];
