@@ -137,8 +137,81 @@
   <script>
     let mediaRecorder;
     let chunks = [];
-    let oscillator, oscGain;
     let audioStream;
+    let stopTonePlayback; // store stop function for solfeggio tone
+
+    function createSolfeggioToneGrid(audioContext, destination, micStream) {
+      const micSource = audioContext.createMediaStreamSource(micStream);
+      const analyser = audioContext.createAnalyser();
+      analyser.fftSize = 512;
+      const dataArray = new Uint8Array(analyser.frequencyBinCount);
+      micSource.connect(analyser);
+
+      const freqs = [528, 432, 963];
+      const stereoPositions = [-1, 0, 1];
+      const oscillators = [], lfos = [], panners = [], gains = [];
+
+      const real = new Float32Array([0, 1, 0.3, 0.1, 0.02]);
+      const imag = new Float32Array(real.length);
+      const wave = audioContext.createPeriodicWave(real, imag);
+
+      freqs.forEach((freq, i) => {
+        const osc = audioContext.createOscillator();
+        osc.setPeriodicWave(wave);
+        osc.frequency.value = freq;
+
+        const driftLFO = audioContext.createOscillator();
+        driftLFO.frequency.value = 0.15 + Math.random() * 0.1;
+
+        const driftGain = audioContext.createGain();
+        driftGain.gain.value = 1 + Math.random();
+
+        driftLFO.connect(driftGain).connect(osc.frequency);
+
+        const gain = audioContext.createGain();
+        gain.gain.setValueAtTime(0, audioContext.currentTime);
+        gain.gain.linearRampToValueAtTime(0.02, audioContext.currentTime + 3);
+
+        const pan = audioContext.createStereoPanner();
+        pan.pan.value = stereoPositions[i];
+
+        osc.connect(gain).connect(pan).connect(destination);
+
+        osc.start();
+        driftLFO.start();
+
+        oscillators.push(osc);
+        lfos.push(driftLFO);
+        panners.push(pan);
+        gains.push(gain);
+      });
+
+      let frame;
+      const animate = () => {
+        analyser.getByteTimeDomainData(dataArray);
+        const avg = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
+        const voiceLevel = Math.abs(avg - 128) / 128;
+        lfos.forEach(lfo => {
+          lfo.frequency.setTargetAtTime(0.1 + voiceLevel * 0.5, audioContext.currentTime, 0.2);
+        });
+        frame = requestAnimationFrame(animate);
+      };
+      animate();
+
+      return () => {
+        cancelAnimationFrame(frame);
+        const now = audioContext.currentTime;
+        gains.forEach(g => {
+          g.gain.cancelScheduledValues(now);
+          g.gain.setValueAtTime(g.gain.value, now);
+          g.gain.linearRampToValueAtTime(0, now + 3);
+        });
+        setTimeout(() => {
+          oscillators.forEach(o => o.stop());
+          lfos.forEach(l => l.stop());
+        }, 3100);
+      };
+    }
 
     const recordBtn = document.getElementById('recordBtn');
     const stopBtn = document.getElementById('stopBtn');
@@ -151,36 +224,13 @@
       if (!ritual) return;
 
       const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
       const audioContext = new (window.AudioContext || window.webkitAudioContext)();
       const destination = audioContext.createMediaStreamDestination();
 
       const micSource = audioContext.createMediaStreamSource(micStream);
       micSource.connect(destination);
 
-// ✨ 528Hz crystal tone with fade, drift & custom wave
-const real = new Float32Array([0, 1, 0.2, 0.05, 0.02]);
-const imag = new Float32Array(real.length);
-const crystalWave = audioContext.createPeriodicWave(real, imag);
-
-oscillator = audioContext.createOscillator();
-oscillator.setPeriodicWave(crystalWave);
-oscillator.frequency.setValueAtTime(528, audioContext.currentTime);
-
-oscGain = audioContext.createGain();
-oscGain.gain.setValueAtTime(0.0, audioContext.currentTime); // Start silent
-oscGain.gain.linearRampToValueAtTime(0.04, audioContext.currentTime + 3); // Fade in
-
-const driftLFO = audioContext.createOscillator();
-const driftGain = audioContext.createGain();
-driftLFO.frequency.value = 0.1;         // Slow drift
-driftGain.gain.value = 1.2;             // Drift depth in Hz
-driftLFO.connect(driftGain).connect(oscillator.frequency);
-
-oscillator.connect(oscGain).connect(destination);
-oscillator.start();
-driftLFO.start();
-
+      stopTonePlayback = createSolfeggioToneGrid(audioContext, destination, micStream);
 
       audioStream = destination.stream;
       mediaRecorder = new MediaRecorder(audioStream);
@@ -210,24 +260,12 @@ driftLFO.start();
       stopBtn.disabled = false;
     };
 
-stopBtn.onclick = () => {
-  if (mediaRecorder && mediaRecorder.state === 'recording') {
-    mediaRecorder.stop();
-
-    // 🌀 Fade out the oscillator volume gradually
-    const now = oscillator.context.currentTime;
-    oscGain.gain.cancelScheduledValues(now);
-    oscGain.gain.setValueAtTime(oscGain.gain.value, now);
-    oscGain.gain.linearRampToValueAtTime(0, now + 3); // 3-second fade out
-
-    // 🛑 Stop both oscillators after fade-out is complete
-    setTimeout(() => {
-      if (oscillator) oscillator.stop();
-      if (driftLFO) driftLFO.stop();
-    }, 3100); // Stop after fade-out completes
-  }
-};
-
+    stopBtn.onclick = () => {
+      if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+        if (stopTonePlayback) stopTonePlayback();
+      }
+    };
 
     resetBtn.onclick = () => {
       audioPlayback.pause();
