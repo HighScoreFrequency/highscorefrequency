@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <title>High Score Voice Activation</title>
   <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500&display=swap" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/mic-recorder-to-mp3@2.2.1/dist/index.min.js"></script>
   <style>
     html, body {
       margin: 0;
@@ -117,6 +116,7 @@
   </style>
 </head>
 <body>
+
   <div class="portal-wrapper">
     <div class="portal-image"></div>
     <div class="content">
@@ -135,7 +135,10 @@
   </div>
 
   <script>
-    const Mp3Recorder = new MicRecorder({ bitRate: 128 });
+    let mediaRecorder;
+    let chunks = [];
+    let oscillator, oscGain;
+    let audioStream;
 
     const recordBtn = document.getElementById('recordBtn');
     const stopBtn = document.getElementById('stopBtn');
@@ -143,134 +146,61 @@
     const audioPlayback = document.getElementById('audioPlayback');
     const downloadLink = document.getElementById('downloadLink');
 
-    let audioContext, mediaDest, stopTones;
-
-    function createSolfeggioToneGrid(context, destination, micStream) {
-      const micSource = context.createMediaStreamSource(micStream);
-      const analyser = context.createAnalyser();
-      analyser.fftSize = 512;
-      const dataArray = new Uint8Array(analyser.frequencyBinCount);
-      micSource.connect(analyser);
-
-      const freqs = [528, 432, 963];
-      const stereoPositions = [-1, 0, 1];
-      const oscillators = [];
-      const lfos = [];
-      const gains = [];
-
-      const wave = (() => {
-        const real = new Float32Array([0, 1, 0.3, 0.1, 0.02]);
-        const imag = new Float32Array(real.length);
-        return context.createPeriodicWave(real, imag);
-      })();
-
-      freqs.forEach((freq, i) => {
-        const osc = context.createOscillator();
-        osc.setPeriodicWave(wave);
-        osc.frequency.value = freq;
-
-        const driftLFO = context.createOscillator();
-        driftLFO.frequency.value = 0.1 + Math.random() * 0.2;
-
-        const driftGain = context.createGain();
-        driftGain.gain.value = 1 + Math.random();
-
-        driftLFO.connect(driftGain).connect(osc.frequency);
-        lfos.push(driftLFO);
-
-        const gain = context.createGain();
-        gain.gain.setValueAtTime(0, context.currentTime);
-        gain.gain.linearRampToValueAtTime(0.28, context.currentTime + 2.5);
-
-        const panNode = context.createStereoPanner();
-        panNode.pan.value = stereoPositions[i];
-
-        osc.connect(gain).connect(panNode).connect(destination);
-        oscillators.push(osc);
-        gains.push(gain);
-
-        osc.start();
-        driftLFO.start();
-      });
-
-      let frame;
-      const animate = () => {
-        analyser.getByteTimeDomainData(dataArray);
-        const avg = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
-        const intensity = Math.abs(avg - 128) / 128;
-        lfos.forEach(lfo => {
-          lfo.frequency.setTargetAtTime(0.1 + intensity * 0.4, context.currentTime, 0.2);
-        });
-        frame = requestAnimationFrame(animate);
-      };
-      animate();
-
-      return () => {
-        cancelAnimationFrame(frame);
-        const now = context.currentTime;
-        gains.forEach(g => {
-          g.gain.cancelScheduledValues(now);
-          g.gain.setValueAtTime(g.gain.value, now);
-          g.gain.linearRampToValueAtTime(0, now + 2.5);
-        });
-        setTimeout(() => {
-          oscillators.forEach(o => o.stop());
-          lfos.forEach(l => l.stop());
-        }, 2600);
-      };
-    }
-
-    recordBtn.onclick = () => {
+    recordBtn.onclick = async () => {
       const ritual = confirm("Are you ready to imprint your voice into this reality?");
       if (!ritual) return;
 
-      navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        mediaDest = audioContext.createMediaStreamDestination();
-        stopTones = createSolfeggioToneGrid(audioContext, mediaDest, stream);
+      const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-        const combinedStream = new MediaStream([
-          ...stream.getAudioTracks(),
-          ...mediaDest.stream.getAudioTracks()
-        ]);
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const destination = audioContext.createMediaStreamDestination();
 
-        Mp3Recorder.start(combinedStream)
-          .then(() => {
-            recordBtn.disabled = true;
-            stopBtn.disabled = false;
-          })
-          .catch(e => alert('Mic permission denied or unavailable.'));
-      });
+      const micSource = audioContext.createMediaStreamSource(micStream);
+      micSource.connect(destination);
+
+      oscillator = audioContext.createOscillator();
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(528, audioContext.currentTime);
+
+      oscGain = audioContext.createGain();
+      oscGain.gain.value = 0.05; // Subtle volume
+
+      oscillator.connect(oscGain).connect(destination);
+      oscillator.start();
+
+      audioStream = destination.stream;
+      mediaRecorder = new MediaRecorder(audioStream);
+      mediaRecorder.ondataavailable = e => chunks.push(e.data);
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(chunks, { type: 'audio/webm' });
+        chunks = [];
+
+        const date = new Date().toISOString().split('T')[0];
+        const filename = `highscore-frequency-${date}.webm`;
+        const audioUrl = URL.createObjectURL(blob);
+
+        audioPlayback.src = audioUrl;
+        audioPlayback.style.display = 'block';
+
+        downloadLink.href = audioUrl;
+        downloadLink.download = filename;
+        downloadLink.style.display = 'inline-block';
+
+        recordBtn.disabled = false;
+        stopBtn.disabled = true;
+        resetBtn.disabled = false;
+      };
+
+      mediaRecorder.start();
+      recordBtn.disabled = true;
+      stopBtn.disabled = false;
     };
 
     stopBtn.onclick = () => {
-      Mp3Recorder
-        .stop()
-        .getMp3()
-        .then(([buffer, blob]) => {
-          const date = new Date().toISOString().split('T')[0];
-          const filename = `highscore-frequency-${date}.mp3`;
-
-          const file = new File(buffer, filename, {
-            type: blob.type,
-            lastModified: Date.now()
-          });
-
-          const audioUrl = URL.createObjectURL(file);
-          audioPlayback.src = audioUrl;
-          audioPlayback.style.display = 'block';
-
-          downloadLink.href = audioUrl;
-          downloadLink.download = filename;
-          downloadLink.style.display = 'inline-block';
-
-          recordBtn.disabled = false;
-          stopBtn.disabled = true;
-          resetBtn.disabled = false;
-
-          if (stopTones) stopTones();
-        })
-        .catch(e => alert('Something went wrong during recording.'));
+      if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+        oscillator.stop();
+      }
     };
 
     resetBtn.onclick = () => {
@@ -285,6 +215,120 @@
 
       resetBtn.disabled = true;
     };
+    <script>
+  const Mp3Recorder = new MicRecorder({ bitRate: 128 });
+  const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  const dest = audioContext.createMediaStreamDestination();
+  const micSource = null; // will initialize when mic is active
+  let stopCrystalTone = null;
+
+  const recordBtn = document.getElementById('recordBtn');
+  const stopBtn = document.getElementById('stopBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const audioPlayback = document.getElementById('audioPlayback');
+  const downloadLink = document.getElementById('downloadLink');
+
+  // Crystal Tone Generator with drift + fade
+  const createCrystalTone = (audioContext, destination) => {
+    const oscGain = audioContext.createGain();
+    oscGain.gain.setValueAtTime(0.0, audioContext.currentTime);
+    oscGain.gain.linearRampToValueAtTime(0.05, audioContext.currentTime + 3);
+
+    const real = new Float32Array([0, 1, 0.2, 0.05, 0.02]);
+    const imag = new Float32Array(real.length);
+    const crystalWave = audioContext.createPeriodicWave(real, imag);
+
+    const oscillator = audioContext.createOscillator();
+    oscillator.setPeriodicWave(crystalWave);
+    oscillator.frequency.setValueAtTime(528, audioContext.currentTime);
+
+    const driftLFO = audioContext.createOscillator();
+    driftLFO.frequency.value = 0.15;
+    const driftGain = audioContext.createGain();
+    driftGain.gain.value = 1.25;
+
+    driftLFO.connect(driftGain).connect(oscillator.frequency);
+    oscillator.connect(oscGain).connect(destination);
+
+    oscillator.start();
+    driftLFO.start();
+
+    return () => {
+      const now = audioContext.currentTime;
+      oscGain.gain.cancelScheduledValues(now);
+      oscGain.gain.setValueAtTime(oscGain.gain.value, now);
+      oscGain.gain.linearRampToValueAtTime(0, now + 3);
+      setTimeout(() => {
+        oscillator.stop();
+        driftLFO.stop();
+      }, 3100);
+    };
+  };
+
+  recordBtn.onclick = () => {
+    const ritual = confirm("Are you ready to imprint your voice into this reality?");
+    if (!ritual) return;
+
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+      const micStreamSource = audioContext.createMediaStreamSource(stream);
+      micStreamSource.connect(dest);
+
+      // Start tone
+      stopCrystalTone = createCrystalTone(audioContext, dest);
+
+      Mp3Recorder.start()
+        .then(() => {
+          recordBtn.disabled = true;
+          stopBtn.disabled = false;
+        })
+        .catch(e => alert('Mic permission denied or unavailable.'));
+    });
+  };
+
+  stopBtn.onclick = () => {
+    Mp3Recorder
+      .stop()
+      .getMp3()
+      .then(([buffer, blob]) => {
+        const date = new Date().toISOString().split('T')[0];
+        const filename = `highscore-frequency-${date}.mp3`;
+
+        const file = new File(buffer, filename, {
+          type: blob.type,
+          lastModified: Date.now()
+        });
+
+        const audioUrl = URL.createObjectURL(file);
+        audioPlayback.src = audioUrl;
+        audioPlayback.style.display = 'block';
+
+        downloadLink.href = audioUrl;
+        downloadLink.download = filename;
+        downloadLink.style.display = 'inline-block';
+
+        recordBtn.disabled = false;
+        stopBtn.disabled = true;
+        resetBtn.disabled = false;
+
+        if (stopCrystalTone) stopCrystalTone();
+      })
+      .catch(e => alert('Something went wrong during recording.'));
+  };
+
+  resetBtn.onclick = () => {
+    audioPlayback.pause();
+    audioPlayback.currentTime = 0;
+    audioPlayback.src = '';
+    audioPlayback.style.display = 'none';
+
+    downloadLink.href = '';
+    downloadLink.download = '';
+    downloadLink.style.display = 'none';
+
+    resetBtn.disabled = true;
+  };
+</script>
+
   </script>
 </body>
 </html>
