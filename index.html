@@ -3,28 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <title>High Score Voice Activation</title>
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: 'Helvetica Neue', sans-serif;
-      background: #f9f9f9;
+      font-family: 'Unbounded', cursive;
+      background: #f3f6f9;
       text-align: center;
       padding: 60px 20px;
-      color: #1a1a1a;
+      color: #202020;
     }
     h2 {
-      font-size: 28px;
+      font-size: 32px;
       margin-bottom: 10px;
     }
     p {
-      font-size: 16px;
-      color: #666;
+      font-size: 18px;
+      color: #444;
       margin-bottom: 30px;
     }
     button {
-      background-color: #333;
+      background-color: #1a1a1a;
       color: white;
       border: none;
-      padding: 12px 24px;
+      padding: 14px 28px;
       font-size: 16px;
       cursor: pointer;
       margin: 10px;
@@ -35,28 +36,31 @@
     }
     audio {
       margin-top: 30px;
-      width: 100%;
+      width: 90%;
       max-width: 400px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
     }
     a {
       display: inline-block;
       margin-top: 20px;
       text-decoration: none;
-      color: #0055ff;
+      color: #0070f3;
     }
   </style>
 </head>
 <body>
-  <h2>🎙️ Record Your Voice Activation</h2>
-  <p>Speak your phrase. Play it back. Let your field respond.</p>
+  <audio src="https://cdn.pixabay.com/audio/2022/08/09/audio_92865ab5d2.mp3" autoplay loop hidden></audio>
 
-  <button id="recordBtn">⏺️ Start Recording</button>
-  <button id="stopBtn" disabled>⏹️ Stop</button>
+  <h2>🎙️ Voice Activation Portal</h2>
+  <p>Speak your ritual phrase. Playback will anchor it into your field.</p>
 
-  <div>
-    <audio id="audioPlayback" controls style="display: none;"></audio>
-    <a id="downloadLink" style="display: none;" download="highscore-activation.wav">⬇️ Download Your Recording</a>
-  </div>
+  <button id="recordBtn">🟢 Start Recording</button>
+  <button id="stopBtn" disabled>🛑 Stop</button>
+
+  <audio id="audioPlayback" controls style="display: none;"></audio>
+  <a id="downloadLink" style="display: none;" download="highscore-activation.wav">⬇️ Download Your Recording</a>
 
   <script>
     let mediaRecorder;
@@ -68,6 +72,9 @@
     const downloadLink = document.getElementById('downloadLink');
 
     recordBtn.onclick = async () => {
+      const ritual = confirm("Are you ready to imprint your voice into this reality?");
+      if (!ritual) return;
+
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaRecorder = new MediaRecorder(stream);
       audioChunks = [];
