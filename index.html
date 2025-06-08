@@ -90,7 +90,7 @@
         .getMp3()
         .then(([buffer, blob]) => {
           const date = new Date().toISOString().split('T')[0]; // e.g., 2025-06-08
-          const filename = `highscore-frequency-activation-${date}.mp3`;
+          const filename = `highscore-frequency-${date}.mp3`;
 
           const file = new File(buffer, filename, {
             type: blob.type,
