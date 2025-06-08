@@ -116,6 +116,7 @@
   </style>
 </head>
 <body>
+
   <div class="portal-wrapper">
     <div class="portal-image"></div>
     <div class="content">
@@ -135,56 +136,9 @@
 
   <script>
     let mediaRecorder;
-    let recordedChunks = [];
-    let audioContext;
-    let oscillator;
-    let mediaStream;
-
-    async function startRecording() {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      audioContext = new (window.AudioContext || window.webkitAudioContext)();
-
-      oscillator = audioContext.createOscillator();
-      oscillator.type = "sine";
-      oscillator.frequency.setValueAtTime(528, audioContext.currentTime);
-
-      const micSource = audioContext.createMediaStreamSource(stream);
-      const oscGain = audioContext.createGain();
-      oscGain.gain.value = 0.05;
-
-oscillator.connect(oscGain).connect(audioContext.destination);
-micSource.connect(audioContext.destination);
-
-      const dest = audioContext.createMediaStreamDestination();
-      micSource.connect(dest);
-      oscillator.connect(dest);
-
-      mediaRecorder = new MediaRecorder(dest.stream);
-      recordedChunks = [];
-
-      mediaRecorder.ondataavailable = e => recordedChunks.push(e.data);
-      mediaRecorder.onstop = () => {
-        const blob = new Blob(recordedChunks, { type: 'audio/webm' });
-        const url = URL.createObjectURL(blob);
-        const audio = document.getElementById("audioPlayback");
-        const link = document.getElementById("downloadLink");
-
-        const date = new Date().toISOString().split('T')[0];
-        const filename = `highscore-frequency-${date}.webm`;
-
-        audio.src = url;
-        audio.style.display = 'block';
-
-        link.href = url;
-        link.download = filename;
-        link.style.display = 'inline-block';
-      };
-
-      mediaRecorder.start();
-      oscillator.start();
-
-      return stream;
-    }
+    let chunks = [];
+    let oscillator, oscGain;
+    let audioStream;
 
     const recordBtn = document.getElementById('recordBtn');
     const stopBtn = document.getElementById('stopBtn');
@@ -196,20 +150,57 @@ micSource.connect(audioContext.destination);
       const ritual = confirm("Are you ready to imprint your voice into this reality?");
       if (!ritual) return;
 
-      mediaStream = await startRecording();
+      const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const destination = audioContext.createMediaStreamDestination();
+
+      const micSource = audioContext.createMediaStreamSource(micStream);
+      micSource.connect(destination);
+
+      oscillator = audioContext.createOscillator();
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(528, audioContext.currentTime);
+
+      oscGain = audioContext.createGain();
+      oscGain.gain.value = 0.05; // Subtle volume
+
+      oscillator.connect(oscGain).connect(destination);
+      oscillator.start();
+
+      audioStream = destination.stream;
+      mediaRecorder = new MediaRecorder(audioStream);
+      mediaRecorder.ondataavailable = e => chunks.push(e.data);
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(chunks, { type: 'audio/webm' });
+        chunks = [];
+
+        const date = new Date().toISOString().split('T')[0];
+        const filename = `highscore-frequency-${date}.webm`;
+        const audioUrl = URL.createObjectURL(blob);
+
+        audioPlayback.src = audioUrl;
+        audioPlayback.style.display = 'block';
+
+        downloadLink.href = audioUrl;
+        downloadLink.download = filename;
+        downloadLink.style.display = 'inline-block';
+
+        recordBtn.disabled = false;
+        stopBtn.disabled = true;
+        resetBtn.disabled = false;
+      };
+
+      mediaRecorder.start();
       recordBtn.disabled = true;
       stopBtn.disabled = false;
     };
 
     stopBtn.onclick = () => {
-      mediaRecorder.stop();
-      oscillator.stop();
-      mediaStream.getTracks().forEach(track => track.stop());
-
-      stopBtn.disabled = true;
-      recordBtn.disabled = false;
-      resetBtn.disabled = false;
+      if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+        oscillator.stop();
+      }
     };
 
     resetBtn.onclick = () => {
