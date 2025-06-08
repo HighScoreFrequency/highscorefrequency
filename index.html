@@ -158,50 +158,28 @@
       const micSource = audioContext.createMediaStreamSource(micStream);
       micSource.connect(destination);
 
-const createCrystalTone = (audioContext, destination) => {
-  // Fade-in/out control
-  const oscGain = audioContext.createGain();
-  oscGain.gain.setValueAtTime(0.0, audioContext.currentTime); // Start muted
-  oscGain.gain.linearRampToValueAtTime(0.05, audioContext.currentTime + 3); // Fade in over 3s
+// ✨ 528Hz crystal tone with fade, drift & custom wave
+const real = new Float32Array([0, 1, 0.2, 0.05, 0.02]);
+const imag = new Float32Array(real.length);
+const crystalWave = audioContext.createPeriodicWave(real, imag);
 
-  // Custom waveform (singing crystal-like)
-  const real = new Float32Array([0, 1, 0.2, 0.05, 0.02]);
-  const imag = new Float32Array(real.length); // No phase shift
-  const crystalWave = audioContext.createPeriodicWave(real, imag);
+oscillator = audioContext.createOscillator();
+oscillator.setPeriodicWave(crystalWave);
+oscillator.frequency.setValueAtTime(528, audioContext.currentTime);
 
-  const oscillator = audioContext.createOscillator();
-  oscillator.setPeriodicWave(crystalWave);
-  oscillator.frequency.setValueAtTime(528, audioContext.currentTime);
+oscGain = audioContext.createGain();
+oscGain.gain.setValueAtTime(0.0, audioContext.currentTime); // Start silent
+oscGain.gain.linearRampToValueAtTime(0.04, audioContext.currentTime + 3); // Fade in
 
-  // Micro-drift to simulate analog variance
-  const driftLFO = audioContext.createOscillator();
-  driftLFO.frequency.value = 0.15; // ultra-slow drift
-  const driftGain = audioContext.createGain();
-  driftGain.gain.value = 1.25; // +/- 1.25 Hz drift
+const driftLFO = audioContext.createOscillator();
+const driftGain = audioContext.createGain();
+driftLFO.frequency.value = 0.1;         // Slow drift
+driftGain.gain.value = 1.2;             // Drift depth in Hz
+driftLFO.connect(driftGain).connect(oscillator.frequency);
 
-  driftLFO.connect(driftGain).connect(oscillator.frequency);
-
-  // Output control
-  oscillator.connect(oscGain).connect(destination);
-
-  // Start everything
-  oscillator.start();
-  driftLFO.start();
-
-  // Auto fade-out after recording stops
-  const stopTone = () => {
-    const now = audioContext.currentTime;
-    oscGain.gain.cancelScheduledValues(now);
-    oscGain.gain.setValueAtTime(oscGain.gain.value, now);
-    oscGain.gain.linearRampToValueAtTime(0, now + 3); // fade out over 3s
-    setTimeout(() => {
-      oscillator.stop();
-      driftLFO.stop();
-    }, 3100);
-  };
-
-  return stopTone;
-};
+oscillator.connect(oscGain).connect(destination);
+oscillator.start();
+driftLFO.start();
 
 
       audioStream = destination.stream;
