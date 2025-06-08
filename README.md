@@ -1,1 +1,1 @@
-# -highscore-voice
+# highscore-frequency
