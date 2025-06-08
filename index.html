@@ -210,12 +210,24 @@ driftLFO.start();
       stopBtn.disabled = false;
     };
 
-    stopBtn.onclick = () => {
-      if (mediaRecorder && mediaRecorder.state === 'recording') {
-        mediaRecorder.stop();
-        oscillator.stop();
-      }
-    };
+stopBtn.onclick = () => {
+  if (mediaRecorder && mediaRecorder.state === 'recording') {
+    mediaRecorder.stop();
+
+    // 🌀 Fade out the oscillator volume gradually
+    const now = oscillator.context.currentTime;
+    oscGain.gain.cancelScheduledValues(now);
+    oscGain.gain.setValueAtTime(oscGain.gain.value, now);
+    oscGain.gain.linearRampToValueAtTime(0, now + 3); // 3-second fade out
+
+    // 🛑 Stop both oscillators after fade-out is complete
+    setTimeout(() => {
+      if (oscillator) oscillator.stop();
+      if (driftLFO) driftLFO.stop();
+    }, 3100); // Stop after fade-out completes
+  }
+};
+
 
     resetBtn.onclick = () => {
       audioPlayback.pause();
