@@ -116,7 +116,6 @@
   </style>
 </head>
 <body>
-
   <div class="portal-wrapper">
     <div class="portal-image"></div>
     <div class="content">
@@ -125,7 +124,7 @@
 
       <div class="button-group">
         <button id="recordBtn">🟢 Start Recording</button>
-        <button id="stopBtn" disabled>🔚 Stop</button>
+        <button id="stopBtn" disabled>🖚 Stop</button>
         <button id="resetBtn" disabled>🔁 Reset</button>
       </div>
 
@@ -157,12 +156,21 @@
 
         const groupGain = audioContext.createGain();
         groupGain.gain.setValueAtTime(0, audioContext.currentTime);
-        groupGain.gain.linearRampToValueAtTime(0.02, audioContext.currentTime + 3);
+        groupGain.gain.linearRampToValueAtTime(0.008, audioContext.currentTime + 5);
 
-        for (let j = 0; j < 3; j++) {
+        const delay = audioContext.createDelay();
+        delay.delayTime.value = 0.15;
+        const delayGain = audioContext.createGain();
+        delayGain.gain.value = 0.3;
+
+        const highPass = audioContext.createBiquadFilter();
+        highPass.type = "highpass";
+        highPass.frequency.value = 180;
+
+        for (let j = 0; j < 2; j++) {
           const osc = audioContext.createOscillator();
           osc.type = 'sine';
-          osc.frequency.value = freq + (j - 1) * 0.4;
+          osc.frequency.value = freq + (j - 0.5) * 0.4;
 
           const lfo = audioContext.createOscillator();
           lfo.frequency.value = 0.1 + Math.random() * 0.2;
@@ -180,7 +188,10 @@
           lfos.push(lfo);
         }
 
-        groupGain.connect(pan).connect(destination);
+        groupGain.connect(pan).connect(highPass);
+        highPass.connect(destination);
+        highPass.connect(delay).connect(delayGain).connect(destination);
+
         gains.push(groupGain);
         panners.push(pan);
       });
@@ -191,7 +202,7 @@
         const avg = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
         const voiceLevel = Math.abs(avg - 128) / 128;
         lfos.forEach(lfo => {
-          lfo.frequency.setTargetAtTime(0.1 + voiceLevel * 0.4, audioContext.currentTime, 0.3);
+          lfo.frequency.setTargetAtTime(0.05 + voiceLevel * 0.2, audioContext.currentTime, 0.2);
         });
         frame = requestAnimationFrame(animate);
       };
@@ -203,12 +214,12 @@
         gains.forEach(g => {
           g.gain.cancelScheduledValues(now);
           g.gain.setValueAtTime(g.gain.value, now);
-          g.gain.linearRampToValueAtTime(0, now + 3);
+          g.gain.linearRampToValueAtTime(0, now + 5);
         });
         setTimeout(() => {
           oscillators.forEach(o => o.stop());
           lfos.forEach(l => l.stop());
-        }, 3100);
+        }, 5100);
       };
     }
 
