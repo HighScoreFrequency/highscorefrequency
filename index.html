@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>High Score Voice Activation</title>
   <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/mic-recorder-to-mp3"></script>
   <style>
     body {
       font-family: 'Unbounded', cursive;
@@ -51,7 +52,8 @@
   </style>
 </head>
 <body>
-  <audio src="https://cdn.pixabay.com/audio/2022/08/09/audio_92865ab5d2.mp3" autoplay loop hidden></audio>
+  <!-- Background frequency (528Hz) -->
+  <audio src="https://cdn.pixabay.com/audio/2023/03/05/audio_234e928c68.mp3" autoplay loop hidden></audio>
 
   <h2>🎙️ Voice Activation Portal</h2>
   <p>Speak your ritual phrase. Playback will anchor it into your field.</p>
@@ -60,45 +62,49 @@
   <button id="stopBtn" disabled>🛑 Stop</button>
 
   <audio id="audioPlayback" controls style="display: none;"></audio>
-  <a id="downloadLink" style="display: none;" download="highscore-activation.wav">⬇️ Download Your Recording</a>
+  <a id="downloadLink" style="display: none;" download="highscore-activation.mp3">⬇️ Download Your Recording</a>
 
   <script>
-    let mediaRecorder;
-    let audioChunks = [];
-
     const recordBtn = document.getElementById('recordBtn');
     const stopBtn = document.getElementById('stopBtn');
     const audioPlayback = document.getElementById('audioPlayback');
     const downloadLink = document.getElementById('downloadLink');
 
-    recordBtn.onclick = async () => {
-      const ritual = confirm("Are you ready to imprint your voice into this reality?");
-      if (!ritual) return;
+    const Mp3Recorder = new MicRecorder({ bitRate: 128 });
 
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorder = new MediaRecorder(stream);
-      audioChunks = [];
+    recordBtn.onclick = () => {
+      const confirmed = confirm("🌀 Are you ready to imprint your voice into this timeline?");
+      if (!confirmed) return;
 
-      mediaRecorder.ondataavailable = event => audioChunks.push(event.data);
-
-      mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-        const audioUrl = URL.createObjectURL(audioBlob);
-        audioPlayback.src = audioUrl;
-        audioPlayback.style.display = 'block';
-        downloadLink.href = audioUrl;
-        downloadLink.style.display = 'inline-block';
-      };
-
-      mediaRecorder.start();
-      recordBtn.disabled = true;
-      stopBtn.disabled = false;
+      Mp3Recorder
+        .start()
+        .then(() => {
+          recordBtn.disabled = true;
+          stopBtn.disabled = false;
+        })
+        .catch(e => alert('Microphone permission required.'));
     };
 
     stopBtn.onclick = () => {
-      mediaRecorder.stop();
-      recordBtn.disabled = false;
-      stopBtn.disabled = true;
+      Mp3Recorder
+        .stop()
+        .getMp3()
+        .then(([buffer, blob]) => {
+          const file = new File(buffer, 'highscore-activation.mp3', {
+            type: blob.type,
+            lastModified: Date.now()
+          });
+
+          const audioUrl = URL.createObjectURL(file);
+          audioPlayback.src = audioUrl;
+          audioPlayback.style.display = 'block';
+          downloadLink.href = audioUrl;
+          downloadLink.style.display = 'inline-block';
+
+          recordBtn.disabled = false;
+          stopBtn.disabled = true;
+        })
+        .catch(e => alert('Something went wrong during recording.'));
     };
   </script>
 </body>
