@@ -120,12 +120,12 @@
   <div class="portal-wrapper">
     <div class="portal-image"></div>
     <div class="content">
-      <h2>🎙️ Voice Activation Portal</h2>
+      <h2>🎧 Voice Activation Portal</h2>
       <p>Speak your ritual phrase.<br>Playback will anchor it into your field.</p>
 
       <div class="button-group">
         <button id="recordBtn">🟢 Start Recording</button>
-        <button id="stopBtn" disabled>🛑 Stop</button>
+        <button id="stopBtn" disabled>🔚 Stop</button>
         <button id="resetBtn" disabled>🔁 Reset</button>
       </div>
 
@@ -138,7 +138,7 @@
     let mediaRecorder;
     let chunks = [];
     let audioStream;
-    let stopTonePlayback; // store stop function for solfeggio tone
+    let stopTonePlayback;
 
     function createSolfeggioToneGrid(audioContext, destination, micStream) {
       const micSource = audioContext.createMediaStreamSource(micStream);
@@ -148,42 +148,41 @@
       micSource.connect(analyser);
 
       const freqs = [528, 432, 963];
-      const stereoPositions = [-1, 0, 1];
+      const stereoPositions = [-0.7, 0, 0.7];
       const oscillators = [], lfos = [], panners = [], gains = [];
 
-      const real = new Float32Array([0, 1, 0.3, 0.1, 0.02]);
-      const imag = new Float32Array(real.length);
-      const wave = audioContext.createPeriodicWave(real, imag);
-
       freqs.forEach((freq, i) => {
-        const osc = audioContext.createOscillator();
-        osc.setPeriodicWave(wave);
-        osc.frequency.value = freq;
-
-        const driftLFO = audioContext.createOscillator();
-        driftLFO.frequency.value = 0.15 + Math.random() * 0.1;
-
-        const driftGain = audioContext.createGain();
-        driftGain.gain.value = 1 + Math.random();
-
-        driftLFO.connect(driftGain).connect(osc.frequency);
-
-        const gain = audioContext.createGain();
-        gain.gain.setValueAtTime(0, audioContext.currentTime);
-        gain.gain.linearRampToValueAtTime(0.02, audioContext.currentTime + 3);
-
         const pan = audioContext.createStereoPanner();
         pan.pan.value = stereoPositions[i];
 
-        osc.connect(gain).connect(pan).connect(destination);
+        const groupGain = audioContext.createGain();
+        groupGain.gain.setValueAtTime(0, audioContext.currentTime);
+        groupGain.gain.linearRampToValueAtTime(0.02, audioContext.currentTime + 3);
 
-        osc.start();
-        driftLFO.start();
+        for (let j = 0; j < 3; j++) {
+          const osc = audioContext.createOscillator();
+          osc.type = 'sine';
+          osc.frequency.value = freq + (j - 1) * 0.4;
 
-        oscillators.push(osc);
-        lfos.push(driftLFO);
+          const lfo = audioContext.createOscillator();
+          lfo.frequency.value = 0.1 + Math.random() * 0.2;
+
+          const lfoGain = audioContext.createGain();
+          lfoGain.gain.value = 1;
+
+          lfo.connect(lfoGain).connect(osc.frequency);
+          osc.connect(groupGain);
+
+          osc.start();
+          lfo.start();
+
+          oscillators.push(osc);
+          lfos.push(lfo);
+        }
+
+        groupGain.connect(pan).connect(destination);
+        gains.push(groupGain);
         panners.push(pan);
-        gains.push(gain);
       });
 
       let frame;
@@ -192,7 +191,7 @@
         const avg = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
         const voiceLevel = Math.abs(avg - 128) / 128;
         lfos.forEach(lfo => {
-          lfo.frequency.setTargetAtTime(0.1 + voiceLevel * 0.5, audioContext.currentTime, 0.2);
+          lfo.frequency.setTargetAtTime(0.1 + voiceLevel * 0.4, audioContext.currentTime, 0.3);
         });
         frame = requestAnimationFrame(animate);
       };
