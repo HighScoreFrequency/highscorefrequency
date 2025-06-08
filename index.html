@@ -152,8 +152,8 @@
       const oscGain = audioContext.createGain();
       oscGain.gain.value = 0.05;
 
-      oscillator.connect(oscGain).connect(audioContext.destination);
-      micSource.connect(audioContext.destination);
+oscillator.connect(oscGain).connect(dest);
+micSource.connect(dest);
 
       const dest = audioContext.createMediaStreamDestination();
       micSource.connect(dest);
