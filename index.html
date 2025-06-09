@@ -28,7 +28,7 @@
 
     .portal-image {
       opacity: 0;
-      animation: fadeIn 6s ease forwards, rotate 111s linear infinite;
+      animation: fadeIn 6s ease forwards, rotate 69s linear infinite;
       position: absolute;
       top: 50%;
       left: 50%;
@@ -189,7 +189,7 @@
 
       oscillator.type = 'sine';
       oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
-      gainNode.gain.setValueAtTime(0.03, audioCtx.currentTime); // Adjust volume here
+      gainNode.gain.setValueAtTime(0.02, audioCtx.currentTime); // Adjust volume here
 
       oscillator.connect(panner).connect(gainNode);
       return gainNode;
