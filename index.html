@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <title>High Score Voice Activation</title>
   <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500&display=swap" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/mic-recorder-to-mp3@2.2.1/dist/index.min.js"></script>
   <style>
     html, body {
       margin: 0;
@@ -17,7 +16,6 @@
       align-items: center;
       overflow: hidden;
     }
-
     .portal-wrapper {
       position: relative;
       width: 93vmin;
@@ -26,7 +24,6 @@
       justify-content: center;
       align-items: center;
     }
-
     .portal-image {
       position: absolute;
       top: 50%;
@@ -41,7 +38,6 @@
       animation: rotate 369s linear infinite;
       z-index: 1;
     }
-
     .content {
       position: relative;
       z-index: 2;
@@ -57,26 +53,14 @@
       justify-content: center;
       align-items: center;
     }
-
-    h2 {
-      font-size: 32px;
-      margin-bottom: 10px;
-    }
-
-    p {
-      font-size: 18px;
-      color: #444;
-      margin-bottom: 20px;
-    }
-
+    h2 { font-size: 32px; margin-bottom: 10px; }
+    p { font-size: 18px; color: #444; margin-bottom: 30px; }
     .button-group {
       display: flex;
       justify-content: center;
       gap: 20px;
       flex-wrap: wrap;
-      margin-top: 10px;
     }
-
     button {
       background-color: #1a1a1a;
       color: white;
@@ -87,37 +71,31 @@
       border-radius: 6px;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
-
     button:hover:not(:disabled) {
       transform: scale(1.05);
       box-shadow: 0 0 12px rgba(0, 0, 0, 0.2);
     }
-
     button:disabled {
       background-color: #aaa;
       cursor: not-allowed;
     }
-
     select {
-      margin-top: 10px;
+      margin: 15px 0;
       padding: 8px;
       font-size: 16px;
       border-radius: 6px;
     }
-
     audio {
       margin-top: 30px;
       width: 100%;
       max-width: 400px;
     }
-
     a {
       display: inline-block;
       margin-top: 20px;
       text-decoration: none;
       color: #0070f3;
     }
-
     @keyframes rotate {
       from { transform: translate(-50%, -50%) rotate(0deg); }
       to { transform: translate(-50%, -50%) rotate(-360deg); }
@@ -129,38 +107,22 @@
     <div class="portal-image"></div>
     <div class="content">
       <h2>🎙️ Voice Activation Portal</h2>
-      <p>Choose your frequency. Optionally preview it. Then speak your ritual phrase.<br>Playback will anchor it into your field.</p>
-
+      <p>Choose your frequency, then speak your ritual phrase.<br>Playback will anchor it into your field.</p>
       <select id="frequencySelect">
         <option value="528">528 Hz – DNA Repair</option>
         <option value="639">639 Hz – Love & Harmony</option>
         <option value="963">963 Hz – Pineal Activation</option>
       </select>
-
       <div class="button-group">
-        <button id="previewBtn">🎧 Preview Tone</button>
         <button id="recordBtn">🟢 Start Recording</button>
         <button id="stopBtn" disabled>🛑 Stop</button>
         <button id="resetBtn" disabled>🔁 Reset</button>
       </div>
-
       <audio id="audioPlayback" controls style="display: none;"></audio>
       <a id="downloadLink" style="display: none;">⬇️ Download Your Recording</a>
     </div>
   </div>
-
   <script>
-    const Mp3Recorder = new MicRecorder({ bitRate: 128 });
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    const audioCtx = new AudioContext();
-
-    let oscillator, gainNode, panner;
-    let oscInterval, panInterval;
-    let previewing = false;
-    let micSource;
-    let dest = audioCtx.createMediaStreamDestination();
-
-    const previewBtn = document.getElementById('previewBtn');
     const recordBtn = document.getElementById('recordBtn');
     const stopBtn = document.getElementById('stopBtn');
     const resetBtn = document.getElementById('resetBtn');
@@ -168,101 +130,58 @@
     const downloadLink = document.getElementById('downloadLink');
     const frequencySelect = document.getElementById('frequencySelect');
 
-    function startOscillator(freq, outputNode) {
+    let mediaRecorder, recordedChunks = [], oscillator;
+
+    recordBtn.onclick = async () => {
+      const freq = parseFloat(frequencySelect.value);
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+      // Oscillator
       oscillator = audioCtx.createOscillator();
       oscillator.type = 'sine';
       oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
 
-      panner = audioCtx.createStereoPanner();
-      let pan = -1;
-      panInterval = setInterval(() => {
-        panner.pan.setValueAtTime(pan, audioCtx.currentTime);
-        pan = -pan;
-      }, 3000);
+      const gainNode = audioCtx.createGain();
+      gainNode.gain.setValueAtTime(0.25, audioCtx.currentTime);
 
-      oscInterval = setInterval(() => {
-        const detune = (Math.random() - 0.5) * 2;
-        oscillator.frequency.setValueAtTime(freq + detune, audioCtx.currentTime);
-      }, 500);
+      oscillator.connect(gainNode);
 
-      gainNode = audioCtx.createGain();
-      gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
-      gainNode.gain.linearRampToValueAtTime(0.25, audioCtx.currentTime + 2);
+      const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const micSource = audioCtx.createMediaStreamSource(micStream);
 
-      oscillator.connect(panner).connect(gainNode).connect(outputNode);
+      const dest = audioCtx.createMediaStreamDestination();
+      micSource.connect(dest);
+      gainNode.connect(dest);
       oscillator.start();
-    }
 
-    function stopOscillator() {
-      if (oscillator) oscillator.stop();
-      clearInterval(oscInterval);
-      clearInterval(panInterval);
-    }
+      mediaRecorder = new MediaRecorder(dest.stream);
+      recordedChunks = [];
 
-    previewBtn.onclick = () => {
-      if (!previewing) {
-        const freq = parseFloat(frequencySelect.value);
-        startOscillator(freq, audioCtx.destination);
-        previewing = true;
-        previewBtn.textContent = "🛑 Stop Preview";
-      } else {
-        stopOscillator();
-        previewing = false;
-        previewBtn.textContent = "🎧 Preview Tone";
-      }
-    };
+      mediaRecorder.ondataavailable = e => recordedChunks.push(e.data);
+      mediaRecorder.onstop = () => {
+        oscillator.stop();
+        const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+        const url = URL.createObjectURL(blob);
+        audioPlayback.src = url;
+        audioPlayback.style.display = 'block';
 
-    recordBtn.onclick = async () => {
-      const freq = parseFloat(frequencySelect.value);
+        const date = new Date().toISOString().split('T')[0];
+        const filename = `highscore-frequency-${date}.webm`;
+        downloadLink.href = url;
+        downloadLink.download = filename;
+        downloadLink.style.display = 'inline-block';
+      };
 
-      // Setup oscillator, muted but routed to recording only
-      startOscillator(freq, dest);
-
-      try {
-        const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        micSource = audioCtx.createMediaStreamSource(micStream);
-        micSource.connect(dest);
-
-        Mp3Recorder.start(dest.stream)
-          .then(() => {
-            recordBtn.disabled = true;
-            stopBtn.disabled = false;
-            previewBtn.disabled = true;
-          });
-      } catch (e) {
-        alert('Microphone access denied or unavailable.');
-      }
+      mediaRecorder.start();
+      recordBtn.disabled = true;
+      stopBtn.disabled = false;
     };
 
     stopBtn.onclick = () => {
-      stopOscillator();
-
-      Mp3Recorder
-        .stop()
-        .getMp3()
-        .then(([buffer, blob]) => {
-          const date = new Date().toISOString().split('T')[0];
-          const filename = `highscore-frequency-${date}.mp3`;
-
-          const file = new File(buffer, filename, {
-            type: blob.type,
-            lastModified: Date.now()
-          });
-
-          const audioUrl = URL.createObjectURL(file);
-          audioPlayback.src = audioUrl;
-          audioPlayback.style.display = 'block';
-
-          downloadLink.href = audioUrl;
-          downloadLink.download = filename;
-          downloadLink.style.display = 'inline-block';
-
-          recordBtn.disabled = false;
-          stopBtn.disabled = true;
-          resetBtn.disabled = false;
-          previewBtn.disabled = false;
-        })
-        .catch(e => alert('Something went wrong during recording.'));
+      mediaRecorder.stop();
+      recordBtn.disabled = false;
+      stopBtn.disabled = true;
+      resetBtn.disabled = false;
     };
 
     resetBtn.onclick = () => {
@@ -270,11 +189,9 @@
       audioPlayback.currentTime = 0;
       audioPlayback.src = '';
       audioPlayback.style.display = 'none';
-
       downloadLink.href = '';
       downloadLink.download = '';
       downloadLink.style.display = 'none';
-
       resetBtn.disabled = true;
     };
   </script>
