@@ -141,14 +141,15 @@
     <div class="content">
       <h2>🎙️ High Score Voice Portal</h2>
       <p>Choose your tone, speak it clear.<br>
-Code your field, draw truth near.<br>
-This isn’t speech, it’s memory’s key.<br>
-A voice-etched path to sovereignty.</p>
+      Code your field, draw truth near.<br>
+      This isn’t speech, it’s memory’s key.<br>
+      A voice-etched path to sovereignty.</p>
 
       <select id="frequencySelect">
         <option value="528">528 Hz – 🧬 Cell Recalibration – Level Up to Wholeness</option>
         <option value="639">639 Hz – 💖 Heart Link Gateway – Sync Into Unity Field</option>
         <option value="963">963 Hz – 👑 Crown Signal – Access Divine Intelligence</option>
+        <option value="0">0 Hz – 🕊️ Silence Mode – Record Without Tone</option>
       </select>
 
       <div class="button-group">
@@ -192,15 +193,17 @@ A voice-etched path to sovereignty.</p>
 
       oscillator.type = 'sine';
       oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
-      gainNode.gain.setValueAtTime(0.02, audioCtx.currentTime); // Adjust volume here
+      gainNode.gain.setValueAtTime(0.02, audioCtx.currentTime);
 
       oscillator.connect(panner).connect(gainNode);
       return gainNode;
     }
 
     previewTone.onclick = () => {
+      const freq = parseFloat(frequencySelect.value);
+      if (freq === 0) return; // Silence mode — don't play tone
+
       if (!previewPlaying) {
-        const freq = parseFloat(frequencySelect.value);
         const node = createOscillator(freq);
         node.connect(audioCtx.destination);
         oscillator.start();
@@ -215,7 +218,7 @@ A voice-etched path to sovereignty.</p>
 
     recordBtn.onclick = async () => {
       const freq = parseFloat(frequencySelect.value);
-      const oscillatorNode = createOscillator(freq);
+      const oscillatorNode = freq > 0 ? createOscillator(freq) : null;
 
       try {
         const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -223,7 +226,7 @@ A voice-etched path to sovereignty.</p>
 
         const dest = audioCtx.createMediaStreamDestination();
         micSource.connect(dest);
-        oscillatorNode.connect(dest);
+        if (oscillatorNode) oscillatorNode.connect(dest);
 
         mixedStream = dest.stream;
         mediaRecorder = new MediaRecorder(mixedStream);
@@ -244,7 +247,7 @@ A voice-etched path to sovereignty.</p>
         };
 
         mediaRecorder.start();
-        oscillator.start();
+        if (oscillatorNode) oscillator.start();
 
         recordBtn.disabled = true;
         stopBtn.disabled = false;
@@ -255,7 +258,7 @@ A voice-etched path to sovereignty.</p>
 
     stopBtn.onclick = () => {
       mediaRecorder.stop();
-      oscillator.stop();
+      if (oscillator) oscillator.stop();
       recordBtn.disabled = false;
       stopBtn.disabled = true;
       resetBtn.disabled = false;
