@@ -243,7 +243,7 @@
 
     recordBtn.onclick = async () => {
       const freq = parseFloat(frequencySelect.value);
-      const oscillatorNode = freq > 0 ? (oscillator = createOscillator(freq)) : null;
+      const oscillatorNode = freq > 0 ? createOscillator(freq) : null;
 
       try {
         const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
