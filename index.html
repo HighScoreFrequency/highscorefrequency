@@ -5,12 +5,6 @@
   <title>High Score Voice Activation</title>
   <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500&display=swap" rel="stylesheet" />
   <style>
-    @keyframes fadeIn {
-  to {
-    opacity: 1;
-  }
-}
-
     html, body {
       margin: 0;
       padding: 0;
@@ -32,23 +26,21 @@
       align-items: center;
     }
 
-.portal-image {
-  opacity: 0;
-  animation: fadeIn 3s ease forwards, rotate 369s linear infinite;
-  /* rest stays the same */
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 96%;
-  height: 96%;
-  background-image: url('https://github.com/HighScoreFrequency/highscorefrequency/blob/main/369portalactivation.png?raw=true');
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-  z-index: 1;
-}
-
+    .portal-image {
+      opacity: 0;
+      animation: fadeIn 3s ease forwards, rotate 369s linear infinite;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 96%;
+      height: 96%;
+      background-image: url('https://github.com/HighScoreFrequency/highscorefrequency/blob/main/369portalactivation.png?raw=true');
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      z-index: 1;
+    }
 
     .content {
       position: relative;
@@ -79,10 +71,17 @@
 
     .button-group {
       display: flex;
-      justify-content: center;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .button-row {
+      display: flex;
       gap: 15px;
       flex-wrap: wrap;
-      margin-bottom: 10px;
+      justify-content: center;
     }
 
     button {
@@ -130,6 +129,10 @@
       from { transform: translate(-50%, -50%) rotate(0deg); }
       to { transform: translate(-50%, -50%) rotate(-360deg); }
     }
+
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
   </style>
 </head>
 <body>
@@ -145,17 +148,16 @@
         <option value="963">963 Hz – Pineal Activation</option>
       </select>
 
-<div class="button-group">
-  <div>
-    <button id="previewTone">🔊 Preview Tone</button>
-    <button id="recordBtn">🟢 Start Recording</button>
-  </div>
-  <div style="margin-top: 10px;">
-    <button id="stopBtn" disabled>🛑 Stop</button>
-    <button id="resetBtn" disabled>🔁 Reset</button>
-  </div>
-</div>
-
+      <div class="button-group">
+        <div class="button-row">
+          <button id="previewTone">🔊 Preview Tone</button>
+          <button id="recordBtn">🟢 Start Recording</button>
+        </div>
+        <div class="button-row">
+          <button id="stopBtn" disabled>🛑 Stop</button>
+          <button id="resetBtn" disabled>🔁 Reset</button>
+        </div>
+      </div>
 
       <audio id="audioPlayback" controls style="display: none;"></audio>
       <a id="downloadLink" style="display: none;">⬇️ Download Your Recording</a>
@@ -187,7 +189,7 @@
 
       oscillator.type = 'sine';
       oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
-      gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime);
+      gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime); // Adjust volume here
 
       oscillator.connect(panner).connect(gainNode);
       return gainNode;
@@ -200,7 +202,7 @@
         node.connect(audioCtx.destination);
         oscillator.start();
         previewPlaying = true;
-        previewTone.textContent = '🛑 Stop Preview';
+        previewTone.textContent = '⏹️ Stop Preview';
       } else {
         oscillator.stop();
         previewPlaying = false;
