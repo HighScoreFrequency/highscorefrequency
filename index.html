@@ -144,6 +144,7 @@
       Code your field, draw truth near.<br>
       This isn’t speech, it’s memory’s key.<br>
       A voice-etched path to sovereignty.</p>
+
       <select id="frequencySelect">
         <option value="528">528 Hz – 🧬 Cell Recalibration – Level Up to Wholeness</option>
         <option value="639">639 Hz – 💖 Heart Link Gateway – Sync Into Unity Field</option>
@@ -185,16 +186,28 @@
     const downloadLink = document.getElementById('downloadLink');
     const frequencySelect = document.getElementById('frequencySelect');
 
-    function createOscillator(freq) {
+    function createOscillator(freq, fadeIn = 1.5, fadeOut = 1.5) {
       oscillator = audioCtx.createOscillator();
       gainNode = audioCtx.createGain();
       panner = audioCtx.createStereoPanner();
 
       oscillator.type = 'sine';
       oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
-      gainNode.gain.setValueAtTime(0.02, audioCtx.currentTime);
+
+      const now = audioCtx.currentTime;
+      gainNode.gain.setValueAtTime(0, now);
+      gainNode.gain.linearRampToValueAtTime(0.02, now + fadeIn);
 
       oscillator.connect(panner).connect(gainNode);
+
+      oscillator.stopWithFade = () => {
+        const stopTime = audioCtx.currentTime + fadeOut;
+        gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
+        gainNode.gain.setValueAtTime(gainNode.gain.value, audioCtx.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0, stopTime);
+        oscillator.stop(stopTime);
+      };
+
       return gainNode;
     }
 
@@ -209,7 +222,11 @@
         previewPlaying = true;
         previewTone.textContent = '🛑 Stop Preview';
       } else {
-        oscillator.stop();
+        if (oscillator.stopWithFade) {
+          oscillator.stopWithFade();
+        } else {
+          oscillator.stop();
+        }
         previewPlaying = false;
         previewTone.textContent = '🔊 Preview Tone';
       }
@@ -221,7 +238,6 @@
       previewTone.textContent = freq === 0 ? '🔇 Preview Disabled' : '🔊 Preview Tone';
     });
 
-    // Set correct initial button state
     previewTone.disabled = parseFloat(frequencySelect.value) === 0;
     previewTone.textContent = parseFloat(frequencySelect.value) === 0 ? '🔇 Preview Disabled' : '🔊 Preview Tone';
 
@@ -267,7 +283,11 @@
 
     stopBtn.onclick = () => {
       mediaRecorder.stop();
-      if (oscillator) oscillator.stop();
+      if (oscillator && oscillator.stopWithFade) {
+        oscillator.stopWithFade();
+      } else if (oscillator) {
+        oscillator.stop();
+      }
       recordBtn.disabled = false;
       stopBtn.disabled = true;
       resetBtn.disabled = false;
