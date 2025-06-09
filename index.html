@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <title>High Score Voice Activation</title>
   <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/mic-recorder-to-mp3@2.2.1/dist/index.min.js"></script>
   <style>
     html, body {
       margin: 0;
@@ -96,6 +97,13 @@
       cursor: not-allowed;
     }
 
+    select {
+      margin: 15px 0;
+      padding: 8px;
+      font-size: 16px;
+      border-radius: 6px;
+    }
+
     audio {
       margin-top: 30px;
       width: 100%;
@@ -116,16 +124,21 @@
   </style>
 </head>
 <body>
-
   <div class="portal-wrapper">
     <div class="portal-image"></div>
     <div class="content">
-      <h2>🎧 Voice Activation Portal</h2>
-      <p>Speak your ritual phrase.<br>Playback will anchor it into your field.</p>
+      <h2>🎙️ Voice Activation Portal</h2>
+      <p>Choose your frequency, then speak your ritual phrase.<br>Playback will anchor it into your field.</p>
+
+      <select id="frequencySelect">
+        <option value="528">528 Hz – DNA Repair</option>
+        <option value="639">639 Hz – Love & Harmony</option>
+        <option value="963">963 Hz – Pineal Activation</option>
+      </select>
 
       <div class="button-group">
         <button id="recordBtn">🟢 Start Recording</button>
-        <button id="stopBtn" disabled>🔚 Stop</button>
+        <button id="stopBtn" disabled>🛑 Stop</button>
         <button id="resetBtn" disabled>🔁 Reset</button>
       </div>
 
@@ -135,107 +148,94 @@
   </div>
 
   <script>
-    let mediaRecorder;
-    let chunks = [];
-    let audioStream;
-    let stopTonePlayback;
+    const Mp3Recorder = new MicRecorder({ bitRate: 128 });
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    const audioCtx = new AudioContext();
 
-    function createAngelicToneGrid(audioContext, destination) {
-      const freqs = [432, 528];
-      const oscillators = [], lfos = [], gains = [];
-
-      freqs.forEach(freq => {
-        const groupGain = audioContext.createGain();
-        groupGain.gain.setValueAtTime(0, audioContext.currentTime);
-        groupGain.gain.linearRampToValueAtTime(0.015, audioContext.currentTime + 8);
-
-        for (let i = 0; i < 4; i++) {
-          const osc = audioContext.createOscillator();
-          osc.type = 'triangle';
-          osc.frequency.value = freq + (Math.random() - 0.5) * 0.5;
-
-          const lfo = audioContext.createOscillator();
-          lfo.frequency.value = 0.05 + Math.random() * 0.05;
-          const lfoGain = audioContext.createGain();
-          lfoGain.gain.value = 0.4;
-          lfo.connect(lfoGain).connect(osc.frequency);
-
-          osc.connect(groupGain);
-          osc.start();
-          lfo.start();
-
-          oscillators.push(osc);
-          lfos.push(lfo);
-        }
-
-        groupGain.connect(destination);
-        gains.push(groupGain);
-      });
-
-      return () => {
-        const now = audioContext.currentTime;
-        gains.forEach(g => {
-          g.gain.cancelScheduledValues(now);
-          g.gain.setValueAtTime(g.gain.value, now);
-          g.gain.linearRampToValueAtTime(0, now + 3);
-        });
-        setTimeout(() => {
-          oscillators.forEach(o => o.stop());
-          lfos.forEach(l => l.stop());
-        }, 3100);
-      };
-    }
+    let oscillator, gainNode, panner;
+    let micSource;
+    let dest = audioCtx.createMediaStreamDestination();
 
     const recordBtn = document.getElementById('recordBtn');
     const stopBtn = document.getElementById('stopBtn');
     const resetBtn = document.getElementById('resetBtn');
     const audioPlayback = document.getElementById('audioPlayback');
     const downloadLink = document.getElementById('downloadLink');
+    const frequencySelect = document.getElementById('frequencySelect');
 
     recordBtn.onclick = async () => {
-      const ritual = confirm("Are you ready to imprint your voice into this reality?");
-      if (!ritual) return;
+      const freq = parseFloat(frequencySelect.value);
 
-      const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      const destination = audioContext.createMediaStreamDestination();
-      audioContext.createMediaStreamSource(micStream).connect(destination);
+      // Create oscillator with micro pitch variation
+      oscillator = audioCtx.createOscillator();
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
 
-      stopTonePlayback = createAngelicToneGrid(audioContext, destination);
+      // Subtle pitch variation
+      setInterval(() => {
+        const detune = (Math.random() - 0.5) * 2; // -1 to +1 Hz variation
+        oscillator.frequency.setValueAtTime(freq + detune, audioCtx.currentTime);
+      }, 500);
 
-      audioStream = destination.stream;
-      mediaRecorder = new MediaRecorder(audioStream);
-      mediaRecorder.ondataavailable = e => chunks.push(e.data);
-      mediaRecorder.onstop = () => {
-        const blob = new Blob(chunks, { type: 'audio/webm' });
-        chunks = [];
+      // Panning left/right
+      panner = audioCtx.createStereoPanner();
+      let pan = -1;
+      setInterval(() => {
+        panner.pan.setValueAtTime(pan, audioCtx.currentTime);
+        pan = -pan;
+      }, 3000);
 
-        const date = new Date().toISOString().split('T')[0];
-        const filename = `highscore-frequency-${date}.webm`;
-        const audioUrl = URL.createObjectURL(blob);
+      // Gain fade-in
+      gainNode = audioCtx.createGain();
+      gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.25, audioCtx.currentTime + 2);
 
-        audioPlayback.src = audioUrl;
-        audioPlayback.style.display = 'block';
+      oscillator.connect(panner).connect(gainNode).connect(dest);
+      oscillator.start();
 
-        downloadLink.href = audioUrl;
-        downloadLink.download = filename;
-        downloadLink.style.display = 'inline-block';
+      try {
+        const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        micSource = audioCtx.createMediaStreamSource(micStream);
+        micSource.connect(dest);
 
-        recordBtn.disabled = false;
-        stopBtn.disabled = true;
-        resetBtn.disabled = false;
-      };
-
-      mediaRecorder.start();
-      recordBtn.disabled = true;
-      stopBtn.disabled = false;
+        Mp3Recorder.start(dest.stream)
+          .then(() => {
+            recordBtn.disabled = true;
+            stopBtn.disabled = false;
+          });
+      } catch (e) {
+        alert('Microphone access denied or unavailable.');
+      }
     };
 
     stopBtn.onclick = () => {
-      if (mediaRecorder && mediaRecorder.state === 'recording') {
-        mediaRecorder.stop();
-        if (stopTonePlayback) stopTonePlayback();
-      }
+      oscillator.stop();
+
+      Mp3Recorder
+        .stop()
+        .getMp3()
+        .then(([buffer, blob]) => {
+          const date = new Date().toISOString().split('T')[0];
+          const filename = `highscore-frequency-${date}.mp3`;
+
+          const file = new File(buffer, filename, {
+            type: blob.type,
+            lastModified: Date.now()
+          });
+
+          const audioUrl = URL.createObjectURL(file);
+          audioPlayback.src = audioUrl;
+          audioPlayback.style.display = 'block';
+
+          downloadLink.href = audioUrl;
+          downloadLink.download = filename;
+          downloadLink.style.display = 'inline-block';
+
+          recordBtn.disabled = false;
+          stopBtn.disabled = true;
+          resetBtn.disabled = false;
+        })
+        .catch(e => alert('Something went wrong during recording.'));
     };
 
     resetBtn.onclick = () => {
