@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <title>High Score Voice Activation</title>
   <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/mic-recorder-to-mp3@2.2.1/dist/index.min.js"></script>
   <style>
     html, body {
       margin: 0;
@@ -65,22 +66,22 @@
     p {
       font-size: 18px;
       color: #444;
-      margin-bottom: 30px;
+      margin-bottom: 20px;
     }
 
     .button-group {
       display: flex;
       justify-content: center;
-      gap: 15px;
+      gap: 10px;
       flex-wrap: wrap;
-      margin-bottom: 10px;
+      margin-bottom: 15px;
     }
 
     button {
       background-color: #1a1a1a;
       color: white;
       border: none;
-      padding: 12px 22px;
+      padding: 12px 24px;
       font-size: 16px;
       cursor: pointer;
       border-radius: 6px;
@@ -98,7 +99,7 @@
     }
 
     select {
-      margin: 15px 0;
+      margin: 10px 0;
       padding: 8px;
       font-size: 16px;
       border-radius: 6px;
@@ -112,7 +113,7 @@
 
     a {
       display: inline-block;
-      margin-top: 20px;
+      margin-top: 15px;
       text-decoration: none;
       color: #0070f3;
     }
@@ -128,7 +129,7 @@
     <div class="portal-image"></div>
     <div class="content">
       <h2>🎙️ Voice Activation Portal</h2>
-      <p>Choose your frequency, preview, then record your ritual phrase.</p>
+      <p>Select a frequency, preview, then record your ritual phrase.<br>The tone will be embedded into your MP3.</p>
 
       <select id="frequencySelect">
         <option value="528">528 Hz – DNA Repair</option>
@@ -137,7 +138,7 @@
       </select>
 
       <div class="button-group">
-        <button id="previewTone">🔊 Preview Tone</button>
+        <button id="previewBtn">🎧 Preview Tone</button>
         <button id="recordBtn">🟢 Start Recording</button>
         <button id="stopBtn" disabled>🛑 Stop</button>
         <button id="resetBtn" disabled>🔁 Reset</button>
@@ -149,97 +150,143 @@
   </div>
 
   <script>
+    const Mp3Recorder = new MicRecorder({ bitRate: 128 });
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     const audioCtx = new AudioContext();
 
     let oscillator, gainNode, panner;
-    let mediaRecorder;
-    let chunks = [];
-    let mixedStream;
-    let previewPlaying = false;
+    let micSource, previewOscillator;
+    let tonePanInterval, toneDetuneInterval;
+    let dest = audioCtx.createMediaStreamDestination();
 
     const recordBtn = document.getElementById('recordBtn');
     const stopBtn = document.getElementById('stopBtn');
     const resetBtn = document.getElementById('resetBtn');
-    const previewTone = document.getElementById('previewTone');
+    const previewBtn = document.getElementById('previewBtn');
     const audioPlayback = document.getElementById('audioPlayback');
     const downloadLink = document.getElementById('downloadLink');
     const frequencySelect = document.getElementById('frequencySelect');
 
-    function createOscillator(freq) {
-      oscillator = audioCtx.createOscillator();
-      gainNode = audioCtx.createGain();
-      panner = audioCtx.createStereoPanner();
+    // Preview tone handler
+    previewBtn.onclick = () => {
+      const freq = parseFloat(frequencySelect.value);
 
-      oscillator.type = 'sine';
-      oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
-      gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
-
-      oscillator.connect(panner).connect(gainNode);
-      return gainNode;
-    }
-
-    previewTone.onclick = () => {
-      if (!previewPlaying) {
-        const freq = parseFloat(frequencySelect.value);
-        const node = createOscillator(freq);
-        node.connect(audioCtx.destination);
-        oscillator.start();
-        previewPlaying = true;
-        previewTone.textContent = '⏹️ Stop Preview';
-      } else {
-        oscillator.stop();
-        previewPlaying = false;
-        previewTone.textContent = '🔊 Preview Tone';
+      if (previewOscillator) {
+        previewOscillator.stop();
+        previewOscillator.disconnect();
+        previewOscillator = null;
+        previewBtn.textContent = '🎧 Preview Tone';
+        return;
       }
+
+      previewOscillator = audioCtx.createOscillator();
+      previewOscillator.type = 'sine';
+      previewOscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+      const previewGain = audioCtx.createGain();
+      previewGain.gain.setValueAtTime(0, audioCtx.currentTime);
+      previewGain.gain.linearRampToValueAtTime(0.08, audioCtx.currentTime + 1);
+
+      const previewPanner = audioCtx.createStereoPanner();
+      let panDirection = 1;
+      const panOsc = () => {
+        const now = audioCtx.currentTime;
+        previewPanner.pan.linearRampToValueAtTime(panDirection, now + 2);
+        panDirection *= -1;
+        setTimeout(panOsc, 2000);
+      };
+      panOsc();
+
+      previewOscillator.connect(previewPanner).connect(previewGain).connect(audioCtx.destination);
+      previewOscillator.start();
+
+      previewBtn.textContent = '🔇 Stop Preview';
+
+      previewOscillator.onended = () => {
+        previewBtn.textContent = '🎧 Preview Tone';
+        previewOscillator = null;
+      };
     };
 
     recordBtn.onclick = async () => {
       const freq = parseFloat(frequencySelect.value);
-      const oscillatorNode = createOscillator(freq);
+
+      oscillator = audioCtx.createOscillator();
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+      // Micro-detuning
+      toneDetuneInterval = setInterval(() => {
+        const detune = (Math.random() - 0.5) * 1.5;
+        oscillator.frequency.setValueAtTime(freq + detune, audioCtx.currentTime);
+      }, 600);
+
+      panner = audioCtx.createStereoPanner();
+      let panDir = 1;
+      const animatePan = () => {
+        const now = audioCtx.currentTime;
+        panner.pan.linearRampToValueAtTime(panDir, now + 3);
+        panDir *= -1;
+        tonePanInterval = setTimeout(animatePan, 3000);
+      };
+      animatePan();
+
+      gainNode = audioCtx.createGain();
+      gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.08, audioCtx.currentTime + 2);
+
+      oscillator.connect(panner).connect(gainNode).connect(dest);
+      oscillator.start();
 
       try {
         const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        const micSource = audioCtx.createMediaStreamSource(micStream);
-
-        const dest = audioCtx.createMediaStreamDestination();
+        micSource = audioCtx.createMediaStreamSource(micStream);
         micSource.connect(dest);
-        oscillatorNode.connect(dest);
 
-        mixedStream = dest.stream;
-        mediaRecorder = new MediaRecorder(mixedStream);
-
-        chunks = [];
-        mediaRecorder.ondataavailable = e => chunks.push(e.data);
-        mediaRecorder.onstop = () => {
-          const blob = new Blob(chunks, { type: 'audio/mp3' });
-          const url = URL.createObjectURL(blob);
-
-          audioPlayback.src = url;
-          audioPlayback.style.display = 'block';
-
-          const date = new Date().toISOString().split('T')[0];
-          downloadLink.href = url;
-          downloadLink.download = `highscore-frequency-${date}.mp3`;
-          downloadLink.style.display = 'inline-block';
-        };
-
-        mediaRecorder.start();
-        oscillator.start();
-
-        recordBtn.disabled = true;
-        stopBtn.disabled = false;
+        Mp3Recorder.start(dest.stream)
+          .then(() => {
+            recordBtn.disabled = true;
+            stopBtn.disabled = false;
+            resetBtn.disabled = true;
+          });
       } catch (e) {
-        alert('Mic access denied.');
+        alert('Microphone access denied or unavailable.');
       }
     };
 
     stopBtn.onclick = () => {
-      mediaRecorder.stop();
-      oscillator.stop();
-      recordBtn.disabled = false;
-      stopBtn.disabled = true;
-      resetBtn.disabled = false;
+      if (oscillator) {
+        oscillator.stop();
+        oscillator.disconnect();
+        clearInterval(toneDetuneInterval);
+        clearTimeout(tonePanInterval);
+      }
+
+      Mp3Recorder
+        .stop()
+        .getMp3()
+        .then(([buffer, blob]) => {
+          const date = new Date().toISOString().split('T')[0];
+          const filename = `highscore-frequency-${date}.mp3`;
+
+          const file = new File(buffer, filename, {
+            type: blob.type,
+            lastModified: Date.now()
+          });
+
+          const audioUrl = URL.createObjectURL(file);
+          audioPlayback.src = audioUrl;
+          audioPlayback.style.display = 'block';
+
+          downloadLink.href = audioUrl;
+          downloadLink.download = filename;
+          downloadLink.style.display = 'inline-block';
+
+          recordBtn.disabled = false;
+          stopBtn.disabled = true;
+          resetBtn.disabled = false;
+        })
+        .catch(e => alert('Something went wrong during recording.'));
     };
 
     resetBtn.onclick = () => {
