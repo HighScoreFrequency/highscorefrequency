@@ -28,7 +28,7 @@
 
     .portal-image {
       opacity: 0;
-      animation: fadeIn 6s ease forwards, rotate 35s linear infinite;
+      animation: fadeIn 6s ease forwards, rotate 22s linear infinite;
       position: absolute;
       top: 50%;
       left: 50%;
@@ -201,7 +201,7 @@
 
     previewTone.onclick = () => {
       const freq = parseFloat(frequencySelect.value);
-      if (freq === 0) return; // Silence mode — don't play tone
+      if (freq === 0) return;
 
       if (!previewPlaying) {
         const node = createOscillator(freq);
@@ -215,6 +215,16 @@
         previewTone.textContent = '🔊 Preview Tone';
       }
     };
+
+    frequencySelect.addEventListener('change', () => {
+      const freq = parseFloat(frequencySelect.value);
+      previewTone.disabled = freq === 0;
+      previewTone.textContent = freq === 0 ? '🔇 Preview Disabled' : '🔊 Preview Tone';
+    });
+
+    // Set correct initial button state
+    previewTone.disabled = parseFloat(frequencySelect.value) === 0;
+    previewTone.textContent = parseFloat(frequencySelect.value) === 0 ? '🔇 Preview Disabled' : '🔊 Preview Tone';
 
     recordBtn.onclick = async () => {
       const freq = parseFloat(frequencySelect.value);
