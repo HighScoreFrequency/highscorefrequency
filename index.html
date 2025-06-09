@@ -189,7 +189,7 @@
 
       oscillator.type = 'sine';
       oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
-      gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime); // Adjust volume here
+      gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime); // Adjust volume here
 
       oscillator.connect(panner).connect(gainNode);
       return gainNode;
