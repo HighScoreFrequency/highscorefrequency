@@ -43,37 +43,39 @@
   left: 50%;
   transform: translate(-50%, -50%);
   border-radius: 50%;
+  border: 3px solid transparent;
   pointer-events: none;
-  border-style: solid;
-  border-width: 3px;
-  box-shadow: 0 0 8px rgba(255, 215, 0, 0.15);
+  background: radial-gradient(circle, transparent 60%, rgba(255,255,255,0.01) 61%);
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.2);
 }
 
-/* OUTER ring (clockwise rotation) */
 .ring1 {
   width: 95%;
   height: 95%;
-  border-image: linear-gradient(45deg, #ffd700, #b8860b) 1;
+  border-image: linear-gradient(45deg, #d4af37, #a9712c) 1;
   animation: rotateClockwise 44s linear infinite;
+  border-width: 2px;
+  border-style: solid;
 }
 
-/* MIDDLE ring (counterclockwise rotation) */
 .ring2 {
   width: 85%;
   height: 85%;
-  border-image: linear-gradient(135deg, #b8860b, #ffd700) 1;
+  border-image: linear-gradient(135deg, #a9712c, #ffd700) 1;
   animation: rotateCounter 44s linear infinite;
+  border-width: 2px;
+  border-style: solid;
 }
 
-/* INNER ring (slower or pulsing) */
 .ring3 {
   width: 75%;
   height: 75%;
-  border-image: linear-gradient(225deg, #ffcc33, #a96c0e) 1;
-  animation: rotateClockwise 22s linear infinite, pulseGlow 4s ease-in-out infinite;
-  opacity: 0.8;
+  border-image: linear-gradient(225deg, #f5c32c, #a96c0e) 1;
+  animation: rotateClockwise 22s linear infinite;
+  border-width: 2px;
+  border-style: solid;
+  opacity: 0.6;
 }
-
 
 @keyframes rotateClockwise {
   from { transform: translate(-50%, -50%) rotate(0deg); }
@@ -84,12 +86,6 @@
   from { transform: translate(-50%, -50%) rotate(0deg); }
   to { transform: translate(-50%, -50%) rotate(-360deg); }
 }
-
-    @keyframes pulseGlow {
-  0%, 100% { box-shadow: 0 0 6px rgba(255, 215, 0, 0.1); }
-  50% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.6); }
-}
-
 
 
     .content {
@@ -193,6 +189,10 @@
       color: #0070f3;
     }
 
+    @keyframes rotate {
+      from { transform: translate(-50%, -50%) rotate(0deg); }
+      to { transform: translate(-50%, -50%) rotate(-360deg); }
+    }
 
     @keyframes fadeIn {
       to { opacity: 1; }
@@ -200,20 +200,15 @@
   </style>
 </head>
 <body>
-
   <div class="portal-wrapper">
-  <canvas id="waveform"></canvas>
-
-  <!-- Outer ring (clockwise) -->
-  <div class="ring ring1"></div>
+    <canvas id="waveform"></canvas>
+      <div class="ring ring1"></div>
 
   <!-- Middle ring (counterclockwise) -->
   <div class="ring ring2"></div>
 
   <!-- Inner ring (optional, pulse or faster spin) -->
   <div class="ring ring3"></div>
-  
-
     <div class="content">
       <div class="fade-layer"></div>
       <h2>🎙️ High Score Voice Portal</h2>
@@ -358,14 +353,6 @@ function drawWaveform() {
 
 }
 
-    // Convert average amplitude to scale factor (0.95–1.1)
-let pulseScale = 0.95 + Math.min(average / 64, 0.15);
-
-// Apply it to the inner ring
-const ring3 = document.querySelector('.ring3');
-ring3.style.transform = `translate(-50%, -50%) scale(${pulseScale.toFixed(3)})`;
-
-    
     drawWaveform();
     
     let oscillator, gainNode, panner;
