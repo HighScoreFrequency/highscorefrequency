@@ -228,44 +228,50 @@
       analyser.getByteTimeDomainData(dataArray);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-// 🎵 Draw waveform with slow-motion decay, reduced vertical height, and calmer curves
+// 🎵 Draw waveform with slow-motion decay, reduced vertical height, and silky smooth curves
 ctx.beginPath();
-ctx.lineWidth = 2.5; // Slightly thinner for a softer look
-// Create a calming blue-teal gradient
+ctx.lineWidth = 2; // Thinner for a delicate, silky look
+// Create a softer blue-teal gradient
 const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
-gradient.addColorStop(0, '#4a90de'); // Soft blue
-gradient.addColorStop(1, '#4adeb6'); // Soft teal
+gradient.addColorStop(0, '#5a9fe6'); // Softer blue
+gradient.addColorStop(1, '#5aecc6'); // Softer teal
 ctx.strokeStyle = gradient;
-ctx.shadowColor = '#4a90de'; // Subtle blue glow
-ctx.shadowBlur = 15; // Reduced glow for calmness
+ctx.shadowColor = '#5a9fe6'; // Subtle blue glow
+ctx.shadowBlur = 12; // Subtler glow for calmness
 let sliceWidth = canvas.width / dataArray.length;
 let x = 0;
 let prevX = 0;
 let prevY = canvas.height / 2; // Start at center
 
-// Maintain arrays for smoothed amplitudes and averaged values
+// Maintain arrays for smoothed amplitudes and EMA values
 if (!window.smoothedAmplitudes) {
   window.smoothedAmplitudes = new Float32Array(dataArray.length).fill(0.0); // Initialize with 0 deviation
 }
-const decayRate = 0.98; // Even slower decay for noticeable linger
+if (!window.emaValues) {
+  window.emaValues = new Float32Array(dataArray.length).fill(1.0); // Initialize at baseline
+}
+const decayRate = 0.98; // Slower decay for resonant linger
+const emaAlpha = 0.1; // EMA smoothing factor (lower = smoother)
 
 // Array to store smoothed y values
 let smoothedY = new Float32Array(dataArray.length);
 for (let i = 0; i < dataArray.length; i++) {
   let v = dataArray[i] / 128.0;
-  // Apply 3-point moving average for smoothness
-  let avgV;
-  if (i > 0 && i < dataArray.length - 1) {
-    avgV = (v + (dataArray[i - 1] / 128.0) + (dataArray[i + 1] / 128.0)) / 3;
-  } else {
-    avgV = v; // No averaging at edges
-  }
-  // Update smoothed amplitude with decay on the averaged value
-  let deviation = Math.abs(avgV - 1.0);
+  // Apply exponential moving average to raw input
+  window.emaValues[i] = emaAlpha * v + (1 - emaAlpha) * window.emaValues[i];
+  let smoothedV = window.emaValues[i];
+  // Update smoothed amplitude with decay
+  let deviation = Math.abs(smoothedV - 1.0);
   window.smoothedAmplitudes[i] = Math.max(deviation, window.smoothedAmplitudes[i] * decayRate);
   // Apply decayed amplitude, preserving sign
-  let smoothedV = avgV > 1.0 ? 1.0 + window.smoothedAmplitudes[i] : 1.0 - window.smoothedAmplitudes[i];
-  smoothedY[i] = (smoothedV - 1.0) * canvas.height / 10 + canvas.height / 2; // Slightly taller for visibility
+  let finalV = smoothedV > 1.0 ? 1.0 + window.smoothedAmplitudes[i] : 1.0 - window.smoothedAmplitudes[i];
+  // Apply another EMA to the final value for ultra-smoothness
+  if (i > 0) {
+    smoothedY[i] = emaAlpha * ((finalV - 1.0) * canvas.height / 14 + canvas.height / 2) +
+                   (1 - emaAlpha) * smoothedY[i - 1];
+  } else {
+    smoothedY[i] = (finalV - 1.0) * canvas.height / 14 + canvas.height / 2; // No EMA at first point
+  }
 }
 
 for (let i = 0; i < dataArray.length; i++) {
@@ -273,10 +279,10 @@ for (let i = 0; i < dataArray.length; i++) {
   if (i === 0) {
     ctx.moveTo(x, y);
   } else {
-    // Use Bezier curve for ultra-smooth, flowing transitions
-    let cp1x = prevX + (x - prevX) * 0.3; // First control point
+    // Use Bezier curve with softer control points for liquid-like transitions
+    let cp1x = prevX + (x - prevX) * 0.25; // First control point, closer for smoother curve
     let cp1y = prevY;
-    let cp2x = prevX + (x - prevX) * 0.7; // Second control point
+    let cp2x = prevX + (x - prevX) * 0.75; // Second control point, adjusted for flow
     let cp2y = y;
     ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y);
   }
