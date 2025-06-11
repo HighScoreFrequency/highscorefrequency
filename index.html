@@ -28,12 +28,13 @@
     }
 
     canvas#waveform {
-      position: absolute;
+      position: fixed;
       top: 0;
       left: 0;
-      width: 100%;
-      height: 100%;
+      width: 100vw;
+      height: 100vh;
       z-index: 0;
+      background: transparent;
     }
 
     .portal-image {
@@ -57,15 +58,32 @@
       z-index: 2;
       width: 90%;
       max-width: 500px;
-      background: rgba(255, 255, 255, 0.85);
       padding: 30px;
-      border-radius: 16px;
+      border-radius: 99px;
       box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
       text-align: center;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
+      overflow: hidden;
+    }
+
+    .fade-layer {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      background: white;
+      opacity: 0;
+      z-index: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
+
+    .content > *:not(.fade-layer) {
+      position: relative;
+      z-index: 1;
     }
 
     h2 {
@@ -87,7 +105,7 @@
       margin-bottom: 10px;
     }
 
-    .button-row {
+    .row {
       display: flex;
       gap: 15px;
       flex-wrap: wrap;
@@ -141,89 +159,8 @@
     }
 
     @keyframes fadeIn {
-      to { opacity: 3; }
+      to { opacity: 1; }
     }
-
-/* 🔧 Mobile-Only Overrides (Centered layout + fixed font size) */
-@media only screen and (max-width: 768px) {
-  html, body {
-    width: 100%;
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    overflow: auto;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
-  .portal-wrapper {
-    width: 100vw !important;
-    height: 100vh !important;
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
-    padding: 0 !important;
-    box-sizing: border-box !important;
-  }
-
-  html {
-  scroll-behavior: smooth;
-}
-
-
-  .content {
-    width: 90vw !important;
-    max-width: 500px !important;
-    padding: 24px 16px !important;
-    font-size: 1rem !important;
-    background: rgba(255, 255, 255, 0.85) !important;
-    border-radius: 16px !important;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1) !important;
-    text-align: center !important;
-  }
-
-  h2 {
-    font-size: 20px !important;
-  }
-
-  p {
-    font-size: 16px !important;
-  }
-
-  select {
-    width: 100% !important;
-    max-width: 400px !important;
-    font-size: 14px !important;
-    padding: 10px 18px !important;
-    margin: 0 auto 15px auto !important;
-    display: block !important;
-  }
-
-  button {
-    font-size: 14px !important;
-    padding: 10px 18px !important;
-  }
-
-  .button-group {
-    width: 100% !important;
-    align-items: center !important;
-  }
-
-  .button-row {
-    display: flex !important;
-    flex-direction: row !important;
-    flex-wrap: nowrap !important;
-    justify-content: center !important;
-    gap: 12px !important;
-  }
-
-  audio {
-    max-width: 100% !important;
-  }
-}
-
-
   </style>
 </head>
 <body>
@@ -231,6 +168,7 @@
     <canvas id="waveform"></canvas>
     <div class="portal-image"></div>
     <div class="content">
+      <div class="fade-layer"></div>
       <h2>🎙️ High Score Voice Portal</h2>
       <p>Choose your tone, speak it clear,<br>
       code your field, draw truth near.<br>
@@ -245,11 +183,11 @@
       </select>
 
       <div class="button-group">
-        <div class="button-row">
-          <button id="previewTone">🔊 Preview Tone</button>
-          <button id="recordBtn">🟢 Start Recording</button>
+        <div class="row">
+          <button id="preview-btn">🔊 Preview</button>
+          <button id="record-btn">🟢 Record</button>
         </div>
-        <div class="button-row">
+        <div class="row">
           <button id="stopBtn" disabled>🛑 Stop</button>
           <button id="resetBtn" disabled>🔁 Reset</button>
         </div>
@@ -263,9 +201,7 @@
   <script>
     const canvas = document.getElementById('waveform');
     const ctx = canvas.getContext('2d');
-
-    canvas.width = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
+    const fadeLayer = document.querySelector('.fade-layer');
 
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     const audioCtx = new AudioContext();
@@ -274,29 +210,108 @@
     analyser.fftSize = 2048;
     let dataArray = new Uint8Array(analyser.fftSize);
 
+    let previousOpacity = 0.85; // Start at base level
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    // Set initial size
+    resizeCanvas();
+
+    // Update canvas size on window resize
+    window.addEventListener('resize', resizeCanvas);
+
     function drawWaveform() {
       requestAnimationFrame(drawWaveform);
       analyser.getByteTimeDomainData(dataArray);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+      // 🎵 Draw waveform with slow-motion decay, reduced vertical height, and less wavy curves
       ctx.beginPath();
-      ctx.lineWidth = 2;
-      ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
-
+      ctx.lineWidth = 2; // Thinner for a delicate, silky look (try 1.5 for thinner, 2.5 for bolder)
+      const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
+      gradient.addColorStop(0, '#5a9fe6'); // Softer blue
+      gradient.addColorStop(1, '#5aecc6'); // Subtle teal
+      ctx.strokeStyle = gradient;
+      ctx.shadowColor = '#5a9fe6'; // Subtle blue glow
+      ctx.shadowBlur = 12; // Subtler glow for calmness
       let sliceWidth = canvas.width / dataArray.length;
       let x = 0;
+      let prevX = 0;
+      let prevY = canvas.height / 2; // Start at center
+
+      // Maintain arrays for smoothed amplitudes and EMA values
+      if (!window.smoothedAmplitudes) {
+        window.smoothedAmplitudes = new Float32Array(dataArray.length).fill(0.0); // Initialize with 0 deviation
+      }
+      if (!window.emaValues) {
+        window.emaValues = new Float32Array(dataArray.length).fill(1.0); // Initialize at baseline
+      }
+      const decayRate = 0.98; // Slower decay for resonant linger
+      const emaAlpha = 0.15; // Slightly more responsive EMA (try 0.1 for smoother, 0.2 for more reactive)
+
+      // Array to store smoothed y values
+      let smoothedY = new Float32Array(dataArray.length);
       for (let i = 0; i < dataArray.length; i++) {
         let v = dataArray[i] / 128.0;
-        let y = v * canvas.height / 2;
+        // Apply exponential moving average to raw input
+        window.emaValues[i] = emaAlpha * v + (1 - emaAlpha) * window.emaValues[i];
+        let smoothedV = window.emaValues[i];
+        // Update smoothed amplitude with decay
+        let deviation = Math.abs(smoothedV - 1.0);
+        window.smoothedAmplitudes[i] = Math.max(deviation, window.smoothedAmplitudes[i] * decayRate);
+        // Apply decayed amplitude, preserving sign
+        let finalV = smoothedV > 1.0 ? 1.0 + window.smoothedAmplitudes[i] : 1.0 - window.smoothedAmplitudes[i];
+        // Apply another EMA to the final y-value for ultra-smoothness
+        if (i > 0) {
+          smoothedY[i] = emaAlpha * ((finalV - 1.0) * canvas.height / 14 + canvas.height / 2) +
+                         (1 - emaAlpha) * smoothedY[i - 1];
+        } else {
+          smoothedY[i] = (finalV - 1.0) * canvas.height / 14 + canvas.height / 2; // No EMA at first point
+          // Adjust /14 for vertical height: /12 for taller, /16 for flatter
+        }
+      }
+
+      for (let i = 0; i < dataArray.length; i++) {
+        let y = smoothedY[i];
         if (i === 0) {
           ctx.moveTo(x, y);
         } else {
-          ctx.lineTo(x, y);
+          // Use quadratic curve for less wavy, smooth transitions
+          let xc = (prevX + x) / 2; // Control point x (midpoint for balanced curve)
+          let yc = (prevY + y) / 2; // Control point y
+          ctx.quadraticCurveTo(prevX, prevY, xc, yc);
         }
+        prevX = x;
+        prevY = y;
         x += sliceWidth;
       }
+      // Connect to the last point
+      ctx.lineTo(canvas.width, prevY);
       ctx.stroke();
+      ctx.shadowBlur = 0; // Reset shadow
+
+      // 🔊 Analyze amplitude (volume)
+      let sum = 0;
+      for (let i = 0; i < dataArray.length; i++) {
+        sum += Math.abs(dataArray[i] - 128);
+      }
+      let average = sum / dataArray.length;
+
+      // 📈 Normalize and invert for fade-out effect
+      let normalized = Math.min(average / 3, 1); // High sensitivity
+      let targetOpacity = 0.63 - (normalized * 0.63); // inverse fade
+
+      // 🎯 Smooth transition to prevent jitter
+      let smoothing = 0.5;
+      let smoothedOpacity = previousOpacity + (targetOpacity - previousOpacity) * smoothing;
+      previousOpacity = smoothedOpacity;
+
+      fadeLayer.style.opacity = smoothedOpacity.toFixed(2);
     }
+
     drawWaveform();
 
     let oscillator, gainNode, panner;
@@ -305,10 +320,10 @@
     let mixedStream;
     let previewPlaying = false;
 
-    const recordBtn = document.getElementById('recordBtn');
+    const recordBtn = document.getElementById('record-btn');
     const stopBtn = document.getElementById('stopBtn');
     const resetBtn = document.getElementById('resetBtn');
-    const previewTone = document.getElementById('previewTone');
+    const previewTone = document.getElementById('preview-btn');
     const audioPlayback = document.getElementById('audioPlayback');
     const downloadLink = document.getElementById('downloadLink');
     const frequencySelect = document.getElementById('frequencySelect');
@@ -345,7 +360,7 @@
         oscillator.stop();
       }
       previewPlaying = false;
-      previewTone.textContent = '🔊 Preview Tone';
+      previewTone.textContent = '🔊 Preview';
     }
 
     previewTone.onclick = () => {
@@ -366,11 +381,11 @@
     frequencySelect.addEventListener('change', () => {
       const freq = parseFloat(frequencySelect.value);
       previewTone.disabled = freq === 0;
-      previewTone.textContent = freq === 0 ? '🔇 Preview Disabled' : '🔊 Preview Tone';
+      previewTone.textContent = freq === 0 ? '🔇 Preview Disabled' : '🔊 Preview';
     });
 
     previewTone.disabled = parseFloat(frequencySelect.value) === 0;
-    previewTone.textContent = parseFloat(frequencySelect.value) === 0 ? '🔇 Preview Disabled' : '🔊 Preview Tone';
+    previewTone.textContent = parseFloat(frequencySelect.value) === 0 ? '🔇 Preview Disabled' : '🔊 Preview';
 
     recordBtn.onclick = async () => {
       const startRecording = async () => {
@@ -399,7 +414,7 @@
 
             const date = new Date().toISOString().split('T')[0];
             downloadLink.href = url;
-            downloadLink.download = highscore-frequency-${date}.mp3;
+            downloadLink.download = `highscore-frequency-${date}.mp3`;
             downloadLink.style.display = 'inline-block';
           };
 
@@ -436,14 +451,9 @@
       resetBtn.disabled = false;
 
       const freq = parseFloat(frequencySelect.value);
-      if (freq === 0) {
-        previewTone.disabled = true;
-        previewTone.textContent = '🔇 Preview Disabled';
-      } else {
-        previewTone.disabled = false;
-        previewTone.textContent = '🔊 Preview Tone';
-        previewPlaying = false;
-      }
+      previewTone.disabled = freq === 0;
+      previewTone.textContent = freq === 0 ? '🔇 Preview Disabled' : '🔊 Preview';
+      previewPlaying = false;
     };
 
     resetBtn.onclick = () => {
