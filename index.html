@@ -256,8 +256,8 @@
       let average = sum / dataArray.length;
 
       // 📈 Normalize and invert for fade-out effect
-      let normalized = Math.min(average / 3, 1); // High sensitivity
-      let targetOpacity = 0.63 - (normalized * 0.63); // inverse fade
+      let normalized = Math.min(average / 2, 1); // High sensitivity
+      let targetOpacity = 0.85 - (normalized * 0.85); // inverse fade
 
       // 🎯 Smooth transition to prevent jitter
       let smoothing = 0.5;
