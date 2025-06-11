@@ -55,10 +55,8 @@
 .content {
   position: relative;
   z-index: 2;
-  width: 500px;
-  height: 500px;
-  max-width: 90vmin;
-  max-height: 90vmin;
+  width: 90vmin;
+  aspect-ratio: 1 / 1; /* ⬅️ Keeps it a perfect circle */
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.85);
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
@@ -66,7 +64,16 @@
   justify-content: center;
   align-items: center;
   overflow: visible;
-  padding: 0; /* ⬅️ important */
+  padding: 0;
+}
+
+.title-overflow {
+  position: absolute;
+  top: -50px;            /* 👈 Moves it *above* the circle */
+  width: 100%;           /* 👈 Ensures it's centered properly */
+  text-align: center;
+  font-size: 32px;
+  z-index: 3;            /* 👈 Keeps it above all layers */
 }
 
 
@@ -179,8 +186,8 @@
     <div class="portal-image"></div>
 <div class="content">
   <div class="fade-layer"></div>
+<h2 class="title-overflow">🎙️ High Score Voice Portal</h2>
   <div class="content-inner">
-    <h2>🎙️ High Score Voice Portal</h2>
     <p>Choose your tone, speak it clear,<br>
     code your field, draw truth near.<br>
     This isn’t speech, it’s memory’s key,<br>
