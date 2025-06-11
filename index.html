@@ -73,12 +73,19 @@
 
 /* Inner ring - circle */
 .ring3 {
-  width: 75vmin;
-  height: 75vmin;
+  width: 50vmin;
+  height: 50vmin;
+  aspect-ratio: 1/1;
   border-radius: 50%;
-  border-image: linear-gradient(225deg, #f5c32c, #a96c0e, #f5c32c) 1;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(255, 215, 0, 0.1), transparent 80%);
   animation: rotateClockwise 22s linear infinite;
-  opacity: 0.7;
+  opacity: 0.8;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+  z-index: 3;
 }
 
 
