@@ -223,17 +223,12 @@
     // Update canvas size on window resize
     window.addEventListener('resize', resizeCanvas);
 
-let rippleRadius = 0;
-let rippleDecay = 0.96; // Slow decay
-let rippleGrowth = 20;  // Controls how fast the ripple expands
-let lastPeak = 0;
-
 function drawWaveform() {
   requestAnimationFrame(drawWaveform);
   analyser.getByteTimeDomainData(dataArray);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // 🎵 Style
+  // 🎵 Draw waveform with pronounced ripple effect from center
   ctx.beginPath();
   ctx.lineWidth = 3;
   const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
@@ -243,63 +238,56 @@ function drawWaveform() {
   ctx.shadowColor = '#5a9fe6';
   ctx.shadowBlur = 12;
 
-  const sliceWidth = canvas.width / dataArray.length;
-  const centerX = canvas.width / 2;
-  const centerY = canvas.height / 2;
+  let sliceWidth = canvas.width / dataArray.length;
+  let x = 0;
+  let prevX = 0;
+  let prevY = canvas.height / 2;
 
+  if (!window.smoothedAmplitudes) {
+    window.smoothedAmplitudes = new Float32Array(dataArray.length).fill(0.0);
+  }
   if (!window.emaValues) {
     window.emaValues = new Float32Array(dataArray.length).fill(1.0);
   }
 
-  const emaAlpha = 0.2;
+  const decayRate = 0.94;
+  const emaAlpha = 0.3;
+
   let smoothedY = new Float32Array(dataArray.length);
-
-  // 🔊 Calculate volume
-  let sum = 0;
-  for (let i = 0; i < dataArray.length; i++) {
-    sum += Math.abs(dataArray[i] - 128);
-  }
-  const average = sum / dataArray.length;
-
-  // 🌀 Trigger new ripple on louder sounds
-  if (average > 15 && average > lastPeak + 3) {
-    rippleRadius = 10;
-    lastPeak = average;
-  } else {
-    rippleRadius *= rippleDecay;
-  }
-
-  // ⏳ Expand ripple over time
-  rippleRadius += rippleGrowth * 0.05;
-
-  let x = 0;
-  let prevX = 0;
-  let prevY = centerY;
+  const centerX = canvas.width / 2;
+  const rippleSpread = canvas.width * 0.6; // Wider spread for deeper ripple effect
 
   for (let i = 0; i < dataArray.length; i++) {
-    let raw = dataArray[i] / 128.0;
-    window.emaValues[i] = emaAlpha * raw + (1 - emaAlpha) * window.emaValues[i];
-    let deviation = window.emaValues[i] - 1.0;
+    let v = dataArray[i] / 128.0;
+    window.emaValues[i] = emaAlpha * v + (1 - emaAlpha) * window.emaValues[i];
+    let smoothedV = window.emaValues[i];
 
+    let deviation = Math.abs(smoothedV - 1.0);
+    window.smoothedAmplitudes[i] = Math.max(deviation, window.smoothedAmplitudes[i] * decayRate);
+    let finalV = smoothedV > 1.0 ? 1.0 + window.smoothedAmplitudes[i] : 1.0 - window.smoothedAmplitudes[i];
+
+    let baseY = (finalV - 1.0) * canvas.height * 0.3 + canvas.height / 2;
     let xPos = i * sliceWidth;
-    let distance = Math.abs(xPos - centerX);
+    let distanceFromCenter = Math.abs(xPos - centerX);
 
-    // 🌊 Strong ripple effect when inside rippleRadius
-    let rippleEffect = Math.exp(-Math.pow((distance - rippleRadius), 2) / (2 * Math.pow(canvas.width / 8, 2)));
+    let rippleFactor = Math.exp(-Math.pow(distanceFromCenter, 2) / (2 * Math.pow(rippleSpread, 2)));
+    let rippleMod = Math.sin((Date.now() / 400) - distanceFromCenter / 50) * rippleFactor * 2; // Animate ripple outward
 
-    let y = centerY + deviation * canvas.height * 0.4 * rippleEffect;
-    smoothedY[i] = i > 0
-      ? emaAlpha * y + (1 - emaAlpha) * smoothedY[i - 1]
-      : y;
+    if (i > 0) {
+      smoothedY[i] = emaAlpha * (baseY + rippleMod * canvas.height * 0.2) +
+                     (1 - emaAlpha) * smoothedY[i - 1];
+    } else {
+      smoothedY[i] = baseY + rippleMod * canvas.height * 0.2;
+    }
   }
 
   for (let i = 0; i < dataArray.length; i++) {
-    const y = smoothedY[i];
+    let y = smoothedY[i];
     if (i === 0) {
       ctx.moveTo(x, y);
     } else {
-      const xc = (prevX + x) / 2;
-      const yc = (prevY + y) / 2;
+      let xc = (prevX + x) / 2;
+      let yc = (prevY + y) / 2;
       ctx.quadraticCurveTo(prevX, prevY, xc, yc);
     }
     prevX = x;
@@ -311,15 +299,21 @@ function drawWaveform() {
   ctx.stroke();
   ctx.shadowBlur = 0;
 
-  // 🔮 Opacity control
-  const targetOpacity = 1;
-  const smoothing = 0.5;
+  // 🔊 Analyze amplitude (volume)
+  let sum = 0;
+  for (let i = 0; i < dataArray.length; i++) {
+    sum += Math.abs(dataArray[i] - 128);
+  }
+  let average = sum / dataArray.length;
+  let normalized = Math.min(average / 2, 1);
+  let targetOpacity = 1;
+
+  let smoothing = 0.5;
   let smoothedOpacity = previousOpacity + (targetOpacity - previousOpacity) * smoothing;
   previousOpacity = smoothedOpacity;
   fadeLayer.style.opacity = smoothedOpacity.toFixed(2);
 }
-
-    drawWaveform();
+drawWaveform();
     
     let oscillator, gainNode, panner;
     let mediaRecorder;
