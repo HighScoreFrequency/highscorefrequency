@@ -20,8 +20,8 @@
 
     .portal-wrapper {
       position: relative;
-      width: 93vmin;
-      height: 93vmin;
+      width: 45vmin;
+      height: 45vmin;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -58,7 +58,7 @@
       left: 50%;
       transform: translateX(-50%);
       text-align: center;
-      font-size: 32px;
+      font-size: 22px;
       z-index: 3;
       white-space: nowrap;
     }
@@ -66,7 +66,7 @@
     .content {
       position: relative;
       z-index: 2;
-      width: 90vmin;
+      width: 100%;
       aspect-ratio: 1 / 1;
       border-radius: 50%;
       background: rgba(255, 255, 255, 0.85);
@@ -79,7 +79,7 @@
     }
 
     .content-inner {
-      padding: 30px;
+      padding: 10px;
       text-align: center;
       display: flex;
       flex-direction: column;
@@ -87,7 +87,7 @@
       align-items: center;
       height: 100%;
       width: 100%;
-      gap: 16px;
+      gap: 10px;
     }
 
     .fade-layer {
@@ -108,23 +108,22 @@
     }
 
     p {
-      font-size: 18px;
+      font-size: 14px;
       color: #444;
       margin: 0;
-      line-height: 1.5;
+      line-height: 1.4;
     }
 
     .button-group {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 10px;
-      margin-bottom: 10px;
+      gap: 8px;
     }
 
     .button-row {
       display: flex;
-      gap: 15px;
+      gap: 10px;
       flex-wrap: wrap;
       justify-content: center;
     }
@@ -133,8 +132,8 @@
       background-color: #1a1a1a;
       color: white;
       border: none;
-      padding: 12px 22px;
-      font-size: 16px;
+      padding: 10px 18px;
+      font-size: 14px;
       cursor: pointer;
       border-radius: 6px;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -151,21 +150,21 @@
     }
 
     select {
-      margin: 15px 0;
-      padding: 8px;
-      font-size: 16px;
+      margin: 5px 0;
+      padding: 6px;
+      font-size: 14px;
       border-radius: 6px;
     }
 
     audio {
-      margin-top: 20px;
+      margin-top: 10px;
       width: 100%;
-      max-width: 400px;
+      max-width: 300px;
     }
 
     a {
       display: inline-block;
-      margin-top: 20px;
+      margin-top: 10px;
       text-decoration: none;
       color: #0070f3;
     }
@@ -184,12 +183,9 @@
   <div class="portal-wrapper">
     <canvas id="waveform"></canvas>
     <div class="portal-image"></div>
-
     <h2 class="title-overflow">🎙️ High Score Voice Portal</h2>
-
     <div class="content">
       <div class="fade-layer"></div>
-
       <div class="content-inner">
         <p>Choose your tone, speak it clear,<br>
         code your field, draw truth near.<br>
@@ -197,10 +193,10 @@
         a voice-etched path to mastery.</p>
 
         <select id="frequencySelect">
-          <option value="528">528 Hz – 🧬 Cell Recalibration – Level Up to Wholeness</option>
-          <option value="639">639 Hz – 💖 Heart Link Gateway – Sync Into Unity Field</option>
-          <option value="963">963 Hz – 👑 Crown Signal – Access Divine Intelligence</option>
-          <option value="0">0 Hz – 🕊️ Silence Mode – Record Without Tone</option>
+          <option value="528">528 Hz – 🧬 Cell Recalibration</option>
+          <option value="639">639 Hz – 💖 Heart Link Gateway</option>
+          <option value="963">963 Hz – 👑 Crown Signal</option>
+          <option value="0">0 Hz – 🕊️ Silence Mode</option>
         </select>
 
         <div class="button-group">
@@ -219,5 +215,133 @@
       </div>
     </div>
   </div>
+
+  <script>
+    const canvas = document.getElementById('waveform');
+    const ctx = canvas.getContext('2d');
+    const fadeLayer = document.querySelector('.fade-layer');
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    const audioCtx = new AudioContext();
+    let analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 2048;
+    let dataArray = new Uint8Array(analyser.fftSize);
+
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+
+    function drawWaveform() {
+      requestAnimationFrame(drawWaveform);
+      analyser.getByteTimeDomainData(dataArray);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.beginPath();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+      let sliceWidth = canvas.width / dataArray.length;
+      let x = 0;
+      for (let i = 0; i < dataArray.length; i++) {
+        let v = dataArray[i] / 128.0;
+        let y = v * canvas.height / 2;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+        x += sliceWidth;
+      }
+      ctx.stroke();
+      let sum = 0;
+      for (let i = 0; i < dataArray.length; i++) {
+        sum += Math.abs(dataArray[i] - 128);
+      }
+      let average = sum / dataArray.length;
+      let normalized = Math.min(average / 10, 1);
+      let inverse = 0.85 - (normalized * 0.85);
+      fadeLayer.style.opacity = inverse.toFixed(2);
+    }
+    drawWaveform();
+
+    let oscillator, gainNode, panner, mediaRecorder, chunks = [], mixedStream, previewPlaying = false;
+    const recordBtn = document.getElementById('recordBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const previewTone = document.getElementById('previewTone');
+    const audioPlayback = document.getElementById('audioPlayback');
+    const downloadLink = document.getElementById('downloadLink');
+    const frequencySelect = document.getElementById('frequencySelect');
+
+    function createOscillator(freq) {
+      oscillator = audioCtx.createOscillator();
+      gainNode = audioCtx.createGain();
+      panner = audioCtx.createStereoPanner();
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      gainNode.gain.setValueAtTime(0.02, audioCtx.currentTime);
+      oscillator.connect(panner).connect(gainNode);
+      return gainNode;
+    }
+
+    previewTone.onclick = () => {
+      const freq = parseFloat(frequencySelect.value);
+      if (freq === 0) return;
+      if (!previewPlaying) {
+        const node = createOscillator(freq);
+        node.connect(audioCtx.destination);
+        oscillator.start();
+        previewPlaying = true;
+        previewTone.textContent = '🛑 Stop Preview';
+      } else {
+        oscillator.stop();
+        previewTone.textContent = '🔊 Preview Tone';
+        previewPlaying = false;
+      }
+    };
+
+    recordBtn.onclick = async () => {
+      const freq = parseFloat(frequencySelect.value);
+      const oscillatorNode = freq > 0 ? createOscillator(freq) : null;
+      try {
+        const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const micSource = audioCtx.createMediaStreamSource(micStream);
+        micSource.connect(analyser);
+        const dest = audioCtx.createMediaStreamDestination();
+        micSource.connect(dest);
+        if (oscillatorNode) oscillatorNode.connect(dest);
+        mixedStream = dest.stream;
+        mediaRecorder = new MediaRecorder(mixedStream);
+        mediaRecorder.ondataavailable = e => chunks.push(e.data);
+        mediaRecorder.onstop = () => {
+          const blob = new Blob(chunks, { type: 'audio/mp3' });
+          const url = URL.createObjectURL(blob);
+          audioPlayback.src = url;
+          audioPlayback.style.display = 'block';
+          downloadLink.href = url;
+          downloadLink.download = `highscore-${Date.now()}.mp3`;
+          downloadLink.style.display = 'inline-block';
+        };
+        mediaRecorder.start();
+        if (oscillatorNode) oscillator.start();
+        recordBtn.disabled = true;
+        stopBtn.disabled = false;
+        previewTone.disabled = true;
+      } catch {
+        alert('Mic access denied.');
+      }
+    };
+
+    stopBtn.onclick = () => {
+      mediaRecorder.stop();
+      oscillator?.stop();
+      recordBtn.disabled = false;
+      stopBtn.disabled = true;
+      resetBtn.disabled = false;
+      previewTone.disabled = false;
+      previewTone.textContent = '🔊 Preview Tone';
+    };
+
+    resetBtn.onclick = () => {
+      audioPlayback.pause();
+      audioPlayback.src = '';
+      audioPlayback.style.display = 'none';
+      downloadLink.style.display = 'none';
+      resetBtn.disabled = true;
+    };
+  </script>
 </body>
 </html>
