@@ -243,36 +243,29 @@ let x = 0;
 let prevX = 0;
 let prevY = canvas.height / 2; // Start at center
 
-// Maintain an array for smoothed amplitudes
+// Maintain arrays for smoothed amplitudes and averaged values
 if (!window.smoothedAmplitudes) {
-  window.smoothedAmplitudes = new Float32Array(dataArray.length).fill(1.0);
+  window.smoothedAmplitudes = new Float32Array(dataArray.length).fill(0.0); // Initialize with 0 deviation
 }
-const decayRate = 0.97; // Slower decay for a calmer linger
+const decayRate = 0.98; // Even slower decay for noticeable linger
 
-// Array to store smoothed y values with expanded moving average
+// Array to store smoothed y values
 let smoothedY = new Float32Array(dataArray.length);
 for (let i = 0; i < dataArray.length; i++) {
   let v = dataArray[i] / 128.0;
-  // Update smoothed amplitude: take max of current or decaying previous
-  window.smoothedAmplitudes[i] = Math.max(Math.abs(v - 1.0), window.smoothedAmplitudes[i] * decayRate);
-  // Use smoothed amplitude, preserving sign of original value
-  let smoothedV = v > 1.0 ? 1.0 + window.smoothedAmplitudes[i] : 1.0 - window.smoothedAmplitudes[i];
-  // Apply wider moving average (5-point) for smoother data points
-  if (i > 1 && i < dataArray.length - 2) {
-    let avgV = (
-      smoothedV +
-      (dataArray[i - 2] / 128.0) +
-      (dataArray[i - 1] / 128.0) +
-      (dataArray[i + 1] / 128.0) +
-      (dataArray[i + 2] / 128.0)
-    ) / 5;
-    smoothedY[i] = (avgV - 1.0) * canvas.height / 12 + canvas.height / 2; // Further reduced height
-  } else if (i > 0 && i < dataArray.length - 1) {
-    let avgV = (smoothedV + (dataArray[i - 1] / 128.0) + (dataArray[i + 1] / 128.0)) / 3;
-    smoothedY[i] = (avgV - 1.0) * canvas.height / 12 + canvas.height / 2;
+  // Apply 3-point moving average for smoothness
+  let avgV;
+  if (i > 0 && i < dataArray.length - 1) {
+    avgV = (v + (dataArray[i - 1] / 128.0) + (dataArray[i + 1] / 128.0)) / 3;
   } else {
-    smoothedY[i] = (smoothedV - 1.0) * canvas.height / 12 + canvas.height / 2;
+    avgV = v; // No averaging at edges
   }
+  // Update smoothed amplitude with decay on the averaged value
+  let deviation = Math.abs(avgV - 1.0);
+  window.smoothedAmplitudes[i] = Math.max(deviation, window.smoothedAmplitudes[i] * decayRate);
+  // Apply decayed amplitude, preserving sign
+  let smoothedV = avgV > 1.0 ? 1.0 + window.smoothedAmplitudes[i] : 1.0 - window.smoothedAmplitudes[i];
+  smoothedY[i] = (smoothedV - 1.0) * canvas.height / 10 + canvas.height / 2; // Slightly taller for visibility
 }
 
 for (let i = 0; i < dataArray.length; i++) {
