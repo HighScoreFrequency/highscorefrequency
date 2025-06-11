@@ -216,84 +216,107 @@
     </div>
   </div>
 
-  <script>
-    const canvas = document.getElementById('waveform');
-    const ctx = canvas.getContext('2d');
-    const fadeLayer = document.querySelector('.fade-layer');
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    const audioCtx = new AudioContext();
-    let analyser = audioCtx.createAnalyser();
-    analyser.fftSize = 2048;
-    let dataArray = new Uint8Array(analyser.fftSize);
+<script>
+  const canvas = document.getElementById('waveform');
+  const ctx = canvas.getContext('2d');
+  const fadeLayer = document.querySelector('.fade-layer');
 
-    canvas.width = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
+  canvas.width = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
 
-    function drawWaveform() {
-      requestAnimationFrame(drawWaveform);
-      analyser.getByteTimeDomainData(dataArray);
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.beginPath();
-      ctx.lineWidth = 2;
-      ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
-      let sliceWidth = canvas.width / dataArray.length;
-      let x = 0;
-      for (let i = 0; i < dataArray.length; i++) {
-        let v = dataArray[i] / 128.0;
-        let y = v * canvas.height / 2;
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-        x += sliceWidth;
-      }
-      ctx.stroke();
-      let sum = 0;
-      for (let i = 0; i < dataArray.length; i++) {
-        sum += Math.abs(dataArray[i] - 128);
-      }
-      let average = sum / dataArray.length;
-      let normalized = Math.min(average / 10, 1);
-      let inverse = 0.85 - (normalized * 0.85);
-      fadeLayer.style.opacity = inverse.toFixed(2);
+  const AudioContext = window.AudioContext || window.webkitAudioContext;
+  const audioCtx = new AudioContext();
+
+  let analyser = audioCtx.createAnalyser();
+  analyser.fftSize = 2048;
+  let dataArray = new Uint8Array(analyser.fftSize);
+
+  function drawWaveform() {
+    requestAnimationFrame(drawWaveform);
+    analyser.getByteTimeDomainData(dataArray);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.beginPath();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+    let sliceWidth = canvas.width / dataArray.length;
+    let x = 0;
+    for (let i = 0; i < dataArray.length; i++) {
+      let v = dataArray[i] / 128.0;
+      let y = v * canvas.height / 2;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+      x += sliceWidth;
     }
-    drawWaveform();
+    ctx.stroke();
 
-    let oscillator, gainNode, panner, mediaRecorder, chunks = [], mixedStream, previewPlaying = false;
-    const recordBtn = document.getElementById('recordBtn');
-    const stopBtn = document.getElementById('stopBtn');
-    const resetBtn = document.getElementById('resetBtn');
-    const previewTone = document.getElementById('previewTone');
-    const audioPlayback = document.getElementById('audioPlayback');
-    const downloadLink = document.getElementById('downloadLink');
-    const frequencySelect = document.getElementById('frequencySelect');
-
-    function createOscillator(freq) {
-      oscillator = audioCtx.createOscillator();
-      gainNode = audioCtx.createGain();
-      panner = audioCtx.createStereoPanner();
-      oscillator.type = 'sine';
-      oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
-      gainNode.gain.setValueAtTime(0.02, audioCtx.currentTime);
-      oscillator.connect(panner).connect(gainNode);
-      return gainNode;
+    let sum = 0;
+    for (let i = 0; i < dataArray.length; i++) {
+      sum += Math.abs(dataArray[i] - 128);
     }
+    let average = sum / dataArray.length;
+    let normalized = Math.min(average / 10, 1);
+    let inverse = 0.85 - (normalized * 0.85);
+    fadeLayer.style.opacity = inverse.toFixed(2);
+  }
+  drawWaveform();
 
-    previewTone.onclick = () => {
-      const freq = parseFloat(frequencySelect.value);
-      if (freq === 0) return;
-      if (!previewPlaying) {
-        const node = createOscillator(freq);
-        node.connect(audioCtx.destination);
-        oscillator.start();
-        previewPlaying = true;
-        previewTone.textContent = '🛑 Stop Preview';
-      } else {
-        oscillator.stop();
-        previewTone.textContent = '🔊 Preview Tone';
-        previewPlaying = false;
-      }
+  let oscillator, gainNode, panner, mediaRecorder, chunks = [], mixedStream, previewPlaying = false;
+
+  const recordBtn = document.getElementById('recordBtn');
+  const stopBtn = document.getElementById('stopBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const previewTone = document.getElementById('previewTone');
+  const audioPlayback = document.getElementById('audioPlayback');
+  const downloadLink = document.getElementById('downloadLink');
+  const frequencySelect = document.getElementById('frequencySelect');
+
+  function createOscillator(freq, fadeIn = 1.5, fadeOut = 1.5) {
+    oscillator = audioCtx.createOscillator();
+    gainNode = audioCtx.createGain();
+    panner = audioCtx.createStereoPanner();
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    const now = audioCtx.currentTime;
+    gainNode.gain.setValueAtTime(0, now);
+    gainNode.gain.linearRampToValueAtTime(0.02, now + fadeIn);
+    oscillator.connect(panner).connect(gainNode);
+    oscillator.stopWithFade = () => {
+      const stopTime = audioCtx.currentTime + fadeOut;
+      gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
+      gainNode.gain.setValueAtTime(gainNode.gain.value, audioCtx.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0, stopTime);
+      oscillator.stop(stopTime);
     };
+    return gainNode;
+  }
 
-    recordBtn.onclick = async () => {
+  function stopPreviewTone() {
+    if (oscillator && oscillator.stopWithFade) oscillator.stopWithFade();
+    else if (oscillator) oscillator.stop();
+    previewPlaying = false;
+    previewTone.textContent = '🔊 Preview Tone';
+  }
+
+  previewTone.onclick = () => {
+    const freq = parseFloat(frequencySelect.value);
+    if (freq === 0) return;
+    if (!previewPlaying) {
+      const node = createOscillator(freq);
+      node.connect(audioCtx.destination);
+      oscillator.start();
+      previewPlaying = true;
+      previewTone.textContent = '🛑 Stop Preview';
+    } else stopPreviewTone();
+  };
+
+  frequencySelect.addEventListener('change', () => {
+    const freq = parseFloat(frequencySelect.value);
+    previewTone.disabled = freq === 0;
+    previewTone.textContent = freq === 0 ? '🔇 Preview Disabled' : '🔊 Preview Tone';
+  });
+
+  recordBtn.onclick = async () => {
+    const startRecording = async () => {
       const freq = parseFloat(frequencySelect.value);
       const oscillatorNode = freq > 0 ? createOscillator(freq) : null;
       try {
@@ -305,14 +328,16 @@
         if (oscillatorNode) oscillatorNode.connect(dest);
         mixedStream = dest.stream;
         mediaRecorder = new MediaRecorder(mixedStream);
+        chunks = [];
         mediaRecorder.ondataavailable = e => chunks.push(e.data);
         mediaRecorder.onstop = () => {
           const blob = new Blob(chunks, { type: 'audio/mp3' });
           const url = URL.createObjectURL(blob);
           audioPlayback.src = url;
           audioPlayback.style.display = 'block';
+          const date = new Date().toISOString().split('T')[0];
           downloadLink.href = url;
-          downloadLink.download = `highscore-${Date.now()}.mp3`;
+          downloadLink.download = `highscore-frequency-${date}.mp3`;
           downloadLink.style.display = 'inline-block';
         };
         mediaRecorder.start();
@@ -320,28 +345,41 @@
         recordBtn.disabled = true;
         stopBtn.disabled = false;
         previewTone.disabled = true;
-      } catch {
+        previewTone.textContent = '🔇 Preview Disabled';
+      } catch (e) {
         alert('Mic access denied.');
       }
     };
+    if (previewPlaying) {
+      stopPreviewTone();
+      setTimeout(startRecording, 1600);
+    } else startRecording();
+  };
 
-    stopBtn.onclick = () => {
-      mediaRecorder.stop();
-      oscillator?.stop();
-      recordBtn.disabled = false;
-      stopBtn.disabled = true;
-      resetBtn.disabled = false;
-      previewTone.disabled = false;
-      previewTone.textContent = '🔊 Preview Tone';
-    };
+  stopBtn.onclick = () => {
+    mediaRecorder.stop();
+    if (oscillator && oscillator.stopWithFade) oscillator.stopWithFade();
+    else if (oscillator) oscillator.stop();
+    recordBtn.disabled = false;
+    stopBtn.disabled = true;
+    resetBtn.disabled = false;
+    const freq = parseFloat(frequencySelect.value);
+    previewTone.disabled = freq === 0;
+    previewTone.textContent = freq === 0 ? '🔇 Preview Disabled' : '🔊 Preview Tone';
+    previewPlaying = false;
+  };
 
-    resetBtn.onclick = () => {
-      audioPlayback.pause();
-      audioPlayback.src = '';
-      audioPlayback.style.display = 'none';
-      downloadLink.style.display = 'none';
-      resetBtn.disabled = true;
-    };
-  </script>
+  resetBtn.onclick = () => {
+    audioPlayback.pause();
+    audioPlayback.currentTime = 0;
+    audioPlayback.src = '';
+    audioPlayback.style.display = 'none';
+    downloadLink.href = '';
+    downloadLink.download = '';
+    downloadLink.style.display = 'none';
+    resetBtn.disabled = true;
+  };
+</script>
+
 </body>
 </html>
