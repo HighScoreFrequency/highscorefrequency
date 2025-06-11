@@ -38,47 +38,81 @@
       background: transparent;
     }
 
-.ring1, .ring2, .ring3 {
+.ring1 {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 80vmin;
+  height: 80vmin;
+  aspect-ratio: 1/1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  animation: rotateClockwise 44s linear infinite;
+  z-index: 1;
+  background: conic-gradient(
+    from 0deg,
+    #ffd700 0deg 30deg,
+    transparent 30deg 60deg,
+    #d4af37 60deg 90deg,
+    transparent 90deg 120deg,
+    #a9712c 120deg 150deg,
+    transparent 150deg 180deg,
+    #ffd700 180deg 210deg,
+    transparent 210deg 240deg,
+    #d4af37 240deg 270deg,
+    transparent 270deg 300deg,
+    #a9712c 300deg 330deg,
+    transparent 330deg 360deg
+  );
+  mask-image: radial-gradient(circle, black 60%, transparent 100%);
+}
+
+    .ring2 {
+  width: 65vmin;
+  height: 65vmin;
+  aspect-ratio: 1/1;
+  transform: translate(-50%, -50%);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  animation: rotateCounter 44s linear infinite;
+  z-index: 2;
+  background: conic-gradient(
+    from 15deg,
+    #ffcc33 0deg 30deg,
+    transparent 30deg 60deg,
+    #a9712c 60deg 90deg,
+    transparent 90deg 120deg,
+    #ffd700 120deg 150deg,
+    transparent 150deg 180deg,
+    #ffcc33 180deg 210deg,
+    transparent 210deg 240deg,
+    #a9712c 240deg 270deg,
+    transparent 270deg 300deg,
+    #ffd700 300deg 330deg,
+    transparent 330deg 360deg
+  );
+  mask-image: radial-gradient(circle, black 60%, transparent 100%);
+  border-radius: 50%;
+}
+
+    .ring3 {
+  width: 50vmin;
+  height: 50vmin;
+  aspect-ratio: 1/1;
+  border-radius: 50%;
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: auto;
-  height: auto;
-  box-sizing: content-box;
-  border-width: 4px;
-  border-style: solid;
-  pointer-events: none;
-  box-shadow: 0 0 12px rgba(255, 215, 0, 0.2);
-  background: none;
-}
-
-/* Outer ring - circle */
-.ring1 {
-  width: 80vmin;
-  height: 80vmin;
-  aspect-ratio: 1/1; important!
-  border-image: linear-gradient(45deg, #ffd700, #d4af37, #a9712c) 1;
-  animation: rotateClockwise 44s linear infinite;
-}
-
-/* Middle ring - square */
-.ring2 {
-  width: 70vmin;
-  height: 70vmin;
-  aspect-ratio: 1/1; important!
-  border-image: linear-gradient(135deg, #ffcc33, #a9712c, #ffd700) 1;
-  animation: rotateCounter 44s linear infinite;
-}
-
-/* Inner ring - circle */
-.ring3 {
-  width: 55vmin;
-  height: 55vmin;
-  border-image: linear-gradient(225deg, #f5c32c, #a96c0e, #f5c32c) 1;
+  background: radial-gradient(circle, rgba(255, 215, 0, 0.1), transparent 80%);
   animation: rotateClockwise 22s linear infinite;
-  opacity: 0.7;
+  opacity: 0.8;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+  z-index: 3;
 }
+
+  
 
     @keyframes pulseGlow {
   0%, 100% { box-shadow: 0 0 6px rgba(255, 215, 0, 0.1); }
