@@ -241,7 +241,7 @@ let x = 0;
 if (!window.smoothedAmplitudes) {
   window.smoothedAmplitudes = new Float32Array(dataArray.length).fill(1.0);
 }
-const decayRate = 0.95; // Adjust for slower (0.9) or faster (0.99) decay
+const decayRate = 0.4; // Adjust for slower (0.9) or faster (0.99) decay
 
 for (let i = 0; i < dataArray.length; i++) {
   let v = dataArray[i] / 128.0;
@@ -249,7 +249,7 @@ for (let i = 0; i < dataArray.length; i++) {
   window.smoothedAmplitudes[i] = Math.max(Math.abs(v - 1.0), window.smoothedAmplitudes[i] * decayRate);
   // Use smoothed amplitude, preserving sign of original value
   let smoothedV = v > 1.0 ? 1.0 + window.smoothedAmplitudes[i] : 1.0 - window.smoothedAmplitudes[i];
-  let y = (smoothedV - 1.0) * canvas.height / 5 + canvas.height / 1; // Reduced vertical height, centered
+  let y = (smoothedV - 1.0) * canvas.height / 6 + canvas.height / 2; // Reduced vertical height, centered
   if (i === 0) {
     ctx.moveTo(x, y);
   } else {
