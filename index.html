@@ -27,14 +27,15 @@
       align-items: center;
     }
 
-    canvas#waveform {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      z-index: -1;
-    }
+canvas#waveform {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0; /* Place above body background but below portal-image and content */
+  background: transparent; /* Ensure canvas is transparent */
+}
 
     .portal-image {
       opacity: 0;
