@@ -37,21 +37,41 @@
       background: transparent;
     }
 
-    .portal-image {
-      opacity: 0;
-      animation: fadeIn 6s ease forwards, rotate 44s linear infinite;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 96%;
-      height: 96%;
-      background-image: url('https://github.com/HighScoreFrequency/highscorefrequency/blob/main/portal.png?raw=true');
-      background-size: contain;
-      background-repeat: no-repeat;
-      background-position: center;
-      z-index: 1;
-    }
+.portal-image {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 96%;
+  height: 96%;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 1;
+  pointer-events: none;
+}
+
+.image-t11 {
+  z-index: 1;
+  background-image: url('/mnt/data/t11.png');
+  animation: rotate 44s linear infinite;
+}
+
+.image-t22 {
+  z-index: 0;
+  background-image: url('/mnt/data/t22.png');
+  animation: rotateReverse 44s linear infinite;
+}
+
+@keyframes rotate {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes rotateReverse {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(-360deg); }
+}
 
     .content {
       position: relative;
@@ -154,10 +174,6 @@
       color: #0070f3;
     }
 
-    @keyframes rotate {
-      from { transform: translate(-50%, -50%) rotate(0deg); }
-      to { transform: translate(-50%, -50%) rotate(-360deg); }
-    }
 
     @keyframes fadeIn {
       to { opacity: 1; }
@@ -167,7 +183,8 @@
 <body>
   <div class="portal-wrapper">
     <canvas id="waveform"></canvas>
-    <div class="portal-image"></div>
+    <div class="portal-image image-t11"></div>
+    <div class="portal-image image-t22"></div>
     <div class="content">
       <div class="fade-layer"></div>
       <h2>🎙️ High Score Voice Portal</h2>
