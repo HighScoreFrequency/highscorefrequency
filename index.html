@@ -240,8 +240,8 @@
         sum += Math.abs(dataArray[i] - 128);
       }
       let average = sum / dataArray.length;
-      let normalized = Math.min(average / 15, 1);
-      fadeLayer.style.opacity = (normalized * normalized).toFixed(2); // quadratic curve
+      let normalized = Math.min(average / 4, 10);
+      fadeLayer.style.opacity = '0.85'(normalized * normalized).toFixed(2); // quadratic curve
 
     }
     drawWaveform();
