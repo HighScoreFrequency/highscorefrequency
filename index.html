@@ -125,13 +125,21 @@
       color: #0070f3;
     }
 
+    #waveform {
+      width: 100%;
+      max-width: 400px;
+      height: 100px;
+      background: transparent;
+      margin-top: 20px;
+    }
+
     @keyframes rotate {
       from { transform: translate(-50%, -50%) rotate(0deg); }
       to { transform: translate(-50%, -50%) rotate(-360deg); }
     }
 
     @keyframes fadeIn {
-      to { opacity: 3; }
+      to { opacity: 1; }
     }
   </style>
 </head>
@@ -163,6 +171,7 @@
         </div>
       </div>
 
+      <canvas id="waveform" width="400" height="100"></canvas>
       <audio id="audioPlayback" controls style="display: none;"></audio>
       <a id="downloadLink" style="display: none;">⬇️ Download Your Recording</a>
     </div>
@@ -185,6 +194,52 @@
     const audioPlayback = document.getElementById('audioPlayback');
     const downloadLink = document.getElementById('downloadLink');
     const frequencySelect = document.getElementById('frequencySelect');
+
+    const canvas = document.getElementById('waveform');
+    const ctx = canvas.getContext('2d');
+    let animationId;
+    let analyser, dataArray, bufferLength;
+
+    function startVisualizer(source) {
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 2048;
+      bufferLength = analyser.fftSize;
+      dataArray = new Uint8Array(bufferLength);
+
+      source.connect(analyser);
+      draw();
+    }
+
+    function draw() {
+      animationId = requestAnimationFrame(draw);
+      analyser.getByteTimeDomainData(dataArray);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#222';
+      ctx.beginPath();
+
+      const sliceWidth = canvas.width / bufferLength;
+      let x = 0;
+
+      for (let i = 0; i < bufferLength; i++) {
+        const v = dataArray[i] / 128.0;
+        const y = (v * canvas.height) / 2;
+        if (i === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+        x += sliceWidth;
+      }
+
+      ctx.lineTo(canvas.width, canvas.height / 2);
+      ctx.stroke();
+    }
+
+    function stopVisualizer() {
+      cancelAnimationFrame(animationId);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
 
     function createOscillator(freq, fadeIn = 1.5, fadeOut = 1.5) {
       oscillator = audioCtx.createOscillator();
@@ -211,16 +266,6 @@
       return gainNode;
     }
 
-    function stopPreviewTone() {
-      if (oscillator && oscillator.stopWithFade) {
-        oscillator.stopWithFade();
-      } else if (oscillator) {
-        oscillator.stop();
-      }
-      previewPlaying = false;
-      previewTone.textContent = '🔊 Preview Tone';
-    }
-
     previewTone.onclick = () => {
       const freq = parseFloat(frequencySelect.value);
       if (freq === 0) return;
@@ -232,7 +277,13 @@
         previewPlaying = true;
         previewTone.textContent = '🛑 Stop Preview';
       } else {
-        stopPreviewTone();
+        if (oscillator.stopWithFade) {
+          oscillator.stopWithFade();
+        } else {
+          oscillator.stop();
+        }
+        previewPlaying = false;
+        previewTone.textContent = '🔊 Preview Tone';
       }
     };
 
@@ -246,80 +297,64 @@
     previewTone.textContent = parseFloat(frequencySelect.value) === 0 ? '🔇 Preview Disabled' : '🔊 Preview Tone';
 
     recordBtn.onclick = async () => {
-      const startRecording = async () => {
-        const freq = parseFloat(frequencySelect.value);
-        const oscillatorNode = freq > 0 ? createOscillator(freq) : null;
+      const freq = parseFloat(frequencySelect.value);
+      const oscillatorNode = freq > 0 ? createOscillator(freq) : null;
 
-        try {
-          const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          const micSource = audioCtx.createMediaStreamSource(micStream);
+      try {
+        const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const micSource = audioCtx.createMediaStreamSource(micStream);
 
-          const dest = audioCtx.createMediaStreamDestination();
-          micSource.connect(dest);
-          if (oscillatorNode) oscillatorNode.connect(dest);
+        const dest = audioCtx.createMediaStreamDestination();
+        micSource.connect(dest);
+        if (oscillatorNode) oscillatorNode.connect(dest);
 
-          mixedStream = dest.stream;
-          mediaRecorder = new MediaRecorder(mixedStream);
+        mixedStream = dest.stream;
+        mediaRecorder = new MediaRecorder(mixedStream);
 
-          chunks = [];
-          mediaRecorder.ondataavailable = e => chunks.push(e.data);
-          mediaRecorder.onstop = () => {
-            const blob = new Blob(chunks, { type: 'audio/mp3' });
-            const url = URL.createObjectURL(blob);
+        chunks = [];
+        mediaRecorder.ondataavailable = e => chunks.push(e.data);
+        mediaRecorder.onstop = () => {
+          const blob = new Blob(chunks, { type: 'audio/mp3' });
+          const url = URL.createObjectURL(blob);
 
-            audioPlayback.src = url;
-            audioPlayback.style.display = 'block';
+          audioPlayback.src = url;
+          audioPlayback.style.display = 'block';
 
-            const date = new Date().toISOString().split('T')[0];
-            downloadLink.href = url;
-            downloadLink.download = `highscore-frequency-${date}.mp3`;
-            downloadLink.style.display = 'inline-block';
-          };
+          const date = new Date().toISOString().split('T')[0];
+          downloadLink.href = url;
+          downloadLink.download = `highscore-frequency-${date}.mp3`;
+          downloadLink.style.display = 'inline-block';
+        };
 
-          mediaRecorder.start();
-          if (oscillatorNode) oscillator.start();
+        mediaRecorder.start();
+        if (oscillatorNode) oscillator.start();
+        startVisualizer(micSource);
 
-          recordBtn.disabled = true;
-          stopBtn.disabled = false;
-          previewTone.disabled = true;
-          previewTone.textContent = '🔇 Preview Disabled';
-        } catch (e) {
-          alert('Mic access denied.');
-        }
-      };
-
-      if (previewPlaying) {
-        stopPreviewTone();
-        setTimeout(startRecording, 1600); // delay start to match fade-out
-      } else {
-        startRecording();
+        recordBtn.disabled = true;
+        stopBtn.disabled = false;
+        previewTone.disabled = true;
+        previewTone.textContent = '🔇 Preview Disabled';
+      } catch (e) {
+        alert('Mic access denied.');
       }
     };
 
-stopBtn.onclick = () => {
-  mediaRecorder.stop();
+    stopBtn.onclick = () => {
+      mediaRecorder.stop();
+      if (oscillator && oscillator.stopWithFade) {
+        oscillator.stopWithFade();
+      } else if (oscillator) {
+        oscillator.stop();
+      }
+      stopVisualizer();
+      recordBtn.disabled = false;
+      stopBtn.disabled = true;
+      resetBtn.disabled = false;
 
-  if (oscillator && oscillator.stopWithFade) {
-    oscillator.stopWithFade();
-  } else if (oscillator) {
-    oscillator.stop();
-  }
-
-  recordBtn.disabled = false;
-  stopBtn.disabled = true;
-  resetBtn.disabled = false;
-
-  // After stopping, restore preview button (unless in 0 Hz mode)
-  const freq = parseFloat(frequencySelect.value);
-  if (freq === 0) {
-    previewTone.disabled = true;
-    previewTone.textContent = '🔇 Preview Disabled';
-  } else {
-    previewTone.disabled = false;
-    previewTone.textContent = '🔊 Preview Tone';
-    previewPlaying = false;
-  }
-};
+      const freq = parseFloat(frequencySelect.value);
+      previewTone.disabled = freq === 0;
+      previewTone.textContent = freq === 0 ? '🔇 Preview Disabled' : '🔊 Preview Tone';
+    };
 
     resetBtn.onclick = () => {
       audioPlayback.pause();
