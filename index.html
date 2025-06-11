@@ -16,7 +16,6 @@
       align-items: center;
       overflow: hidden;
     }
-
     .portal-wrapper {
       position: relative;
       width: 93vmin;
@@ -25,7 +24,6 @@
       justify-content: center;
       align-items: center;
     }
-
     .portal-image {
       opacity: 0;
       animation: fadeIn 6s ease forwards, rotate 44s linear infinite;
@@ -41,7 +39,6 @@
       background-position: center;
       z-index: 1;
     }
-
     .content {
       position: relative;
       z-index: 2;
@@ -57,88 +54,55 @@
       justify-content: center;
       align-items: center;
     }
-
+    canvas {
+      width: 100%;
+      height: 100px;
+      margin-bottom: 10px;
+    }
     h2 {
       font-size: 32px;
       margin-bottom: 10px;
     }
-
     p {
       font-size: 18px;
       color: #444;
       margin-bottom: 20px;
     }
-
-    #waveform {
-      width: 100%;
-      max-width: 400px;
-      height: 100px;
-      margin-bottom: 20px;
-      background-color: #eef2f7;
-      border-radius: 8px;
+    select, button {
+      font-size: 16px;
+      border-radius: 6px;
     }
-
-    .button-group {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-
-    .button-row {
-      display: flex;
-      gap: 15px;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-
     button {
       background-color: #1a1a1a;
       color: white;
       border: none;
       padding: 12px 22px;
-      font-size: 16px;
       cursor: pointer;
-      border-radius: 6px;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
-
     button:hover:not(:disabled) {
       transform: scale(1.05);
       box-shadow: 0 0 12px rgba(0, 0, 0, 0.2);
     }
-
     button:disabled {
       background-color: #aaa;
       cursor: not-allowed;
     }
-
-    select {
-      margin: 15px 0;
-      padding: 8px;
-      font-size: 16px;
-      border-radius: 6px;
-    }
-
     audio {
       margin-top: 20px;
       width: 100%;
       max-width: 400px;
     }
-
     a {
       display: inline-block;
       margin-top: 20px;
       text-decoration: none;
       color: #0070f3;
     }
-
     @keyframes rotate {
       from { transform: translate(-50%, -50%) rotate(0deg); }
       to { transform: translate(-50%, -50%) rotate(-360deg); }
     }
-
     @keyframes fadeIn {
       to { opacity: 3; }
     }
@@ -154,13 +118,13 @@
       This isn’t speech, it’s memory’s key,<br>
       a voice-etched path to mastery.</p>
 
-      <canvas id="waveform"></canvas>
+      <canvas id="visualizer"></canvas>
 
       <select id="frequencySelect">
         <option value="528">528 Hz – 🧬 Cell Recalibration – Level Up to Wholeness</option>
         <option value="639">639 Hz – 💖 Heart Link Gateway – Sync Into Unity Field</option>
         <option value="963">963 Hz – 👑 Crown Signal – Access Divine Intelligence</option>
-        <option value="0">0 Hz – 🙊 Silence Mode – Record Without Tone</option>
+        <option value="0">0 Hz – 🕊️ Silence Mode – Record Without Tone</option>
       </select>
 
       <div class="button-group">
@@ -169,7 +133,7 @@
           <button id="recordBtn">🟢 Start Recording</button>
         </div>
         <div class="button-row">
-          <button id="stopBtn" disabled>😕 Stop</button>
+          <button id="stopBtn" disabled>🛑 Stop</button>
           <button id="resetBtn" disabled>🔁 Reset</button>
         </div>
       </div>
@@ -180,52 +144,40 @@
   </div>
 
   <script>
-    const canvas = document.getElementById('waveform');
+    const canvas = document.getElementById('visualizer');
     const ctx = canvas.getContext('2d');
-    let analyser, sourceNode, animationId;
+    let analyser, source, dataArray, animationId;
 
-    function drawWaveform() {
-      if (!analyser) return;
+    function setupVisualizer(streamSource) {
+      analyser = new (window.AudioContext || window.webkitAudioContext)().createAnalyser();
+      source = streamSource;
+      source.connect(analyser);
+      analyser.fftSize = 256;
+      const bufferLength = analyser.frequencyBinCount;
+      dataArray = new Uint8Array(bufferLength);
 
-      const bufferLength = analyser.fftSize;
-      const dataArray = new Uint8Array(bufferLength);
+      function draw() {
+        animationId = requestAnimationFrame(draw);
+        analyser.getByteTimeDomainData(dataArray);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      analyser.getByteTimeDomainData(dataArray);
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#0070f3';
+        ctx.beginPath();
 
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      ctx.lineWidth = 2;
-      ctx.strokeStyle = '#444';
-      ctx.beginPath();
-
-      const sliceWidth = canvas.width * 1.0 / bufferLength;
-      let x = 0;
-
-      for (let i = 0; i < bufferLength; i++) {
-        const v = dataArray[i] / 128.0;
-        const y = canvas.height / 2 + (v - 1.0) * 30; // smooth wave amplitude
-
-        if (i === 0) {
-          ctx.moveTo(x, y);
-        } else {
-          ctx.lineTo(x, y);
+        const sliceWidth = canvas.width / bufferLength;
+        let x = 0;
+        for (let i = 0; i < bufferLength; i++) {
+          const v = dataArray[i] / 128.0;
+          const y = canvas.height / 2 + (v - 1.0) * 25; // calm waves
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+          x += sliceWidth;
         }
-        x += sliceWidth;
+        ctx.lineTo(canvas.width, canvas.height / 2);
+        ctx.stroke();
       }
-
-      ctx.lineTo(canvas.width, canvas.height / 2);
-      ctx.stroke();
-
-      animationId = requestAnimationFrame(drawWaveform);
-    }
-
-    function startVisualizer(stream) {
-      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      analyser = audioCtx.createAnalyser();
-      analyser.fftSize = 512;
-      sourceNode = audioCtx.createMediaStreamSource(stream);
-      sourceNode.connect(analyser);
-      drawWaveform();
+      draw();
     }
 
     function stopVisualizer() {
@@ -235,10 +187,10 @@
 
     const audioPlayback = document.getElementById('audioPlayback');
     audioPlayback.addEventListener('play', () => {
-      const stream = audioPlayback.captureStream();
-      startVisualizer(stream);
+      const context = new (window.AudioContext || window.webkitAudioContext)();
+      const sourceNode = context.createMediaElementSource(audioPlayback);
+      setupVisualizer(sourceNode);
     });
-
     audioPlayback.addEventListener('pause', stopVisualizer);
     audioPlayback.addEventListener('ended', stopVisualizer);
   </script>
