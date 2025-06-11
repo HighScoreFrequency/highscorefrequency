@@ -1,99 +1,245 @@
-<canvas id="waveform"></canvas>
-<script>
-  const canvas = document.getElementById('waveform');
-  const ctx = canvas.getContext('2d');
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>High Score Voice Activation</title>
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500&display=swap" rel="stylesheet" />
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: #f3f6f9;
+      font-family: 'Unbounded', cursive;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
 
-  function resizeCanvas() {
+    .portal-wrapper {
+      position: relative;
+      width: 93vmin;
+      height: 93vmin;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    canvas#waveform {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+    }
+
+    .portal-image {
+      opacity: 0;
+      animation: fadeIn 6s ease forwards, rotate 44s linear infinite;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 96%;
+      height: 96%;
+      background-image: url('https://github.com/HighScoreFrequency/highscorefrequency/blob/main/portal.png?raw=true');
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      z-index: 1;
+    }
+
+    .content {
+      position: relative;
+      z-index: 2;
+      width: 90%;
+      max-width: 500px;
+      background: rgba(255, 255, 255, 0.85);
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    h2 {
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+
+    p {
+      font-size: 18px;
+      color: #444;
+      margin-bottom: 30px;
+    }
+
+    .button-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    button {
+      background-color: #1a1a1a;
+      color: white;
+      border: none;
+      padding: 12px 22px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    button:hover:not(:disabled) {
+      transform: scale(1.05);
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.2);
+    }
+
+    button:disabled {
+      background-color: #aaa;
+      cursor: not-allowed;
+    }
+
+    select {
+      margin: 15px 0;
+      padding: 8px;
+      font-size: 16px;
+      border-radius: 6px;
+    }
+
+    audio {
+      margin-top: 20px;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    a {
+      display: inline-block;
+      margin-top: 20px;
+      text-decoration: none;
+      color: #0070f3;
+    }
+
+    @keyframes rotate {
+      from { transform: translate(-50%, -50%) rotate(0deg); }
+      to { transform: translate(-50%, -50%) rotate(-360deg); }
+    }
+
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="portal-wrapper">
+    <canvas id="waveform"></canvas>
+    <div class="portal-image"></div>
+    <div class="content">
+      <h2>🎙️ High Score Voice Portal</h2>
+      <p>Choose your tone, speak it clear,<br>
+      code your field, draw truth near.<br>
+      This isn’t speech, it’s memory’s key,<br>
+      a voice-etched path to mastery.</p>
+
+      <select id="frequencySelect">
+        <option value="528">528 Hz – 🧬 Cell Recalibration – Level Up to Wholeness</option>
+        <option value="639">639 Hz – 💖 Heart Link Gateway – Sync Into Unity Field</option>
+        <option value="963">963 Hz – 👑 Crown Signal – Access Divine Intelligence</option>
+        <option value="0">0 Hz – 🕊️ Silence Mode – Record Without Tone</option>
+      </select>
+
+      <div class="button-group">
+        <div class="button-row">
+          <button id="previewTone">🔊 Preview Tone</button>
+          <button id="recordBtn">🟢 Start Recording</button>
+        </div>
+        <div class="button-row">
+          <button id="stopBtn" disabled>🛑 Stop</button>
+          <button id="resetBtn" disabled>🔁 Reset</button>
+        </div>
+      </div>
+
+      <audio id="audioPlayback" controls style="display: none;"></audio>
+      <a id="downloadLink" style="display: none;">⬇️ Download Your Recording</a>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('waveform');
+    const ctx = canvas.getContext('2d');
+
     canvas.width = canvas.offsetWidth;
     canvas.height = canvas.offsetHeight;
-  }
 
-  window.addEventListener('resize', resizeCanvas);
-  resizeCanvas();
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    const audioCtx = new AudioContext();
 
-  const analyser = audioCtx.createAnalyser();
-  analyser.fftSize = 2048;
-  const dataArray = new Uint8Array(analyser.frequencyBinCount);
+    let analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 2048;
+    let dataArray = new Uint8Array(analyser.fftSize);
 
-  let particles = [];
-  class Sparkle {
-    constructor(x, y, size, alpha, velocityY) {
-      this.x = x;
-      this.y = y;
-      this.size = size;
-      this.alpha = alpha;
-      this.velocityY = velocityY;
-    }
-    update() {
-      this.y -= this.velocityY;
-      this.alpha -= 0.01;
-    }
-    draw() {
+    function drawWaveform() {
+      requestAnimationFrame(drawWaveform);
+      analyser.getByteTimeDomainData(dataArray);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      let gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
+      gradient.addColorStop(0, '#8e44ad');
+      gradient.addColorStop(0.5, '#3498db');
+      gradient.addColorStop(1, '#e91e63');
+
       ctx.beginPath();
-      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(255, 255, 255, ${this.alpha})`;
-      ctx.fill();
-    }
-  }
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = gradient;
 
-  function drawWaveform() {
-    requestAnimationFrame(drawWaveform);
-    analyser.getByteTimeDomainData(dataArray);
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+      let sliceWidth = canvas.width / dataArray.length;
+      let x = 0;
 
-    // Gradient Line
-    const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
-    gradient.addColorStop(0, '#a855f7');
-    gradient.addColorStop(0.5, '#3b82f6');
-    gradient.addColorStop(1, '#ec4899');
-    ctx.strokeStyle = gradient;
-    ctx.lineWidth = 2.5;
-    ctx.shadowBlur = 10;
-    ctx.shadowColor = '#f0f9ff';
+      for (let i = 0; i < dataArray.length; i++) {
+        let v = dataArray[i] / 128.0;
+        let y = (v * canvas.height) / 2;
 
-    ctx.beginPath();
-    const sliceWidth = canvas.width / dataArray.length;
-    let x = 0;
-    for (let i = 0; i < dataArray.length; i++) {
-      const v = dataArray[i] / 128.0;
-      const y = (v * canvas.height) / 2;
-      if (i === 0) {
-        ctx.moveTo(x, y);
-      } else {
-        ctx.lineTo(x, y);
+        if (i === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+
+        x += sliceWidth;
       }
-      x += sliceWidth;
+      ctx.stroke();
 
-      // Emit sparkles
-      if (Math.random() < 0.002 && v > 1.2) {
-        particles.push(new Sparkle(x, y, 2 + Math.random() * 2, 1, 0.5));
+      ctx.beginPath();
+      ctx.strokeStyle = gradient;
+      x = 0;
+      for (let i = 0; i < dataArray.length; i++) {
+        let v = dataArray[i] / 128.0;
+        let y = canvas.height - (v * canvas.height) / 2;
+        if (i === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+        x += sliceWidth;
       }
+      ctx.stroke();
     }
-    ctx.stroke();
 
-    // Mirror the waveform
-    ctx.beginPath();
-    x = 0;
-    for (let i = 0; i < dataArray.length; i++) {
-      const v = dataArray[i] / 128.0;
-      const y = canvas.height - (v * canvas.height) / 2;
-      if (i === 0) {
-        ctx.moveTo(x, y);
-      } else {
-        ctx.lineTo(x, y);
-      }
-      x += sliceWidth;
-    }
-    ctx.stroke();
-
-    // Draw sparkles
-    for (let i = particles.length - 1; i >= 0; i--) {
-      particles[i].update();
-      particles[i].draw();
-      if (particles[i].alpha <= 0) {
-        particles.splice(i, 1);
-      }
-    }
-  }
-  drawWaveform();
-</script>
+    drawWaveform();
+  </script>
+</body>
+</html>
