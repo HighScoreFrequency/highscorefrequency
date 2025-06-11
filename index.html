@@ -11,19 +11,28 @@
       height: 100%;
       background: #f3f6f9;
       font-family: 'Unbounded', cursive;
-      display: flex;
-      justify-content: center;
-      align-items: center;
       overflow: hidden;
+    }
+
+    canvas#visualizer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      opacity: 0.15;
     }
 
     .portal-wrapper {
       position: relative;
+      z-index: 2;
       width: 93vmin;
       height: 93vmin;
       display: flex;
       justify-content: center;
       align-items: center;
+      margin: auto;
     }
 
     .portal-image {
@@ -44,7 +53,7 @@
 
     .content {
       position: relative;
-      z-index: 2;
+      z-index: 3;
       width: 90%;
       max-width: 500px;
       background: rgba(255, 255, 255, 0.85);
@@ -125,16 +134,6 @@
       color: #0070f3;
     }
 
-    canvas#waveform {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      z-index: 0;
-      opacity: 0.25;
-    }
-
     @keyframes rotate {
       from { transform: translate(-50%, -50%) rotate(0deg); }
       to { transform: translate(-50%, -50%) rotate(-360deg); }
@@ -146,7 +145,8 @@
   </style>
 </head>
 <body>
-  <canvas id="waveform"></canvas>
+  <canvas id="visualizer"></canvas>
+
   <div class="portal-wrapper">
     <div class="portal-image"></div>
     <div class="content">
@@ -181,56 +181,53 @@
 
   <script>
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const canvas = document.getElementById('waveform');
-    const canvasCtx = canvas.getContext('2d');
+    const canvas = document.getElementById('visualizer');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 
     let analyser = audioCtx.createAnalyser();
-    analyser.fftSize = 1024;
-    const bufferLength = analyser.fftSize;
+    analyser.fftSize = 2048;
+    const bufferLength = analyser.frequencyBinCount;
     const dataArray = new Uint8Array(bufferLength);
 
-    function drawWaveform() {
-      requestAnimationFrame(drawWaveform);
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+      const micSource = audioCtx.createMediaStreamSource(stream);
+      micSource.connect(analyser);
+      draw();
+    });
+
+    function draw() {
+      requestAnimationFrame(draw);
       analyser.getByteTimeDomainData(dataArray);
 
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      ctx.fillStyle = '#f3f6f9';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
-      canvasCtx.lineWidth = 2;
-      canvasCtx.strokeStyle = '#555';
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#000';
 
-      canvasCtx.beginPath();
-      const sliceWidth = canvas.width / bufferLength;
+      ctx.beginPath();
+
+      const sliceWidth = canvas.width * 1.0 / bufferLength;
       let x = 0;
 
-      for (let i = 0; i < bufferLength; i += 2) { // SLOWER by stepping every 2
+      for(let i = 0; i < bufferLength; i++) {
         const v = dataArray[i] / 128.0;
-        const y = (v * canvas.height) / 2;
-        if (i === 0) {
-          canvasCtx.moveTo(x, y);
+        const y = v * canvas.height / 2;
+
+        if(i === 0) {
+          ctx.moveTo(x, y);
         } else {
-          canvasCtx.lineTo(x, y);
+          ctx.lineTo(x, y);
         }
-        x += sliceWidth * 2; // move slower
+
+        x += sliceWidth / 4; // Slower horizontal motion
       }
 
-      canvasCtx.lineTo(canvas.width, canvas.height / 2);
-      canvasCtx.stroke();
+      ctx.lineTo(canvas.width, canvas.height / 2);
+      ctx.stroke();
     }
-
-    async function initWaveform() {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        const source = audioCtx.createMediaStreamSource(stream);
-        source.connect(analyser);
-        drawWaveform();
-      } catch (e) {
-        console.error('Microphone access denied for waveform.');
-      }
-    }
-
-    initWaveform();
   </script>
 </body>
 </html>
