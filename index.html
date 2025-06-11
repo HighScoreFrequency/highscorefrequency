@@ -168,7 +168,7 @@
     </div>
   </div>
 
-  <script>
+<script>
   const AudioContext = window.AudioContext || window.webkitAudioContext;
   const audioCtx = new AudioContext();
 
@@ -199,7 +199,6 @@
     gainNode.gain.linearRampToValueAtTime(0.02, now + fadeIn);
 
     oscillator.connect(panner).connect(gainNode);
-
     return gainNode;
   }
 
@@ -217,7 +216,7 @@
 
   previewTone.onclick = () => {
     const freq = parseFloat(frequencySelect.value);
-    if (freq === 0) return;
+    if (freq === 0 || previewTone.disabled) return;
 
     if (!previewPlaying) {
       const node = createOscillator(freq);
@@ -234,8 +233,9 @@
 
   frequencySelect.addEventListener('change', () => {
     const freq = parseFloat(frequencySelect.value);
-    previewTone.disabled = freq === 0;
-    previewTone.textContent = freq === 0 ? '🔇 Preview Disabled' : '🔊 Preview Tone';
+    const isSilence = freq === 0;
+    previewTone.disabled = isSilence;
+    previewTone.textContent = isSilence ? '🔇 Preview Disabled' : '🔊 Preview Tone';
   });
 
   previewTone.disabled = parseFloat(frequencySelect.value) === 0;
@@ -245,12 +245,16 @@
     const freq = parseFloat(frequencySelect.value);
     const oscillatorNode = freq > 0 ? createOscillator(freq) : null;
 
-    // Stop preview if it’s playing
+    // Stop preview if it's currently active
     if (previewPlaying) {
       fadeOutTone();
       previewPlaying = false;
       previewTone.textContent = '🔊 Preview Tone';
     }
+
+    // Disable preview while recording
+    previewTone.disabled = true;
+    previewTone.textContent = '🔇 Preview Disabled';
 
     try {
       const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -277,8 +281,12 @@
         downloadLink.download = `highscore-frequency-${date}.mp3`;
         downloadLink.style.display = 'inline-block';
 
-        // Ensure tone fades out even if recording was short or long
         fadeOutTone();
+
+        // Re-enable preview tone after recording
+        const currentFreq = parseFloat(frequencySelect.value);
+        previewTone.disabled = currentFreq === 0;
+        previewTone.textContent = currentFreq === 0 ? '🔇 Preview Disabled' : '🔊 Preview Tone';
       };
 
       mediaRecorder.start();
@@ -313,4 +321,3 @@
     resetBtn.disabled = true;
   };
 </script>
-
