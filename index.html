@@ -249,13 +249,13 @@ function drawWaveform() {
   if (!window.emaValues) {
     window.emaValues = new Float32Array(dataArray.length).fill(1.0); // Initialize at baseline
   }
-  const decayRate = 0.94; // Slower decay for resonant linger
-  const emaAlpha = 0.2; // More responsive EMA (try 0.4 for smoother, 0.8 for more reactive)
+  const decayRate = 0.95; // Slower decay for resonant linger
+  const emaAlpha = 0.3; // More responsive EMA (try 0.4 for smoother, 0.8 for more reactive)
 
   // Array to store smoothed y values
   let smoothedY = new Float32Array(dataArray.length);
-  const centerX = canvas.width / 2;
-  const rippleSpread = canvas.width / 4; // Controls ripple falloff (larger = wider ripple)
+  const centerX = canvas.width / 3;
+  const rippleSpread = canvas.width / 6; // Controls ripple falloff (larger = wider ripple)
   for (let i = 0; i < dataArray.length; i++) {
     let v = dataArray[i] / 128.0;
     // Apply exponential moving average to raw input
@@ -309,7 +309,7 @@ function drawWaveform() {
 
   // 📈 Normalize and invert for fade-out effect
   let normalized = Math.min(average / 2, 1); // High sensitivity
-  let targetOpacity = 1 - (normalized * 1); // inverse fade
+  let targetOpacity = 1; // inverse fade
 
   // 🎯 Smooth transition to prevent jitter
   let smoothing = 0.5;
