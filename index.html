@@ -255,7 +255,7 @@ function drawWaveform() {
 
   // Calculate smoothed ripple heights
   for (let i = 0; i < dataArray.length; i++) {
-    let v = Math.min(dataArray[i] / 128.0;
+    let v = Math.min(dataArray[i] / 128.0 * 1.2, 2);
     window.emaValues[i] = emaAlpha * v + (1 - emaAlpha) * window.emaValues[i];
     let smoothedV = window.emaValues[i];
     let deviation = Math.abs(smoothedV - 1.0);
