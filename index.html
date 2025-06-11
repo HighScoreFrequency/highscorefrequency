@@ -318,7 +318,8 @@ function drawWaveform() {
 
   fadeLayer.style.opacity = smoothedOpacity.toFixed(2);
 }
-
+    drawWaveform();
+    
     let oscillator, gainNode, panner;
     let mediaRecorder;
     let chunks = [];
