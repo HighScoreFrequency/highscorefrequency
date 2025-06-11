@@ -359,6 +359,12 @@ function drawWaveform() {
   ctx.stroke();
   ctx.shadowBlur = 0;
 
+// Convert average amplitude to scale factor (0.95–1.1)
+let pulseScale = 0.95 + Math.min(average / 64, 0.15);
+
+// Apply it to the inner ring
+const ring3 = document.querySelector('.ring3');
+ring3.style.transform = `translate(-50%, -50%) scale(${pulseScale.toFixed(3)})`;
 
 }
 
