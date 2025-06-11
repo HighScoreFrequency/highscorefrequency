@@ -58,16 +58,6 @@
       align-items: center;
     }
 
-    canvas#waveform {
-      position: absolute;
-      bottom: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 90%;
-      height: 60px;
-      z-index: 2;
-    }
-
     h2 {
       font-size: 32px;
       margin-bottom: 10px;
@@ -76,7 +66,13 @@
     p {
       font-size: 18px;
       color: #444;
-      margin-bottom: 30px;
+      margin-bottom: 20px;
+    }
+
+    canvas {
+      width: 100%;
+      height: 80px;
+      margin-bottom: 15px;
     }
 
     .button-group {
@@ -147,7 +143,6 @@
 </head>
 <body>
   <div class="portal-wrapper">
-    <canvas id="waveform"></canvas>
     <div class="portal-image"></div>
     <div class="content">
       <h2>🎙️ High Score Voice Portal</h2>
@@ -155,6 +150,8 @@
       code your field, draw truth near.<br>
       This isn’t speech, it’s memory’s key,<br>
       a voice-etched path to mastery.</p>
+
+      <canvas id="waveform"></canvas>
 
       <select id="frequencySelect">
         <option value="528">528 Hz – 🧬 Cell Recalibration – Level Up to Wholeness</option>
@@ -182,53 +179,86 @@
   <script>
     const canvas = document.getElementById('waveform');
     const ctx = canvas.getContext('2d');
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const analyser = audioCtx.createAnalyser();
-    analyser.fftSize = 512;
-    const bufferLength = analyser.fftSize;
-    const dataArray = new Uint8Array(bufferLength);
+    canvas.width = 500;
+    canvas.height = 100;
+
     let animationId;
+    let analyser;
+    let dataArray;
+    let bufferLength;
+    let sourceNode;
 
-    function drawWaveform() {
-      analyser.getByteTimeDomainData(dataArray);
+    function drawWaves() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
       ctx.lineWidth = 2;
-      ctx.strokeStyle = '#333';
-      ctx.beginPath();
+      ctx.strokeStyle = '#0070f3';
 
-      const sliceWidth = canvas.width / bufferLength;
-      let x = 0;
+      const centerY = canvas.height / 2;
+      const waveCount = 4;
+      const waveGap = 10;
+      const waveLength = canvas.width;
 
-      for (let i = 0; i < bufferLength; i++) {
-        const v = dataArray[i] / 128.0;
-        const y = canvas.height / 2 + (v - 1.0) * canvas.height / 4;
-
-        if (i === 0) {
-          ctx.moveTo(x, y);
-        } else {
-          ctx.lineTo(x, y);
+      for (let i = 0; i < waveCount; i++) {
+        ctx.beginPath();
+        for (let x = 0; x < waveLength; x++) {
+          const time = Date.now() / 1000;
+          const y = centerY + Math.sin((x + time * 50 + i * 20) * 0.02) * 8;
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
         }
-        x += sliceWidth * 0.6; // slower movement
+        ctx.stroke();
+      }
+      animationId = requestAnimationFrame(drawWaves);
+    }
+
+    drawWaves();
+
+    const audioPlayback = document.getElementById('audioPlayback');
+    audioPlayback.onplay = () => {
+      const audioCtx = new AudioContext();
+      sourceNode = audioCtx.createMediaElementSource(audioPlayback);
+      analyser = audioCtx.createAnalyser();
+      sourceNode.connect(analyser);
+      analyser.connect(audioCtx.destination);
+
+      bufferLength = analyser.fftSize;
+      dataArray = new Uint8Array(bufferLength);
+
+      function drawRealTime() {
+        animationId = requestAnimationFrame(drawRealTime);
+        analyser.getByteTimeDomainData(dataArray);
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#0070f3';
+
+        ctx.beginPath();
+        const sliceWidth = canvas.width * 1.0 / bufferLength;
+        let x = 0;
+
+        for (let i = 0; i < bufferLength; i++) {
+          const v = dataArray[i] / 128.0;
+          const y = v * canvas.height / 2;
+
+          if (i === 0) {
+            ctx.moveTo(x, y);
+          } else {
+            ctx.lineTo(x, y);
+          }
+
+          x += sliceWidth;
+        }
+        ctx.lineTo(canvas.width, canvas.height / 2);
+        ctx.stroke();
       }
 
-      ctx.lineTo(canvas.width, canvas.height / 2);
-      ctx.stroke();
-      animationId = requestAnimationFrame(drawWaveform);
-    }
+      drawRealTime();
+    };
 
-    function startVisualizer(sourceNode) {
-      sourceNode.connect(analyser);
-      drawWaveform();
-    }
-
-    // Connect microphone to visualizer always
-    navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-      const micSource = audioCtx.createMediaStreamSource(stream);
-      startVisualizer(micSource);
-    }).catch(err => {
-      console.error('Mic access denied for visualizer:', err);
-    });
+    audioPlayback.onpause = () => {
+      cancelAnimationFrame(animationId);
+      drawWaves();
+    };
   </script>
 </body>
 </html>
