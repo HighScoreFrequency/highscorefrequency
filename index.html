@@ -188,7 +188,7 @@
           <button id="record-btn">🟢 Start Recording</button>
         </div>
         <div class="row">
-          <button id="stopBtn" disabled>🛑 Stop Preview</button>
+          <button id="stopBtn" disabled>🛑 Stop</button>
           <button id="resetBtn" disabled>🔁 Reset</button>
         </div>
       </div>
@@ -378,7 +378,7 @@ function drawWaveform() {
         node.connect(audioCtx.destination);
         oscillator.start();
         previewPlaying = true;
-        previewTone.textContent = '🛑 Stop';
+        previewTone.textContent = '🛑 Stop Preview';
       } else {
         stopPreviewTone();
       }
