@@ -234,7 +234,7 @@ canvas#waveform {
       ctx.strokeStyle = '#deb64a'; // Cyan color for the waveform
       ctx.shadowColor = '#b77b29'; // Glow color
       ctx.shadowBlur = 30; // Glow radius
-      ctx.setLineDash([5, 5]);
+      ctx.setLineDash([3, 2]);
       let sliceWidth = canvas.width / dataArray.length;
       let x = 0;
       for (let i = 0; i < dataArray.length; i++) {
