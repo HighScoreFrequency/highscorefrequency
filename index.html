@@ -37,41 +37,56 @@
       background: transparent;
     }
 
-.portal-image {
+.ring {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 96%;
-  height: 96%;
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-  opacity: 1;
+  border-radius: 50%;
+  border: 3px solid transparent;
   pointer-events: none;
+  background: radial-gradient(circle, transparent 60%, rgba(255,255,255,0.01) 61%);
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.2);
 }
 
-.image-t11 {
-  z-index: 1;
-  background-image: url('https://github.com/HighScoreFrequency/highscorefrequency/blob/main/t11.png?raw=true');
-  animation: rotate 44s linear infinite;
+.ring1 {
+  width: 95%;
+  height: 95%;
+  border-image: linear-gradient(45deg, #d4af37, #a9712c) 1;
+  animation: rotateClockwise 44s linear infinite;
+  border-width: 2px;
+  border-style: solid;
 }
 
-.image-t22 {
-  z-index: 0;
-  background-image: url('https://github.com/HighScoreFrequency/highscorefrequency/blob/main/t22.png?raw=true');
-  animation: rotateReverse 44s linear infinite;
+.ring2 {
+  width: 85%;
+  height: 85%;
+  border-image: linear-gradient(135deg, #a9712c, #ffd700) 1;
+  animation: rotateCounter 44s linear infinite;
+  border-width: 2px;
+  border-style: solid;
 }
 
-@keyframes rotate {
+.ring3 {
+  width: 75%;
+  height: 75%;
+  border-image: linear-gradient(225deg, #f5c32c, #a96c0e) 1;
+  animation: rotateClockwise 22s linear infinite;
+  border-width: 2px;
+  border-style: solid;
+  opacity: 0.6;
+}
+
+@keyframes rotateClockwise {
   from { transform: translate(-50%, -50%) rotate(0deg); }
   to { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
-@keyframes rotateReverse {
+@keyframes rotateCounter {
   from { transform: translate(-50%, -50%) rotate(0deg); }
   to { transform: translate(-50%, -50%) rotate(-360deg); }
 }
+
 
     .content {
       position: relative;
@@ -181,10 +196,20 @@
   </style>
 </head>
 <body>
+
   <div class="portal-wrapper">
-    <canvas id="waveform"></canvas>
-    <div class="portal-image image-t11"></div>
-    <div class="portal-image image-t22"></div>
+  <canvas id="waveform"></canvas>
+
+  <!-- Outer ring (clockwise) -->
+  <div class="ring ring1"></div>
+
+  <!-- Middle ring (counterclockwise) -->
+  <div class="ring ring2"></div>
+
+  <!-- Inner ring (optional, pulse or faster spin) -->
+  <div class="ring ring3"></div>
+  
+
     <div class="content">
       <div class="fade-layer"></div>
       <h2>🎙️ High Score Voice Portal</h2>
