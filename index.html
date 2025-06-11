@@ -230,8 +230,10 @@
 
       // 🎵 Draw waveform
       ctx.beginPath();
-      ctx.lineWidth = 2;
-      ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = '#deb64a';
+      ctx.shadowColor = '#b77b29';
+      ctx.shadowBlur = 20; // Glow radius
       let sliceWidth = canvas.width / dataArray.length;
       let x = 0;
       for (let i = 0; i < dataArray.length; i++) {
