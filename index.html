@@ -228,7 +228,7 @@ function drawWaveform() {
   analyser.getByteTimeDomainData(dataArray);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // 🎵 Draw waveform with ripple from center
+  // 🎵 Ripple waveform effect
   ctx.beginPath();
   ctx.lineWidth = 3;
   const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
@@ -238,12 +238,15 @@ function drawWaveform() {
   ctx.shadowColor = '#5a9fe6';
   ctx.shadowBlur = 12;
 
-  let sliceWidth = canvas.width / dataArray.length;
+  const sliceWidth = canvas.width / dataArray.length;
+  const centerX = canvas.width / 2;
+  const rippleSpread = canvas.width / 3; // Wider ripple
+  const decayRate = 0.96;
+  const emaAlpha = 0.1;
   let x = 0;
   let prevX = 0;
   let prevY = canvas.height / 2;
 
-  // Init if not already
   if (!window.smoothedAmplitudes) {
     window.smoothedAmplitudes = new Float32Array(dataArray.length).fill(0.0);
   }
@@ -251,26 +254,20 @@ function drawWaveform() {
     window.emaValues = new Float32Array(dataArray.length).fill(1.0);
   }
 
-  const decayRate = 0.93;
-  const emaAlpha = 0.2;
-
-  let smoothedY = new Float32Array(dataArray.length);
-  const centerX = canvas.width / 2;
-  const rippleSpread = canvas.width / 4;
+  const smoothedY = new Float32Array(dataArray.length);
 
   for (let i = 0; i < dataArray.length; i++) {
-    let v = dataArray[i] / 128.0;
+    const v = dataArray[i] / 128.0;
     window.emaValues[i] = emaAlpha * v + (1 - emaAlpha) * window.emaValues[i];
-    let smoothedV = window.emaValues[i];
-
-    let deviation = Math.abs(smoothedV - 1.0);
+    const smoothedV = window.emaValues[i];
+    const deviation = Math.abs(smoothedV - 1.0);
     window.smoothedAmplitudes[i] = Math.max(deviation, window.smoothedAmplitudes[i] * decayRate);
-    let finalV = smoothedV > 1.0 ? 1.0 + window.smoothedAmplitudes[i] : 1.0 - window.smoothedAmplitudes[i];
+    const finalV = smoothedV > 1.0 ? 1.0 + window.smoothedAmplitudes[i] : 1.0 - window.smoothedAmplitudes[i];
 
-    let baseY = (finalV - 1.0) * canvas.height * 0.3 + canvas.height / 2;
-    let xPos = i * sliceWidth;
-    let distanceFromCenter = Math.abs(xPos - centerX);
-    let rippleFactor = Math.exp(-distanceFromCenter * distanceFromCenter / (2 * rippleSpread * rippleSpread));
+    const baseY = (finalV - 1.0) * canvas.height * 0.3 + canvas.height / 2;
+    const xPos = i * sliceWidth;
+    const distanceFromCenter = Math.abs(xPos - centerX);
+    const rippleFactor = Math.exp(-distanceFromCenter ** 2 / (2 * rippleSpread ** 2));
 
     if (i > 0) {
       smoothedY[i] = emaAlpha * (canvas.height / 2 + (baseY - canvas.height / 2) * rippleFactor) +
@@ -281,12 +278,12 @@ function drawWaveform() {
   }
 
   for (let i = 0; i < dataArray.length; i++) {
-    let y = smoothedY[i];
+    const y = smoothedY[i];
     if (i === 0) {
       ctx.moveTo(x, y);
     } else {
-      let xc = (prevX + x) / 2;
-      let yc = (prevY + y) / 2;
+      const xc = (prevX + x) / 2;
+      const yc = (prevY + y) / 2;
       ctx.quadraticCurveTo(prevX, prevY, xc, yc);
     }
     prevX = x;
@@ -298,22 +295,21 @@ function drawWaveform() {
   ctx.stroke();
   ctx.shadowBlur = 0;
 
-  // 🎛 Fade-layer inverse opacity based on voice
+  // 🎛 Fade-layer opacity based on volume — reverse (louder = more transparent)
   let sum = 0;
   for (let i = 0; i < dataArray.length; i++) {
     sum += Math.abs(dataArray[i] - 128);
   }
-  let average = sum / dataArray.length;
-  let normalized = Math.min(average / 3, 1);
-  let targetOpacity = 1 - (normalized * 1);
+  const average = sum / dataArray.length;
+  const normalized = Math.min(average / 3, 1);
+  const targetOpacity = 1 - normalized; // Start at 1, fade to 0
 
-  let smoothing = 0.5;
-  let smoothedOpacity = previousOpacity + (targetOpacity - previousOpacity) * smoothing;
+  const smoothing = 0.5;
+  const smoothedOpacity = previousOpacity + (targetOpacity - previousOpacity) * smoothing;
   previousOpacity = smoothedOpacity;
 
   fadeLayer.style.opacity = smoothedOpacity.toFixed(2);
 }
-
 
     drawWaveform();
 
