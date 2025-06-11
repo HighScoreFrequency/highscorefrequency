@@ -228,12 +228,16 @@
       analyser.getByteTimeDomainData(dataArray);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-// 🎵 Draw waveform with slow-motion decay, reduced vertical height, and softer curves
+// 🎵 Draw waveform with slow-motion decay, reduced vertical height, and calmer curves
 ctx.beginPath();
-ctx.lineWidth = 3;
-ctx.strokeStyle = '#deb64a'; // Gold color
-ctx.shadowColor = '#b77b29'; // Glow color
-ctx.shadowBlur = 20; // Glow radius
+ctx.lineWidth = 2.5; // Slightly thinner for a softer look
+// Create a calming blue-teal gradient
+const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
+gradient.addColorStop(0, '#4a90de'); // Soft blue
+gradient.addColorStop(1, '#4adeb6'); // Soft teal
+ctx.strokeStyle = gradient;
+ctx.shadowColor = '#4a90de'; // Subtle blue glow
+ctx.shadowBlur = 15; // Reduced glow for calmness
 let sliceWidth = canvas.width / dataArray.length;
 let x = 0;
 let prevX = 0;
@@ -243,9 +247,9 @@ let prevY = canvas.height / 2; // Start at center
 if (!window.smoothedAmplitudes) {
   window.smoothedAmplitudes = new Float32Array(dataArray.length).fill(1.0);
 }
-const decayRate = 0.95; // Adjust for slower (0.9) or faster (0.99) decay
+const decayRate = 0.97; // Slower decay for a calmer linger
 
-// Array to store smoothed y values
+// Array to store smoothed y values with expanded moving average
 let smoothedY = new Float32Array(dataArray.length);
 for (let i = 0; i < dataArray.length; i++) {
   let v = dataArray[i] / 128.0;
@@ -253,12 +257,21 @@ for (let i = 0; i < dataArray.length; i++) {
   window.smoothedAmplitudes[i] = Math.max(Math.abs(v - 1.0), window.smoothedAmplitudes[i] * decayRate);
   // Use smoothed amplitude, preserving sign of original value
   let smoothedV = v > 1.0 ? 1.0 + window.smoothedAmplitudes[i] : 1.0 - window.smoothedAmplitudes[i];
-  // Apply moving average for smoother data points
-  if (i > 0 && i < dataArray.length - 1) {
+  // Apply wider moving average (5-point) for smoother data points
+  if (i > 1 && i < dataArray.length - 2) {
+    let avgV = (
+      smoothedV +
+      (dataArray[i - 2] / 128.0) +
+      (dataArray[i - 1] / 128.0) +
+      (dataArray[i + 1] / 128.0) +
+      (dataArray[i + 2] / 128.0)
+    ) / 5;
+    smoothedY[i] = (avgV - 1.0) * canvas.height / 12 + canvas.height / 2; // Further reduced height
+  } else if (i > 0 && i < dataArray.length - 1) {
     let avgV = (smoothedV + (dataArray[i - 1] / 128.0) + (dataArray[i + 1] / 128.0)) / 3;
-    smoothedY[i] = (avgV - 1.0) * canvas.height / 8 + canvas.height / 2;
+    smoothedY[i] = (avgV - 1.0) * canvas.height / 12 + canvas.height / 2;
   } else {
-    smoothedY[i] = (smoothedV - 1.0) * canvas.height / 8 + canvas.height / 2;
+    smoothedY[i] = (smoothedV - 1.0) * canvas.height / 12 + canvas.height / 2;
   }
 }
 
@@ -267,10 +280,12 @@ for (let i = 0; i < dataArray.length; i++) {
   if (i === 0) {
     ctx.moveTo(x, y);
   } else {
-    // Use quadratic curve with adjusted control points for softer transitions
-    let xc = prevX + (x - prevX) * 0.3; // Extend control point for softer curve
-    let yc = (prevY + y) / 1; // Smooth y transition
-    ctx.quadraticCurveTo(prevX, prevY, xc, yc);
+    // Use Bezier curve for ultra-smooth, flowing transitions
+    let cp1x = prevX + (x - prevX) * 0.3; // First control point
+    let cp1y = prevY;
+    let cp2x = prevX + (x - prevX) * 0.7; // Second control point
+    let cp2y = y;
+    ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y);
   }
   prevX = x;
   prevY = y;
