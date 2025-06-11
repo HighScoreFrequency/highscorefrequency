@@ -69,10 +69,13 @@
       margin-bottom: 20px;
     }
 
-    canvas {
+    #waveform {
       width: 100%;
-      height: 80px;
-      margin-bottom: 15px;
+      max-width: 400px;
+      height: 100px;
+      margin-bottom: 20px;
+      background-color: #eef2f7;
+      border-radius: 8px;
     }
 
     .button-group {
@@ -157,7 +160,7 @@
         <option value="528">528 Hz – 🧬 Cell Recalibration – Level Up to Wholeness</option>
         <option value="639">639 Hz – 💖 Heart Link Gateway – Sync Into Unity Field</option>
         <option value="963">963 Hz – 👑 Crown Signal – Access Divine Intelligence</option>
-        <option value="0">0 Hz – 🕊️ Silence Mode – Record Without Tone</option>
+        <option value="0">0 Hz – 🙊 Silence Mode – Record Without Tone</option>
       </select>
 
       <div class="button-group">
@@ -166,7 +169,7 @@
           <button id="recordBtn">🟢 Start Recording</button>
         </div>
         <div class="button-row">
-          <button id="stopBtn" disabled>🛑 Stop</button>
+          <button id="stopBtn" disabled>😕 Stop</button>
           <button id="resetBtn" disabled>🔁 Reset</button>
         </div>
       </div>
@@ -179,86 +182,65 @@
   <script>
     const canvas = document.getElementById('waveform');
     const ctx = canvas.getContext('2d');
-    canvas.width = 500;
-    canvas.height = 100;
+    let analyser, sourceNode, animationId;
 
-    let animationId;
-    let analyser;
-    let dataArray;
-    let bufferLength;
-    let sourceNode;
+    function drawWaveform() {
+      if (!analyser) return;
 
-    function drawWaves() {
+      const bufferLength = analyser.fftSize;
+      const dataArray = new Uint8Array(bufferLength);
+
+      analyser.getByteTimeDomainData(dataArray);
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+
       ctx.lineWidth = 2;
-      ctx.strokeStyle = '#0070f3';
+      ctx.strokeStyle = '#444';
+      ctx.beginPath();
 
-      const centerY = canvas.height / 2;
-      const waveCount = 4;
-      const waveGap = 10;
-      const waveLength = canvas.width;
+      const sliceWidth = canvas.width * 1.0 / bufferLength;
+      let x = 0;
 
-      for (let i = 0; i < waveCount; i++) {
-        ctx.beginPath();
-        for (let x = 0; x < waveLength; x++) {
-          const time = Date.now() / 1000;
-          const y = centerY + Math.sin((x + time * 50 + i * 20) * 0.02) * 8;
-          if (x === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
+      for (let i = 0; i < bufferLength; i++) {
+        const v = dataArray[i] / 128.0;
+        const y = canvas.height / 2 + (v - 1.0) * 30; // smooth wave amplitude
+
+        if (i === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
         }
-        ctx.stroke();
+        x += sliceWidth;
       }
-      animationId = requestAnimationFrame(drawWaves);
+
+      ctx.lineTo(canvas.width, canvas.height / 2);
+      ctx.stroke();
+
+      animationId = requestAnimationFrame(drawWaveform);
     }
 
-    drawWaves();
+    function startVisualizer(stream) {
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 512;
+      sourceNode = audioCtx.createMediaStreamSource(stream);
+      sourceNode.connect(analyser);
+      drawWaveform();
+    }
+
+    function stopVisualizer() {
+      cancelAnimationFrame(animationId);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
 
     const audioPlayback = document.getElementById('audioPlayback');
-    audioPlayback.onplay = () => {
-      const audioCtx = new AudioContext();
-      sourceNode = audioCtx.createMediaElementSource(audioPlayback);
-      analyser = audioCtx.createAnalyser();
-      sourceNode.connect(analyser);
-      analyser.connect(audioCtx.destination);
+    audioPlayback.addEventListener('play', () => {
+      const stream = audioPlayback.captureStream();
+      startVisualizer(stream);
+    });
 
-      bufferLength = analyser.fftSize;
-      dataArray = new Uint8Array(bufferLength);
-
-      function drawRealTime() {
-        animationId = requestAnimationFrame(drawRealTime);
-        analyser.getByteTimeDomainData(dataArray);
-
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.lineWidth = 2;
-        ctx.strokeStyle = '#0070f3';
-
-        ctx.beginPath();
-        const sliceWidth = canvas.width * 1.0 / bufferLength;
-        let x = 0;
-
-        for (let i = 0; i < bufferLength; i++) {
-          const v = dataArray[i] / 128.0;
-          const y = v * canvas.height / 2;
-
-          if (i === 0) {
-            ctx.moveTo(x, y);
-          } else {
-            ctx.lineTo(x, y);
-          }
-
-          x += sliceWidth;
-        }
-        ctx.lineTo(canvas.width, canvas.height / 2);
-        ctx.stroke();
-      }
-
-      drawRealTime();
-    };
-
-    audioPlayback.onpause = () => {
-      cancelAnimationFrame(animationId);
-      drawWaves();
-    };
+    audioPlayback.addEventListener('pause', stopVisualizer);
+    audioPlayback.addEventListener('ended', stopVisualizer);
   </script>
 </body>
 </html>
