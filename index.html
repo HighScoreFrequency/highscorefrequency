@@ -58,6 +58,16 @@
       align-items: center;
     }
 
+    canvas#waveform {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90%;
+      height: 60px;
+      z-index: 2;
+    }
+
     h2 {
       font-size: 32px;
       margin-bottom: 10px;
@@ -66,16 +76,7 @@
     p {
       font-size: 18px;
       color: #444;
-      margin-bottom: 20px;
-    }
-
-    #waveform {
-      width: 100%;
-      max-width: 400px;
-      height: 100px;
-      margin-bottom: 20px;
-      background-color: #eef2f7;
-      border-radius: 8px;
+      margin-bottom: 30px;
     }
 
     .button-group {
@@ -146,6 +147,7 @@
 </head>
 <body>
   <div class="portal-wrapper">
+    <canvas id="waveform"></canvas>
     <div class="portal-image"></div>
     <div class="content">
       <h2>🎙️ High Score Voice Portal</h2>
@@ -154,13 +156,11 @@
       This isn’t speech, it’s memory’s key,<br>
       a voice-etched path to mastery.</p>
 
-      <canvas id="waveform"></canvas>
-
       <select id="frequencySelect">
         <option value="528">528 Hz – 🧬 Cell Recalibration – Level Up to Wholeness</option>
         <option value="639">639 Hz – 💖 Heart Link Gateway – Sync Into Unity Field</option>
         <option value="963">963 Hz – 👑 Crown Signal – Access Divine Intelligence</option>
-        <option value="0">0 Hz – 🙊 Silence Mode – Record Without Tone</option>
+        <option value="0">0 Hz – 🕊️ Silence Mode – Record Without Tone</option>
       </select>
 
       <div class="button-group">
@@ -169,7 +169,7 @@
           <button id="recordBtn">🟢 Start Recording</button>
         </div>
         <div class="button-row">
-          <button id="stopBtn" disabled>😕 Stop</button>
+          <button id="stopBtn" disabled>🛑 Stop</button>
           <button id="resetBtn" disabled>🔁 Reset</button>
         </div>
       </div>
@@ -182,65 +182,53 @@
   <script>
     const canvas = document.getElementById('waveform');
     const ctx = canvas.getContext('2d');
-    let analyser, sourceNode, animationId;
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 512;
+    const bufferLength = analyser.fftSize;
+    const dataArray = new Uint8Array(bufferLength);
+    let animationId;
 
     function drawWaveform() {
-      if (!analyser) return;
-
-      const bufferLength = analyser.fftSize;
-      const dataArray = new Uint8Array(bufferLength);
-
       analyser.getByteTimeDomainData(dataArray);
-
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       ctx.lineWidth = 2;
-      ctx.strokeStyle = '#444';
+      ctx.strokeStyle = '#333';
       ctx.beginPath();
 
-      const sliceWidth = canvas.width * 1.0 / bufferLength;
+      const sliceWidth = canvas.width / bufferLength;
       let x = 0;
 
       for (let i = 0; i < bufferLength; i++) {
         const v = dataArray[i] / 128.0;
-        const y = canvas.height / 2 + (v - 1.0) * 30; // smooth wave amplitude
+        const y = canvas.height / 2 + (v - 1.0) * canvas.height / 4;
 
         if (i === 0) {
           ctx.moveTo(x, y);
         } else {
           ctx.lineTo(x, y);
         }
-        x += sliceWidth;
+        x += sliceWidth * 0.6; // slower movement
       }
 
       ctx.lineTo(canvas.width, canvas.height / 2);
       ctx.stroke();
-
       animationId = requestAnimationFrame(drawWaveform);
     }
 
-    function startVisualizer(stream) {
-      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      analyser = audioCtx.createAnalyser();
-      analyser.fftSize = 512;
-      sourceNode = audioCtx.createMediaStreamSource(stream);
+    function startVisualizer(sourceNode) {
       sourceNode.connect(analyser);
       drawWaveform();
     }
 
-    function stopVisualizer() {
-      cancelAnimationFrame(animationId);
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-    }
-
-    const audioPlayback = document.getElementById('audioPlayback');
-    audioPlayback.addEventListener('play', () => {
-      const stream = audioPlayback.captureStream();
-      startVisualizer(stream);
+    // Connect microphone to visualizer always
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+      const micSource = audioCtx.createMediaStreamSource(stream);
+      startVisualizer(micSource);
+    }).catch(err => {
+      console.error('Mic access denied for visualizer:', err);
     });
-
-    audioPlayback.addEventListener('pause', stopVisualizer);
-    audioPlayback.addEventListener('ended', stopVisualizer);
   </script>
 </body>
 </html>
