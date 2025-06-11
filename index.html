@@ -26,7 +26,7 @@
       align-items: center;
     }
 
-    #waveCanvas {
+    canvas#waveform {
       position: absolute;
       top: 0;
       left: 0;
@@ -146,7 +146,7 @@
 </head>
 <body>
   <div class="portal-wrapper">
-    <canvas id="waveCanvas"></canvas>
+    <canvas id="waveform"></canvas>
     <div class="portal-image"></div>
     <div class="content">
       <h2>🎙️ High Score Voice Portal</h2>
@@ -179,56 +179,50 @@
   </div>
 
   <script>
-    const canvas = document.getElementById('waveCanvas');
-    const canvasCtx = canvas.getContext('2d');
+    const canvas = document.getElementById('waveform');
+    const ctx = canvas.getContext('2d');
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
 
-    function resizeCanvas() {
-      canvas.width = canvas.clientWidth;
-      canvas.height = canvas.clientHeight;
-    }
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    const audioCtx = new AudioContext();
+    let analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 2048;
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
 
-    let analyser, dataArray, animationId;
-
-    function animateWaveform() {
-      animationId = requestAnimationFrame(animateWaveform);
-
+    function drawWaveform() {
+      requestAnimationFrame(drawWaveform);
       analyser.getByteTimeDomainData(dataArray);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
-
-      const gradient = canvasCtx.createLinearGradient(0, 0, canvas.width, 0);
+      // Set gradient stroke
+      const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
       gradient.addColorStop(0, '#a855f7');
       gradient.addColorStop(0.5, '#3b82f6');
       gradient.addColorStop(1, '#ec4899');
 
-      const avgVolume = dataArray.reduce((sum, val) => sum + Math.abs(val - 128), 0) / dataArray.length;
+      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = gradient;
+      ctx.shadowColor = '#7dd3fc';
+      ctx.shadowBlur = 12;
 
-      canvasCtx.lineWidth = 2;
-      canvasCtx.strokeStyle = gradient;
-      canvasCtx.shadowColor = '#f9a8d4';
-      canvasCtx.shadowBlur = 10 + avgVolume * 0.3;
-
-      canvasCtx.beginPath();
-      const sliceWidth = canvas.width / dataArray.length;
+      ctx.beginPath();
+      let sliceWidth = canvas.width * 1.0 / bufferLength;
       let x = 0;
-
-      for (let i = 0; i < dataArray.length; i++) {
-        const v = dataArray[i] / 128.0;
-        const y = (v * canvas.height) / 2;
-
+      for (let i = 0; i < bufferLength; i++) {
+        let v = dataArray[i] / 128.0;
+        let y = v * canvas.height / 2;
         if (i === 0) {
-          canvasCtx.moveTo(x, y);
+          ctx.moveTo(x, y);
         } else {
-          canvasCtx.lineTo(x, y);
+          ctx.lineTo(x, y);
         }
-
         x += sliceWidth;
       }
-
-      canvasCtx.stroke();
+      ctx.stroke();
     }
+    drawWaveform();
   </script>
 </body>
 </html>
