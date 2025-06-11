@@ -198,11 +198,10 @@
     </div>
   </div>
 
-  <script>
+<script>
   const canvas = document.getElementById('waveform');
   const ctx = canvas.getContext('2d');
   const fadeLayer = document.querySelector('.fade-layer');
-  fadeLayer.style.opacity = '1.0'; // ✅ Default opacity when page loads
 
   const AudioContext = window.AudioContext || window.webkitAudioContext;
   const audioCtx = new AudioContext();
@@ -211,7 +210,7 @@
   analyser.fftSize = 2048;
   let dataArray = new Uint8Array(analyser.fftSize);
 
-  let previousOpacity = 1.0;
+  let previousOpacity = 0.85;
 
   function resizeCanvas() {
     canvas.width = window.innerWidth;
@@ -236,17 +235,17 @@
     ctx.shadowBlur = 12;
 
     let sliceWidth = canvas.width / dataArray.length;
-    let x = 0;
-    let prevX = 0;
-    let prevY = canvas.height / 2;
+    let x = 0, prevX = 0, prevY = canvas.height / 2;
 
-    if (!window.smoothedAmplitudes)
+    if (!window.smoothedAmplitudes) {
       window.smoothedAmplitudes = new Float32Array(dataArray.length).fill(0.0);
-    if (!window.emaValues)
+    }
+    if (!window.emaValues) {
       window.emaValues = new Float32Array(dataArray.length).fill(1.0);
+    }
 
-    const decayRate = 0.94;
-    const emaAlpha = 0.2;
+    const decayRate = 0.99;
+    const emaAlpha = 0.6;
     let smoothedY = new Float32Array(dataArray.length);
     const centerX = canvas.width / 2;
     const rippleSpread = canvas.width / 4;
@@ -257,19 +256,15 @@
       let smoothedV = window.emaValues[i];
       let deviation = Math.abs(smoothedV - 1.0);
       window.smoothedAmplitudes[i] = Math.max(deviation, window.smoothedAmplitudes[i] * decayRate);
-      let finalV = smoothedV > 1.0
-        ? 1.0 + window.smoothedAmplitudes[i]
-        : 1.0 - window.smoothedAmplitudes[i];
+      let finalV = smoothedV > 1.0 ? 1.0 + window.smoothedAmplitudes[i] : 1.0 - window.smoothedAmplitudes[i];
       let baseY = (finalV - 1.0) * canvas.height * 0.3 + canvas.height / 2;
       let xPos = i * sliceWidth;
       let distanceFromCenter = Math.abs(xPos - centerX);
-      let rippleFactor = Math.exp(-distanceFromCenter ** 2 / (2 * rippleSpread ** 2));
-      if (i > 0) {
-        smoothedY[i] = emaAlpha * (canvas.height / 2 + (baseY - canvas.height / 2) * rippleFactor) +
-                       (1 - emaAlpha) * smoothedY[i - 1];
-      } else {
-        smoothedY[i] = canvas.height / 2 + (baseY - canvas.height / 2) * rippleFactor;
-      }
+      let rippleFactor = Math.exp(-distanceFromCenter * distanceFromCenter / (2 * rippleSpread * rippleSpread));
+
+      smoothedY[i] = i > 0
+        ? emaAlpha * (canvas.height / 2 + (baseY - canvas.height / 2) * rippleFactor) + (1 - emaAlpha) * smoothedY[i - 1]
+        : canvas.height / 2 + (baseY - canvas.height / 2) * rippleFactor;
     }
 
     for (let i = 0; i < dataArray.length; i++) {
@@ -290,21 +285,19 @@
     ctx.stroke();
     ctx.shadowBlur = 0;
 
-    // 🔊 Volume-based opacity animation (inverse)
     let sum = 0;
     for (let i = 0; i < dataArray.length; i++) {
       sum += Math.abs(dataArray[i] - 128);
     }
     let average = sum / dataArray.length;
-    let normalized = Math.min(average / 2, 1);
-    let targetOpacity = 1.0 - normalized; // Inverse fade: lower opacity = more sound
+    let normalized = Math.min(average / 3, 1);
+    let targetOpacity = 0.63 - (normalized * 0.63);
     let smoothing = 0.5;
     let smoothedOpacity = previousOpacity + (targetOpacity - previousOpacity) * smoothing;
     previousOpacity = smoothedOpacity;
+
     fadeLayer.style.opacity = smoothedOpacity.toFixed(2);
   }
-
-  drawWaveform();
 
   let oscillator, gainNode, panner;
   let mediaRecorder;
@@ -352,19 +345,20 @@
       oscillator.stop();
     }
     previewPlaying = false;
-    previewTone.textContent = '🔊 Preview tone';
+    previewTone.textContent = '🔊 Preview Tone';
   }
 
-  previewTone.onclick = () => {
+  previewTone.onclick = async () => {
     const freq = parseFloat(frequencySelect.value);
     if (freq === 0) return;
 
     if (!previewPlaying) {
+      await audioCtx.resume(); // ✅ Fix 2
       const node = createOscillator(freq);
       node.connect(audioCtx.destination);
       oscillator.start();
       previewPlaying = true;
-      previewTone.textContent = '🛑 Stop Preview';
+      previewTone.textContent = '🛑 Stop';
     } else {
       stopPreviewTone();
     }
@@ -373,14 +367,15 @@
   frequencySelect.addEventListener('change', () => {
     const freq = parseFloat(frequencySelect.value);
     previewTone.disabled = freq === 0;
-    previewTone.textContent = freq === 0 ? '🔇 Preview Disabled' : '🔊 Preview tone';
+    previewTone.textContent = freq === 0 ? '🔇 Preview Disabled' : '🔊 Preview Tone';
   });
 
   previewTone.disabled = parseFloat(frequencySelect.value) === 0;
-  previewTone.textContent = parseFloat(frequencySelect.value) === 0 ? '🔇 Preview Disabled' : '🔊 Preview tone';
+  previewTone.textContent = parseFloat(frequencySelect.value) === 0 ? '🔇 Preview Disabled' : '🔊 Preview Tone';
 
   recordBtn.onclick = async () => {
     const startRecording = async () => {
+      await audioCtx.resume(); // ✅ Fix 2
       const freq = parseFloat(frequencySelect.value);
       const oscillatorNode = freq > 0 ? createOscillator(freq) : null;
 
@@ -388,6 +383,8 @@
         const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
         const micSource = audioCtx.createMediaStreamSource(micStream);
         micSource.connect(analyser);
+
+        drawWaveform(); // ✅ Fix 1
 
         const dest = audioCtx.createMediaStreamDestination();
         micSource.connect(dest);
@@ -444,10 +441,8 @@
 
     const freq = parseFloat(frequencySelect.value);
     previewTone.disabled = freq === 0;
-    previewTone.textContent = freq === 0 ? '🔇 Preview Disabled' : '🔊 Preview tone';
+    previewTone.textContent = freq === 0 ? '🔇 Preview Disabled' : '🔊 Preview';
     previewPlaying = false;
-
-    fadeLayer.style.opacity = '1.0'; // ✅ Reset to default
   };
 
   resetBtn.onclick = () => {
@@ -461,7 +456,6 @@
     downloadLink.style.display = 'none';
 
     resetBtn.disabled = true;
-
-    fadeLayer.style.opacity = '1.0'; // ✅ Reset to default
   };
 </script>
+
