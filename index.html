@@ -18,14 +18,12 @@
       overflow: hidden;
     }
 
-    .portal-wrapper {
-      position: relative;
-      width: 93vmin;
-      height: 93vmin;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
+.portal-wrapper {
+  aspect-ratio: 1 / 1;
+  width: 93vmin;
+  height: auto;
+}
+
 
     canvas#waveform {
       position: fixed;
@@ -37,12 +35,14 @@
       background: transparent;
     }
 
-.ring1, .ring2, .ring3 {
+.ring1, .ring3 {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  box-sizing: content-box;
   border-width: 4px;
+  aspect-ratio: 1 / 1;
   border-style: solid;
   pointer-events: none;
   box-shadow: 0 0 12px rgba(255, 215, 0, 0.2);
