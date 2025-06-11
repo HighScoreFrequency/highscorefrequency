@@ -54,19 +54,39 @@
 }
 
 /* Outer ring - circle */
-.ring1 {
-  width: 95vmin;
-  height: 95vmin;
+    .ring1 {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 55vmin;
+  height: 55vmin;
+  aspect-ratio: 1/1;
+  transform: translate(-50%, -50%);
   border-radius: 50%;
-  border-image: linear-gradient(45deg, #ffd700, #d4af37, #a9712c) 1;
   animation: rotateClockwise 44s linear infinite;
+  z-index: 1;
+  background: conic-gradient(
+    from 0deg,
+    #ffd700 0deg 30deg,
+    transparent 30deg 60deg,
+    #d4af37 60deg 90deg,
+    transparent 90deg 120deg,
+    #a9712c 120deg 150deg,
+    transparent 150deg 180deg,
+    #ffd700 180deg 210deg,
+    transparent 210deg 240deg,
+    #d4af37 240deg 270deg,
+    transparent 270deg 300deg,
+    #a9712c 300deg 330deg,
+    transparent 330deg 360deg
+  );
+  mask-image: radial-gradient(circle, black 60%, transparent 100%);
 }
 
 /* Middle ring - square */
 .ring2 {
-  width: 85vmin;
-  height: 85vmin;
-  border-radius: 12px;
+  width: 55vmin;
+  height: 55vmin;
   border-image: linear-gradient(135deg, #ffcc33, #a9712c, #ffd700) 1;
   animation: rotateCounter 44s linear infinite;
 }
