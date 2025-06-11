@@ -241,7 +241,7 @@ let x = 0;
 if (!window.smoothedAmplitudes) {
   window.smoothedAmplitudes = new Float32Array(dataArray.length).fill(1.0);
 }
-const decayRate = 1.5; // Adjust for slower (0.9) or faster (0.99) decay
+const decayRate = .99; // Adjust for slower (0.9) or faster (0.99) decay
 
 for (let i = 0; i < dataArray.length; i++) {
   let v = dataArray[i] / 128.0;
