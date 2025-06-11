@@ -144,41 +144,51 @@
       to { opacity: 3; }
     }
 
-    /* 🔧 Mobile-Only Overrides */
-    @media only screen and (max-width: 600px) {
-      .portal-wrapper {
-        width: 75vh !important;
-        height: 50vh !important;
-      }
+/* 🔧 Mobile-Only Overrides (Keep desktop layout) */
+@media only screen and (max-width: 600px) {
+  .portal-wrapper {
+    width: 93vmin !important;
+    height: 93vmin !important;
+  }
 
-      .content {
-        width: 85vw !important;
-        max-width: none !important;
-        padding: 20px 20px !important;
-        font-size: 1.1rem !important;
-      }
+  .content {
+    width: 90% !important;
+    max-width: 500px !important;
+    padding: 30px !important;
+    font-size: 1rem !important;
+  }
 
-      h2 {
-        font-size: 5vw !important;
-      }
+  h2 {
+    font-size: 28px !important;
+  }
 
-      p {
-        font-size: 3.5vw !important;
-      }
+  p {
+    font-size: 16px !important;
+  }
 
-      select, button {
-        font-size: 1rem !important;
-        padding: 14px 20px !important;
-      }
+  select, button {
+    font-size: 16px !important;
+    padding: 12px 22px !important;
+  }
 
-      .button-group {
-        width: 50% !important;
-      }
+  .button-group {
+    width: auto !important;
+    flex-direction: column !important;
+    align-items: center !important;
+  }
 
-      audio {
-        max-width: 100% !important;
-      }
-    }
+  .button-row {
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    gap: 15px !important;
+    justify-content: center !important;
+  }
+
+  audio {
+    max-width: 100% !important;
+  }
+}
+
   </style>
 </head>
 <body>
