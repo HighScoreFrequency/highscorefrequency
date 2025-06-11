@@ -144,31 +144,9 @@
   </style>
 </head>
 <body>
-  
-<canvas id="waveform" width="1920" height="1080"></canvas>
-#waveform {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 0;
-  background: transparent;
-  pointer-events: none;
-}
-
   <div class="portal-wrapper">
-    .portal-wrapper {
-  position: relative;
-  z-index: 2;
-  /* other styles */
-}
     <div class="portal-image"></div>
-    
     <div class="content">
-      .content {
-  z-index: 3;
-}
       <h2>🎙️ High Score Voice Portal</h2>
       <p>Choose your tone, speak it clear,<br>
       code your field, draw truth near.<br>
@@ -193,7 +171,7 @@
         </div>
       </div>
 
-
+      <canvas id="waveform" width="400" height="100"></canvas>
       <audio id="audioPlayback" controls style="display: none;"></audio>
       <a id="downloadLink" style="display: none;">⬇️ Download Your Recording</a>
     </div>
@@ -219,13 +197,6 @@
 
     const canvas = document.getElementById('waveform');
     const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-    window.addEventListener('resize', () => {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-});
-
     let animationId;
     let analyser, dataArray, bufferLength;
 
@@ -244,10 +215,7 @@ canvas.height = window.innerHeight;
       analyser.getByteTimeDomainData(dataArray);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.lineWidth = 2;
-ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
-ctx.shadowColor = 'rgba(255, 255, 255, 0.3)';
-ctx.shadowBlur = 15;
-
+      ctx.strokeStyle = '#222';
       ctx.beginPath();
 
       const sliceWidth = canvas.width / bufferLength;
