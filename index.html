@@ -69,12 +69,14 @@
 
 .title-overflow {
   position: absolute;
-  top: -50px;            /* 👈 Moves it *above* the circle */
-  width: 100%;           /* 👈 Ensures it's centered properly */
-  text-align: center;
+  top: -50px;
+  left: 50%;
+  transform: translateX(-50%);
   font-size: 32px;
-  z-index: 3;            /* 👈 Keeps it above all layers */
+  z-index: 3;
+  white-space: nowrap;
 }
+
 
 
     .content-inner {
