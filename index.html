@@ -69,6 +69,15 @@
       overflow: visible;
     }
 
+    .content-inner {
+  padding: 30px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+
     .fade-layer {
       position: absolute;
       top: 0; left: 0;
@@ -167,31 +176,38 @@
   <div class="portal-wrapper">
     <canvas id="waveform"></canvas>
     <div class="portal-image"></div>
-    <div class="content">
-      <div class="fade-layer"></div>
-      <h2>🎙️ High Score Voice Portal</h2>
-      <p>Choose your tone, speak it clear,<br>
-      code your field, draw truth near.<br>
-      This isn’t speech, it’s memory’s key,<br>
-      a voice-etched path to mastery.</p>
+<div class="content">
+  <div class="fade-layer"></div>
+  <div class="content-inner">
+    <h2>🎙️ High Score Voice Portal</h2>
+    <p>Choose your tone, speak it clear,<br>
+    code your field, draw truth near.<br>
+    This isn’t speech, it’s memory’s key,<br>
+    a voice-etched path to mastery.</p>
 
-      <select id="frequencySelect">
-        <option value="528">528 Hz – 🧬 Cell Recalibration – Level Up to Wholeness</option>
-        <option value="639">639 Hz – 💖 Heart Link Gateway – Sync Into Unity Field</option>
-        <option value="963">963 Hz – 👑 Crown Signal – Access Divine Intelligence</option>
-        <option value="0">0 Hz – 🕊️ Silence Mode – Record Without Tone</option>
-      </select>
+    <select id="frequencySelect">
+      <option value="528">528 Hz – 🧬 Cell Recalibration – Level Up to Wholeness</option>
+      <option value="639">639 Hz – 💖 Heart Link Gateway – Sync Into Unity Field</option>
+      <option value="963">963 Hz – 👑 Crown Signal – Access Divine Intelligence</option>
+      <option value="0">0 Hz – 🕊️ Silence Mode – Record Without Tone</option>
+    </select>
 
-      <div class="button-group">
-        <div class="button-row">
-          <button id="previewTone">🔊 Preview Tone</button>
-          <button id="recordBtn">🟢 Start Recording</button>
-        </div>
-        <div class="button-row">
-          <button id="stopBtn" disabled>🛑 Stop</button>
-          <button id="resetBtn" disabled>🔁 Reset</button>
-        </div>
+    <div class="button-group">
+      <div class="button-row">
+        <button id="previewTone">🔊 Preview Tone</button>
+        <button id="recordBtn">🟢 Start Recording</button>
       </div>
+      <div class="button-row">
+        <button id="stopBtn" disabled>🛑 Stop</button>
+        <button id="resetBtn" disabled>🔁 Reset</button>
+      </div>
+    </div>
+
+    <audio id="audioPlayback" controls style="display: none;"></audio>
+    <a id="downloadLink" style="display: none;">⬇️ Download Your Recording</a>
+  </div>
+</div>
+
 
       <audio id="audioPlayback" controls style="display: none;"></audio>
       <a id="downloadLink" style="display: none;">⬇️ Download Your Recording</a>
