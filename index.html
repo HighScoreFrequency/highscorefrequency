@@ -34,7 +34,7 @@
       width: 100vw;
       height: 100vh;
       z-index: 0;
-      background: white;
+      background: transparent;
     }
 
     .portal-image {
@@ -309,7 +309,7 @@ function drawWaveform() {
 
   // 📈 Normalize and invert for fade-out effect
   let normalized = Math.min(average / 2, 1); // High sensitivity
-  let targetOpacity = 1 - (normalized * 1); // inverse fade
+  let targetOpacity = 0.99 - (normalized * 0.99); // inverse fade
 
   // 🎯 Smooth transition to prevent jitter
   let smoothing = 0.5;
@@ -366,7 +366,7 @@ function drawWaveform() {
         oscillator.stop();
       }
       previewPlaying = false;
-      previewTone.textContent = '🔊 Preview';
+      previewTone.textContent = '🔊 Preview tone';
     }
 
     previewTone.onclick = () => {
@@ -378,7 +378,7 @@ function drawWaveform() {
         node.connect(audioCtx.destination);
         oscillator.start();
         previewPlaying = true;
-        previewTone.textContent = '🛑 Stop Preview';
+        previewTone.textContent = '🛑 Stop';
       } else {
         stopPreviewTone();
       }
@@ -387,11 +387,11 @@ function drawWaveform() {
     frequencySelect.addEventListener('change', () => {
       const freq = parseFloat(frequencySelect.value);
       previewTone.disabled = freq === 0;
-      previewTone.textContent = freq === 0 ? '🔇 Preview Disabled' : '🔊 Preview';
+      previewTone.textContent = freq === 0 ? '🔇 Preview Disabled' : '🔊 Preview tone';
     });
 
     previewTone.disabled = parseFloat(frequencySelect.value) === 0;
-    previewTone.textContent = parseFloat(frequencySelect.value) === 0 ? '🔇 Preview Disabled' : '🔊 Preview';
+    previewTone.textContent = parseFloat(frequencySelect.value) === 0 ? '🔇 Preview Disabled' : '🔊 Preview tone';
 
     recordBtn.onclick = async () => {
       const startRecording = async () => {
@@ -458,7 +458,7 @@ function drawWaveform() {
 
       const freq = parseFloat(frequencySelect.value);
       previewTone.disabled = freq === 0;
-      previewTone.textContent = freq === 0 ? '🔇 Preview Disabled' : '🔊 Preview';
+      previewTone.textContent = freq === 0 ? '🔇 Preview Disabled' : '🔊 Preview tone';
       previewPlaying = false;
     };
 
