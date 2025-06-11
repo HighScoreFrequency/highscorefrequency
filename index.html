@@ -245,11 +245,11 @@ function drawWaveform() {
   let average = sum / dataArray.length;
 
   // 📈 Normalize and invert for fade-out effect
-  let normalized = Math.min(average / 10, 1); // High sensitivity
-  let targetOpacity = 0.85 - (normalized * 0.85); // inverse fade
+  let normalized = Math.min(average / 5, 1); // High sensitivity
+  let targetOpacity = 0.63 - (normalized * 0.63); // inverse fade
 
   // 🎯 Smooth transition to prevent jitter
-  let smoothing = 0.08;
+  let smoothing = 0.5;
   let smoothedOpacity = previousOpacity + (targetOpacity - previousOpacity) * smoothing;
   previousOpacity = smoothedOpacity;
 
