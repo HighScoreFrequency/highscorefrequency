@@ -34,7 +34,7 @@
       width: 100vw;
       height: 100vh;
       z-index: 0;
-      background: transparent;
+      background: white;
     }
 
     .portal-image {
@@ -184,11 +184,11 @@
 
       <div class="button-group">
         <div class="row">
-          <button id="preview-btn">🔊 Preview</button>
-          <button id="record-btn">🟢 Record</button>
+          <button id="preview-btn">🔊 Preview Tone</button>
+          <button id="record-btn">🟢 Start Recording</button>
         </div>
         <div class="row">
-          <button id="stopBtn" disabled>🛑 Stop</button>
+          <button id="stopBtn" disabled>🛑 Stop Preview</button>
           <button id="resetBtn" disabled>🔁 Reset</button>
         </div>
       </div>
@@ -249,8 +249,8 @@ function drawWaveform() {
   if (!window.emaValues) {
     window.emaValues = new Float32Array(dataArray.length).fill(1.0); // Initialize at baseline
   }
-  const decayRate = 0.99; // Slower decay for resonant linger
-  const emaAlpha = 0.6; // More responsive EMA (try 0.4 for smoother, 0.8 for more reactive)
+  const decayRate = 0.94; // Slower decay for resonant linger
+  const emaAlpha = 0.2; // More responsive EMA (try 0.4 for smoother, 0.8 for more reactive)
 
   // Array to store smoothed y values
   let smoothedY = new Float32Array(dataArray.length);
@@ -308,8 +308,8 @@ function drawWaveform() {
   let average = sum / dataArray.length;
 
   // 📈 Normalize and invert for fade-out effect
-  let normalized = Math.min(average / 3, 1); // High sensitivity
-  let targetOpacity = 0.63 - (normalized * 0.63); // inverse fade
+  let normalized = Math.min(average / 2, 1); // High sensitivity
+  let targetOpacity = 1 - (normalized * 1); // inverse fade
 
   // 🎯 Smooth transition to prevent jitter
   let smoothing = 0.5;
