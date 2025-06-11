@@ -296,17 +296,30 @@
       }
     };
 
-    stopBtn.onclick = () => {
-      mediaRecorder.stop();
-      if (oscillator && oscillator.stopWithFade) {
-        oscillator.stopWithFade();
-      } else if (oscillator) {
-        oscillator.stop();
-      }
-      recordBtn.disabled = false;
-      stopBtn.disabled = true;
-      resetBtn.disabled = false;
-    };
+stopBtn.onclick = () => {
+  mediaRecorder.stop();
+
+  if (oscillator && oscillator.stopWithFade) {
+    oscillator.stopWithFade();
+  } else if (oscillator) {
+    oscillator.stop();
+  }
+
+  recordBtn.disabled = false;
+  stopBtn.disabled = true;
+  resetBtn.disabled = false;
+
+  // After stopping, restore preview button (unless in 0 Hz mode)
+  const freq = parseFloat(frequencySelect.value);
+  if (freq === 0) {
+    previewTone.disabled = true;
+    previewTone.textContent = '🔇 Preview Disabled';
+  } else {
+    previewTone.disabled = false;
+    previewTone.textContent = '🔊 Preview Tone';
+    previewPlaying = false;
+  }
+};
 
     resetBtn.onclick = () => {
       audioPlayback.pause();
