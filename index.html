@@ -144,7 +144,7 @@
       to { opacity: 3; }
     }
 
-/* 🔧 Mobile-Only Overrides (Centered layout + consistent landscape behavior) */
+/* 🔧 Mobile-Only Overrides (Centered layout + fixed font size) */
 @media only screen and (max-width: 768px) {
   html, body {
     width: 100%;
@@ -167,6 +167,11 @@
     box-sizing: border-box !important;
   }
 
+  html {
+  scroll-behavior: smooth;
+}
+
+
   .content {
     width: 90vw !important;
     max-width: 500px !important;
@@ -179,11 +184,11 @@
   }
 
   h2 {
-    font-size: 5vw !important;
+    font-size: 32px !important;
   }
 
   p {
-    font-size: 3.5vw !important;
+    font-size: 18px !important;
   }
 
   select {
