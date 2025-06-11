@@ -242,9 +242,9 @@ function drawWaveform() {
   const centerY = canvas.height / 2;
   const half = dataArray.length / 2;
   const sliceWidth = canvas.width / dataArray.length;
-  const decayRate = 0.93;
-  const emaAlpha = 0.1;
-  const rippleSpread = canvas.width / 6;
+  const decayRate = 0.95;
+  const emaAlpha = 0.2;
+  const rippleSpread = canvas.width / 4;
 
   if (!window.smoothedAmplitudes)
     window.smoothedAmplitudes = new Float32Array(dataArray.length).fill(0.0);
