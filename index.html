@@ -243,7 +243,7 @@ let prevY = canvas.height / 2; // Start at center
 if (!window.smoothedAmplitudes) {
   window.smoothedAmplitudes = new Float32Array(dataArray.length).fill(1.0);
 }
-const decayRate = 0.93; // Adjust for slower (0.9) or faster (0.99) decay
+const decayRate = 0.95; // Adjust for slower (0.9) or faster (0.99) decay
 
 // Array to store smoothed y values
 let smoothedY = new Float32Array(dataArray.length);
@@ -268,8 +268,8 @@ for (let i = 0; i < dataArray.length; i++) {
     ctx.moveTo(x, y);
   } else {
     // Use quadratic curve with adjusted control points for softer transitions
-    let xc = prevX + (x - prevX) * 0.6; // Extend control point for softer curve
-    let yc = (prevY + y) / 2; // Smooth y transition
+    let xc = prevX + (x - prevX) * 0.3; // Extend control point for softer curve
+    let yc = (prevY + y) / 1; // Smooth y transition
     ctx.quadraticCurveTo(prevX, prevY, xc, yc);
   }
   prevX = x;
