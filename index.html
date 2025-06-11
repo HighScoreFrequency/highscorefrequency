@@ -223,96 +223,101 @@
     // Update canvas size on window resize
     window.addEventListener('resize', resizeCanvas);
 
-    function drawWaveform() {
-      requestAnimationFrame(drawWaveform);
-      analyser.getByteTimeDomainData(dataArray);
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+function drawWaveform() {
+  requestAnimationFrame(drawWaveform);
+  analyser.getByteTimeDomainData(dataArray);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // 🎵 Draw waveform with slow-motion decay, reduced vertical height, and less wavy curves
-      ctx.beginPath();
-      ctx.lineWidth = 2; // Thinner for a delicate, silky look (try 1.5 for thinner, 2.5 for bolder)
-      const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
-      gradient.addColorStop(0, '#5a9fe6'); // Softer blue
-      gradient.addColorStop(1, '#5aecc6'); // Subtle teal
-      ctx.strokeStyle = gradient;
-      ctx.shadowColor = '#5a9fe6'; // Subtle blue glow
-      ctx.shadowBlur = 12; // Subtler glow for calmness
-      let sliceWidth = canvas.width / dataArray.length;
-      let x = 0;
-      let prevX = 0;
-      let prevY = canvas.height / 2; // Start at center
+  // 🎵 Draw waveform with slower decay, 30% screen height, and ripple effect from center
+  ctx.beginPath();
+  ctx.lineWidth = 3; // Bolder for visibility (try 2 for thinner, 4 for thicker)
+  const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
+  gradient.addColorStop(0, '#5a9fe6'); // Softer blue
+  gradient.addColorStop(1, '#5aecc6'); // Softer teal
+  ctx.strokeStyle = gradient;
+  ctx.shadowColor = '#5a9fe6'; // Subtle blue glow
+  ctx.shadowBlur = 12; // Subtle glow for calmness
+  let sliceWidth = canvas.width / dataArray.length;
+  let x = 0;
+  let prevX = 0;
+  let prevY = canvas.height / 2; // Start at center
 
-      // Maintain arrays for smoothed amplitudes and EMA values
-      if (!window.smoothedAmplitudes) {
-        window.smoothedAmplitudes = new Float32Array(dataArray.length).fill(0.0); // Initialize with 0 deviation
-      }
-      if (!window.emaValues) {
-        window.emaValues = new Float32Array(dataArray.length).fill(1.0); // Initialize at baseline
-      }
-      const decayRate = 0.98; // Slower decay for resonant linger
-      const emaAlpha = 0.15; // Slightly more responsive EMA (try 0.1 for smoother, 0.2 for more reactive)
+  // Maintain arrays for smoothed amplitudes and EMA values
+  if (!window.smoothedAmplitudes) {
+    window.smoothedAmplitudes = new Float32Array(dataArray.length).fill(0.0); // Initialize with 0 deviation
+  }
+  if (!window.emaValues) {
+    window.emaValues = new Float32Array(dataArray.length).fill(1.0); // Initialize at baseline
+  }
+  const decayRate = 0.99; // Slower decay for resonant linger
+  const emaAlpha = 0.6; // More responsive EMA (try 0.4 for smoother, 0.8 for more reactive)
 
-      // Array to store smoothed y values
-      let smoothedY = new Float32Array(dataArray.length);
-      for (let i = 0; i < dataArray.length; i++) {
-        let v = dataArray[i] / 128.0;
-        // Apply exponential moving average to raw input
-        window.emaValues[i] = emaAlpha * v + (1 - emaAlpha) * window.emaValues[i];
-        let smoothedV = window.emaValues[i];
-        // Update smoothed amplitude with decay
-        let deviation = Math.abs(smoothedV - 1.0);
-        window.smoothedAmplitudes[i] = Math.max(deviation, window.smoothedAmplitudes[i] * decayRate);
-        // Apply decayed amplitude, preserving sign
-        let finalV = smoothedV > 1.0 ? 1.0 + window.smoothedAmplitudes[i] : 1.0 - window.smoothedAmplitudes[i];
-        // Apply another EMA to the final y-value for ultra-smoothness
-        if (i > 0) {
-          smoothedY[i] = emaAlpha * ((finalV - 1.0) * canvas.height / 14 + canvas.height / 2) +
-                         (1 - emaAlpha) * smoothedY[i - 1];
-        } else {
-          smoothedY[i] = (finalV - 1.0) * canvas.height / 14 + canvas.height / 2; // No EMA at first point
-          // Adjust /14 for vertical height: /12 for taller, /16 for flatter
-        }
-      }
-
-      for (let i = 0; i < dataArray.length; i++) {
-        let y = smoothedY[i];
-        if (i === 0) {
-          ctx.moveTo(x, y);
-        } else {
-          // Use quadratic curve for less wavy, smooth transitions
-          let xc = (prevX + x) / 2; // Control point x (midpoint for balanced curve)
-          let yc = (prevY + y) / 2; // Control point y
-          ctx.quadraticCurveTo(prevX, prevY, xc, yc);
-        }
-        prevX = x;
-        prevY = y;
-        x += sliceWidth;
-      }
-      // Connect to the last point
-      ctx.lineTo(canvas.width, prevY);
-      ctx.stroke();
-      ctx.shadowBlur = 0; // Reset shadow
-
-      // 🔊 Analyze amplitude (volume)
-      let sum = 0;
-      for (let i = 0; i < dataArray.length; i++) {
-        sum += Math.abs(dataArray[i] - 128);
-      }
-      let average = sum / dataArray.length;
-
-      // 📈 Normalize and invert for fade-out effect
-      let normalized = Math.min(average / 3, 1); // High sensitivity
-      let targetOpacity = 0.63 - (normalized * 0.63); // inverse fade
-
-      // 🎯 Smooth transition to prevent jitter
-      let smoothing = 0.5;
-      let smoothedOpacity = previousOpacity + (targetOpacity - previousOpacity) * smoothing;
-      previousOpacity = smoothedOpacity;
-
-      fadeLayer.style.opacity = smoothedOpacity.toFixed(2);
+  // Array to store smoothed y values
+  let smoothedY = new Float32Array(dataArray.length);
+  const centerX = canvas.width / 2;
+  const rippleSpread = canvas.width / 4; // Controls ripple falloff (larger = wider ripple)
+  for (let i = 0; i < dataArray.length; i++) {
+    let v = dataArray[i] / 128.0;
+    // Apply exponential moving average to raw input
+    window.emaValues[i] = emaAlpha * v + (1 - emaAlpha) * window.emaValues[i];
+    let smoothedV = window.emaValues[i];
+    // Update smoothed amplitude with decay
+    let deviation = Math.abs(smoothedV - 1.0);
+    window.smoothedAmplitudes[i] = Math.max(deviation, window.smoothedAmplitudes[i] * decayRate);
+    // Apply decayed amplitude, preserving sign
+    let finalV = smoothedV > 1.0 ? 1.0 + window.smoothedAmplitudes[i] : 1.0 - window.smoothedAmplitudes[i];
+    // Base y-value with 30% screen height
+    let baseY = (finalV - 1.0) * canvas.height * 0.3 + canvas.height / 2; // Adjust * 0.3 for height: * 0.4 for taller, * 0.2 for shorter
+    // Apply ripple effect: Gaussian falloff from center
+    let xPos = i * sliceWidth;
+    let distanceFromCenter = Math.abs(xPos - centerX);
+    let rippleFactor = Math.exp(-distanceFromCenter * distanceFromCenter / (2 * rippleSpread * rippleSpread));
+    // Apply another EMA to the y-value for smoothness, with ripple modulation
+    if (i > 0) {
+      smoothedY[i] = emaAlpha * (canvas.height / 2 + (baseY - canvas.height / 2) * rippleFactor) +
+                     (1 - emaAlpha) * smoothedY[i - 1];
+    } else {
+      smoothedY[i] = canvas.height / 2 + (baseY - canvas.height / 2) * rippleFactor; // No EMA at first point
     }
+  }
 
-    drawWaveform();
+  for (let i = 0; i < dataArray.length; i++) {
+    let y = smoothedY[i];
+    if (i === 0) {
+      ctx.moveTo(x, y);
+    } else {
+      // Use quadratic curve for smooth, less wavy transitions
+      let xc = (prevX + x) / 2; // Control point x (midpoint for balanced curve)
+      let yc = (prevY + y) / 2; // Control point y
+      ctx.quadraticCurveTo(prevX, prevY, xc, yc);
+    }
+    prevX = x;
+    prevY = y;
+    x += sliceWidth;
+  }
+  // Connect to the last point
+  ctx.lineTo(canvas.width, prevY);
+  ctx.stroke();
+  ctx.shadowBlur = 0; // Reset shadow
+
+  // 🔊 Analyze amplitude (volume)
+  let sum = 0;
+  for (let i = 0; i < dataArray.length; i++) {
+    sum += Math.abs(dataArray[i] - 128);
+  }
+  let average = sum / dataArray.length;
+
+  // 📈 Normalize and invert for fade-out effect
+  let normalized = Math.min(average / 3, 1); // High sensitivity
+  let targetOpacity = 0.63 - (normalized * 0.63); // inverse fade
+
+  // 🎯 Smooth transition to prevent jitter
+  let smoothing = 0.5;
+  let smoothedOpacity = previousOpacity + (targetOpacity - previousOpacity) * smoothing;
+  previousOpacity = smoothedOpacity;
+
+  fadeLayer.style.opacity = smoothedOpacity.toFixed(2);
+}
 
     let oscillator, gainNode, panner;
     let mediaRecorder;
