@@ -308,18 +308,7 @@ function drawWaveform() {
   ctx.stroke();
   ctx.shadowBlur = 0;
 
-  // 🔊 Audio-based fade
-  let sum = 0;
-  for (let i = 0; i < dataArray.length; i++) {
-    sum += Math.abs(dataArray[i] - 128);
-  }
-  let average = sum / dataArray.length;
-  let normalized = Math.min(average / 2, 1);
-  let targetOpacity = 1 - (normalized * 1);
-  let smoothing = 0.5;
-  let smoothedOpacity = previousOpacity + (targetOpacity - previousOpacity) * smoothing;
-  previousOpacity = smoothedOpacity;
-  fadeLayer.style.opacity = smoothedOpacity.toFixed(2);
+
 }
 
     drawWaveform();
