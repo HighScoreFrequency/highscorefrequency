@@ -58,14 +58,14 @@
       width: 90%;
       max-width: 500px;
       padding: 30px;
-      border-radius: 16px;
+      border-radius: 99px;
       box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
       text-align: center;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      overflow: hidden;
+      overflow: visible;
     }
 
     .fade-layer {
@@ -245,7 +245,7 @@ function drawWaveform() {
   let average = sum / dataArray.length;
 
   // 📈 Normalize and invert for fade-out effect
-  let normalized = Math.min(average / 5, 1); // High sensitivity
+  let normalized = Math.min(average / 3, 1); // High sensitivity
   let targetOpacity = 0.63 - (normalized * 0.63); // inverse fade
 
   // 🎯 Smooth transition to prevent jitter
