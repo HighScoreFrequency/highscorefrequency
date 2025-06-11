@@ -245,16 +245,19 @@
     const freq = parseFloat(frequencySelect.value);
     const oscillatorNode = freq > 0 ? createOscillator(freq) : null;
 
-    // Stop preview if it's currently active
-    if (previewPlaying) {
-      fadeOutTone();
-      previewPlaying = false;
-      previewTone.textContent = '🔊 Preview Tone';
-    }
+// Stop preview if it's currently active
+if (previewPlaying) {
+  fadeOutTone();
+  previewPlaying = false;
+  previewTone.textContent = '🔊 Preview Tone';
+}
 
-    // Disable preview while recording
-    previewTone.disabled = true;
-    previewTone.textContent = '🔇 Preview Disabled';
+// Now disable preview tone AFTER it's been reset
+setTimeout(() => {
+  previewTone.disabled = true;
+  previewTone.textContent = '🔇 Preview Disabled';
+}, 100); // slight delay ensures label resets before disabling
+
 
     try {
       const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
