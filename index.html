@@ -223,101 +223,102 @@
     // Update canvas size on window resize
     window.addEventListener('resize', resizeCanvas);
 
+let rippleRadius = 0;
+let rippleDecay = 0.96; // Slow decay
+let rippleGrowth = 20;  // Controls how fast the ripple expands
+let lastPeak = 0;
+
 function drawWaveform() {
   requestAnimationFrame(drawWaveform);
   analyser.getByteTimeDomainData(dataArray);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // 🎵 Draw waveform with slower decay, 30% screen height, and ripple effect from center
+  // 🎵 Style
   ctx.beginPath();
-  ctx.lineWidth = 3; // Bolder for visibility (try 2 for thinner, 4 for thicker)
+  ctx.lineWidth = 3;
   const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
-  gradient.addColorStop(0, '#5a9fe6'); // Softer blue
-  gradient.addColorStop(1, '#5aecc6'); // Softer teal
+  gradient.addColorStop(0, '#5a9fe6');
+  gradient.addColorStop(1, '#5aecc6');
   ctx.strokeStyle = gradient;
-  ctx.shadowColor = '#5a9fe6'; // Subtle blue glow
-  ctx.shadowBlur = 12; // Subtle glow for calmness
-  let sliceWidth = canvas.width / dataArray.length;
+  ctx.shadowColor = '#5a9fe6';
+  ctx.shadowBlur = 12;
+
+  const sliceWidth = canvas.width / dataArray.length;
+  const centerX = canvas.width / 2;
+  const centerY = canvas.height / 2;
+
+  if (!window.emaValues) {
+    window.emaValues = new Float32Array(dataArray.length).fill(1.0);
+  }
+
+  const emaAlpha = 0.2;
+  let smoothedY = new Float32Array(dataArray.length);
+
+  // 🔊 Calculate volume
+  let sum = 0;
+  for (let i = 0; i < dataArray.length; i++) {
+    sum += Math.abs(dataArray[i] - 128);
+  }
+  const average = sum / dataArray.length;
+
+  // 🌀 Trigger new ripple on louder sounds
+  if (average > 15 && average > lastPeak + 3) {
+    rippleRadius = 10;
+    lastPeak = average;
+  } else {
+    rippleRadius *= rippleDecay;
+  }
+
+  // ⏳ Expand ripple over time
+  rippleRadius += rippleGrowth * 0.05;
+
   let x = 0;
   let prevX = 0;
-  let prevY = canvas.height / 2; // Start at center
+  let prevY = centerY;
 
-  // Maintain arrays for smoothed amplitudes and EMA values
-  if (!window.smoothedAmplitudes) {
-    window.smoothedAmplitudes = new Float32Array(dataArray.length).fill(0.0); // Initialize with 0 deviation
-  }
-  if (!window.emaValues) {
-    window.emaValues = new Float32Array(dataArray.length).fill(1.0); // Initialize at baseline
-  }
-  const decayRate = 0.95; // Slower decay for resonant linger
-  const emaAlpha = 0.3; // More responsive EMA (try 0.4 for smoother, 0.8 for more reactive)
-
-  // Array to store smoothed y values
-  let smoothedY = new Float32Array(dataArray.length);
-  const centerX = canvas.width / 3;
-  const rippleSpread = canvas.width / 6; // Controls ripple falloff (larger = wider ripple)
   for (let i = 0; i < dataArray.length; i++) {
-    let v = dataArray[i] / 128.0;
-    // Apply exponential moving average to raw input
-    window.emaValues[i] = emaAlpha * v + (1 - emaAlpha) * window.emaValues[i];
-    let smoothedV = window.emaValues[i];
-    // Update smoothed amplitude with decay
-    let deviation = Math.abs(smoothedV - 1.0);
-    window.smoothedAmplitudes[i] = Math.max(deviation, window.smoothedAmplitudes[i] * decayRate);
-    // Apply decayed amplitude, preserving sign
-    let finalV = smoothedV > 1.0 ? 1.0 + window.smoothedAmplitudes[i] : 1.0 - window.smoothedAmplitudes[i];
-    // Base y-value with 30% screen height
-    let baseY = (finalV - 1.0) * canvas.height * 0.3 + canvas.height / 2; // Adjust * 0.3 for height: * 0.4 for taller, * 0.2 for shorter
-    // Apply ripple effect: Gaussian falloff from center
+    let raw = dataArray[i] / 128.0;
+    window.emaValues[i] = emaAlpha * raw + (1 - emaAlpha) * window.emaValues[i];
+    let deviation = window.emaValues[i] - 1.0;
+
     let xPos = i * sliceWidth;
-    let distanceFromCenter = Math.abs(xPos - centerX);
-    let rippleFactor = Math.exp(-distanceFromCenter * distanceFromCenter / (2 * rippleSpread * rippleSpread));
-    // Apply another EMA to the y-value for smoothness, with ripple modulation
-    if (i > 0) {
-      smoothedY[i] = emaAlpha * (canvas.height / 2 + (baseY - canvas.height / 2) * rippleFactor) +
-                     (1 - emaAlpha) * smoothedY[i - 1];
-    } else {
-      smoothedY[i] = canvas.height / 2 + (baseY - canvas.height / 2) * rippleFactor; // No EMA at first point
-    }
+    let distance = Math.abs(xPos - centerX);
+
+    // 🌊 Strong ripple effect when inside rippleRadius
+    let rippleEffect = Math.exp(-Math.pow((distance - rippleRadius), 2) / (2 * Math.pow(canvas.width / 8, 2)));
+
+    let y = centerY + deviation * canvas.height * 0.4 * rippleEffect;
+    smoothedY[i] = i > 0
+      ? emaAlpha * y + (1 - emaAlpha) * smoothedY[i - 1]
+      : y;
   }
 
   for (let i = 0; i < dataArray.length; i++) {
-    let y = smoothedY[i];
+    const y = smoothedY[i];
     if (i === 0) {
       ctx.moveTo(x, y);
     } else {
-      // Use quadratic curve for smooth, less wavy transitions
-      let xc = (prevX + x) / 2; // Control point x (midpoint for balanced curve)
-      let yc = (prevY + y) / 2; // Control point y
+      const xc = (prevX + x) / 2;
+      const yc = (prevY + y) / 2;
       ctx.quadraticCurveTo(prevX, prevY, xc, yc);
     }
     prevX = x;
     prevY = y;
     x += sliceWidth;
   }
-  // Connect to the last point
+
   ctx.lineTo(canvas.width, prevY);
   ctx.stroke();
-  ctx.shadowBlur = 0; // Reset shadow
+  ctx.shadowBlur = 0;
 
-  // 🔊 Analyze amplitude (volume)
-  let sum = 0;
-  for (let i = 0; i < dataArray.length; i++) {
-    sum += Math.abs(dataArray[i] - 128);
-  }
-  let average = sum / dataArray.length;
-
-  // 📈 Normalize and invert for fade-out effect
-  let normalized = Math.min(average / 2, 1); // High sensitivity
-  let targetOpacity = 1; // inverse fade
-
-  // 🎯 Smooth transition to prevent jitter
-  let smoothing = 0.5;
+  // 🔮 Opacity control
+  const targetOpacity = 1;
+  const smoothing = 0.5;
   let smoothedOpacity = previousOpacity + (targetOpacity - previousOpacity) * smoothing;
   previousOpacity = smoothedOpacity;
-
   fadeLayer.style.opacity = smoothedOpacity.toFixed(2);
 }
+
     drawWaveform();
     
     let oscillator, gainNode, panner;
