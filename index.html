@@ -28,12 +28,12 @@
     }
 
     canvas#waveform {
-      position: absolute;
+      position: fixed;
       top: 0;
       left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -1;
     }
 
     .portal-image {
@@ -202,9 +202,6 @@
     const ctx = canvas.getContext('2d');
     const fadeLayer = document.querySelector('.fade-layer');
 
-    canvas.width = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
-
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     const audioCtx = new AudioContext();
 
@@ -212,52 +209,62 @@
     analyser.fftSize = 2048;
     let dataArray = new Uint8Array(analyser.fftSize);
 
-   let previousOpacity = 0.85; // Start at base level
+    let previousOpacity = 0.85; // Start at base level
 
-function drawWaveform() {
-  requestAnimationFrame(drawWaveform);
-  analyser.getByteTimeDomainData(dataArray);
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // 🎵 Draw waveform
-  ctx.beginPath();
-  ctx.lineWidth = 2;
-  ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
-  let sliceWidth = canvas.width / dataArray.length;
-  let x = 0;
-  for (let i = 0; i < dataArray.length; i++) {
-    let v = dataArray[i] / 128.0;
-    let y = v * canvas.height / 2;
-    if (i === 0) {
-      ctx.moveTo(x, y);
-    } else {
-      ctx.lineTo(x, y);
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
     }
-    x += sliceWidth;
-  }
-  ctx.stroke();
 
-  // 🔊 Analyze amplitude (volume)
-  let sum = 0;
-  for (let i = 0; i < dataArray.length; i++) {
-    sum += Math.abs(dataArray[i] - 128);
-  }
-  let average = sum / dataArray.length;
+    // Set initial size
+    resizeCanvas();
 
-  // 📈 Normalize and invert for fade-out effect
-  let normalized = Math.min(average / 3, 1); // High sensitivity
-  let targetOpacity = 0.63 - (normalized * 0.63); // inverse fade
+    // Update canvas size on window resize
+    window.addEventListener('resize', resizeCanvas);
 
-  // 🎯 Smooth transition to prevent jitter
-  let smoothing = 0.5;
-  let smoothedOpacity = previousOpacity + (targetOpacity - previousOpacity) * smoothing;
-  previousOpacity = smoothedOpacity;
+    function drawWaveform() {
+      requestAnimationFrame(drawWaveform);
+      analyser.getByteTimeDomainData(dataArray);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  fadeLayer.style.opacity = smoothedOpacity.toFixed(2);
-}
+      // 🎵 Draw waveform
+      ctx.beginPath();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+      let sliceWidth = canvas.width / dataArray.length;
+      let x = 0;
+      for (let i = 0; i < dataArray.length; i++) {
+        let v = dataArray[i] / 128.0;
+        let y = v * canvas.height / 2;
+        if (i === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+        x += sliceWidth;
+      }
+      ctx.stroke();
 
-drawWaveform();
+      // 🔊 Analyze amplitude (volume)
+      let sum = 0;
+      for (let i = 0; i < dataArray.length; i++) {
+        sum += Math.abs(dataArray[i] - 128);
+      }
+      let average = sum / dataArray.length;
 
+      // 📈 Normalize and invert for fade-out effect
+      let normalized = Math.min(average / 3, 1); // High sensitivity
+      let targetOpacity = 0.63 - (normalized * 0.63); // inverse fade
+
+      // 🎯 Smooth transition to prevent jitter
+      let smoothing = 0.5;
+      let smoothedOpacity = previousOpacity + (targetOpacity - previousOpacity) * smoothing;
+      previousOpacity = smoothedOpacity;
+
+      fadeLayer.style.opacity = smoothedOpacity.toFixed(2);
+    }
+
+    drawWaveform();
 
     let oscillator, gainNode, panner;
     let mediaRecorder;
