@@ -144,7 +144,7 @@
       to { opacity: 3; }
     }
 
-/* 🔧 Mobile-Only Overrides (Preserve desktop layout with smaller buttons) */
+/* 🔧 Mobile-Only Overrides (Preserve desktop layout with smaller buttons + dropdown fix) */
 @media only screen and (max-width: 600px) {
   .portal-wrapper {
     width: 93vmin !important;
@@ -159,16 +159,23 @@
   }
 
   h2 {
-    font-size: 6vw !important;
+    font-size: 5vw !important;
   }
 
   p {
-    font-size: 4vw !important;
+    font-size: 3.5vw !important;
   }
 
   select, button {
-    font-size: 14px !important; /* Slightly smaller than desktop (was 16px) */
+    font-size: 14px !important;
     padding: 10px 18px !important;
+  }
+
+  select {
+    width: 100% !important;
+    max-width: 400px !important;
+    margin: 0 auto 15px auto !important;
+    display: block !important;
   }
 
   .button-group {
@@ -188,6 +195,7 @@
     max-width: 100% !important;
   }
 }
+
 
   </style>
 </head>
