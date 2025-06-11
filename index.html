@@ -37,18 +37,6 @@ canvas#waveform {
   background: transparent;
 }
 
-.fade-layer {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%;
-  height: 100%;
-  background: white;
-  opacity: 0;
-  z-index: -1; /* Lowered below buttons */
-  transition: opacity 0.3s ease;
-  pointer-events: none; /* This also helps */
-}
-
 
     .portal-image {
       opacity: 0;
@@ -82,17 +70,18 @@ canvas#waveform {
       overflow: hidden;
     }
 
-    .fade-layer {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%;
-      height: 100%;
-      background: white;
-      opacity: 0;
-      z-index: 0;
-      transition: opacity 0.3s ease;
-      pointer-events: none;
-    }
+.fade-layer {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  background: white;
+  opacity: 0;
+  z-index: -1; /* Make sure it's behind content */
+  transition: opacity 0.3s ease;
+  pointer-events: none; /* Prevents blocking interactions */
+}
+
 
     .content > *:not(.fade-layer) {
       position: relative;
@@ -179,6 +168,7 @@ canvas#waveform {
 <body>
   <div class="portal-wrapper">
     <canvas id="waveform"></canvas>
+    <div class="fade-layer"></div>
     <div class="portal-image"></div>
     <div class="content">
       <div class="fade-layer"></div>
