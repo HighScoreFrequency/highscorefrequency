@@ -27,15 +27,15 @@
       align-items: center;
     }
 
-canvas#waveform {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 0; /* Place above body background but below portal-image and content */
-  background: transparent; /* Ensure canvas is transparent */
-}
+    canvas#waveform {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      background: transparent;
+    }
 
     .portal-image {
       opacity: 0;
@@ -230,11 +230,8 @@ canvas#waveform {
 
       // 🎵 Draw waveform
       ctx.beginPath();
-      ctx.lineWidth = 3;
-      ctx.strokeStyle = '#deb64a'; // Cyan color for the waveform
-      ctx.shadowColor = '#b77b29'; // Glow color
-      ctx.shadowBlur = 30; // Glow radius
-      ctx.setLineDash([0, 0]);
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
       let sliceWidth = canvas.width / dataArray.length;
       let x = 0;
       for (let i = 0; i < dataArray.length; i++) {
