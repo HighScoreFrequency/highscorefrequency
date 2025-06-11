@@ -20,8 +20,8 @@
 
     .portal-wrapper {
       position: relative;
-      width: 45vmin;
-      height: 45vmin;
+      width: 93vmin;
+      height: 93vmin;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -52,78 +52,44 @@
       z-index: 1;
     }
 
-    .title-overflow {
-      position: absolute;
-      top: -60px;
-      left: 50%;
-      transform: translateX(-50%);
-      text-align: center;
-      font-size: 22px;
-      z-index: 3;
-      white-space: nowrap;
-    }
-
     .content {
       position: relative;
       z-index: 2;
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      border-radius: 50%;
+      width: 90%;
+      max-width: 500px;
       background: rgba(255, 255, 255, 0.85);
+      padding: 30px;
+      border-radius: 16px;
       box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      overflow: visible;
-      padding: 0;
-    }
-
-    .content-inner {
-      padding: 10px;
       text-align: center;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      height: 100%;
-      width: 100%;
-      gap: 10px;
     }
 
-    .fade-layer {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%;
-      height: 100%;
-      background: white;
-      opacity: 0;
-      z-index: 0;
-      transition: opacity 0.3s ease;
-      pointer-events: none;
-    }
-
-    .content > *:not(.fade-layer) {
-      position: relative;
-      z-index: 1;
+    h2 {
+      font-size: 32px;
+      margin-bottom: 10px;
     }
 
     p {
-      font-size: 14px;
+      font-size: 18px;
       color: #444;
-      margin: 0;
-      line-height: 1.4;
+      margin-bottom: 30px;
     }
 
     .button-group {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
+      margin-bottom: 10px;
     }
 
     .button-row {
       display: flex;
-      gap: 10px;
+      gap: 15px;
       flex-wrap: wrap;
       justify-content: center;
     }
@@ -132,8 +98,8 @@
       background-color: #1a1a1a;
       color: white;
       border: none;
-      padding: 10px 18px;
-      font-size: 14px;
+      padding: 12px 22px;
+      font-size: 16px;
       cursor: pointer;
       border-radius: 6px;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -150,21 +116,21 @@
     }
 
     select {
-      margin: 5px 0;
-      padding: 6px;
-      font-size: 14px;
+      margin: 15px 0;
+      padding: 8px;
+      font-size: 16px;
       border-radius: 6px;
     }
 
     audio {
-      margin-top: 10px;
+      margin-top: 20px;
       width: 100%;
-      max-width: 300px;
+      max-width: 400px;
     }
 
     a {
       display: inline-block;
-      margin-top: 10px;
+      margin-top: 20px;
       text-decoration: none;
       color: #0070f3;
     }
@@ -177,209 +143,321 @@
     @keyframes fadeIn {
       to { opacity: 3; }
     }
+
+/* 🔧 Mobile-Only Overrides (Centered layout + fixed font size) */
+@media only screen and (max-width: 768px) {
+  html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .portal-wrapper {
+    width: 100vw !important;
+    height: 100vh !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  html {
+  scroll-behavior: smooth;
+}
+
+
+  .content {
+    width: 90vw !important;
+    max-width: 500px !important;
+    padding: 24px 16px !important;
+    font-size: 1rem !important;
+    background: rgba(255, 255, 255, 0.85) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1) !important;
+    text-align: center !important;
+  }
+
+  h2 {
+    font-size: 20px !important;
+  }
+
+  p {
+    font-size: 16px !important;
+  }
+
+  select {
+    width: 100% !important;
+    max-width: 400px !important;
+    font-size: 14px !important;
+    padding: 10px 18px !important;
+    margin: 0 auto 15px auto !important;
+    display: block !important;
+  }
+
+  button {
+    font-size: 14px !important;
+    padding: 10px 18px !important;
+  }
+
+  .button-group {
+    width: 100% !important;
+    align-items: center !important;
+  }
+
+  .button-row {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    justify-content: center !important;
+    gap: 12px !important;
+  }
+
+  audio {
+    max-width: 100% !important;
+  }
+}
+
+
   </style>
 </head>
 <body>
   <div class="portal-wrapper">
     <canvas id="waveform"></canvas>
     <div class="portal-image"></div>
-    <h2 class="title-overflow">🎙️ High Score Voice Portal</h2>
     <div class="content">
-      <div class="fade-layer"></div>
-      <div class="content-inner">
-        <p>Choose your tone, speak it clear,<br>
-        code your field, draw truth near.<br>
-        This isn’t speech, it’s memory’s key,<br>
-        a voice-etched path to mastery.</p>
+      <h2>🎙️ High Score Voice Portal</h2>
+      <p>Choose your tone, speak it clear,<br>
+      code your field, draw truth near.<br>
+      This isn’t speech, it’s memory’s key,<br>
+      a voice-etched path to mastery.</p>
 
-        <select id="frequencySelect">
-          <option value="528">528 Hz – 🧬 Cell Recalibration</option>
-          <option value="639">639 Hz – 💖 Heart Link Gateway</option>
-          <option value="963">963 Hz – 👑 Crown Signal</option>
-          <option value="0">0 Hz – 🕊️ Silence Mode</option>
-        </select>
+      <select id="frequencySelect">
+        <option value="528">528 Hz – 🧬 Cell Recalibration – Level Up to Wholeness</option>
+        <option value="639">639 Hz – 💖 Heart Link Gateway – Sync Into Unity Field</option>
+        <option value="963">963 Hz – 👑 Crown Signal – Access Divine Intelligence</option>
+        <option value="0">0 Hz – 🕊️ Silence Mode – Record Without Tone</option>
+      </select>
 
-        <div class="button-group">
-          <div class="button-row">
-            <button id="previewTone">🔊 Preview Tone</button>
-            <button id="recordBtn">🟢 Start Recording</button>
-          </div>
-          <div class="button-row">
-            <button id="stopBtn" disabled>🛑 Stop</button>
-            <button id="resetBtn" disabled>🔁 Reset</button>
-          </div>
+      <div class="button-group">
+        <div class="button-row">
+          <button id="previewTone">🔊 Preview Tone</button>
+          <button id="recordBtn">🟢 Start Recording</button>
         </div>
-
-        <audio id="audioPlayback" controls style="display: none;"></audio>
-        <a id="downloadLink" style="display: none;">⬇️ Download Your Recording</a>
+        <div class="button-row">
+          <button id="stopBtn" disabled>🛑 Stop</button>
+          <button id="resetBtn" disabled>🔁 Reset</button>
+        </div>
       </div>
+
+      <audio id="audioPlayback" controls style="display: none;"></audio>
+      <a id="downloadLink" style="display: none;">⬇️ Download Your Recording</a>
     </div>
   </div>
 
-<script>
-  const canvas = document.getElementById('waveform');
-  const ctx = canvas.getContext('2d');
-  const fadeLayer = document.querySelector('.fade-layer');
+  <script>
+    const canvas = document.getElementById('waveform');
+    const ctx = canvas.getContext('2d');
 
-  canvas.width = canvas.offsetWidth;
-  canvas.height = canvas.offsetHeight;
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
 
-  const AudioContext = window.AudioContext || window.webkitAudioContext;
-  const audioCtx = new AudioContext();
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    const audioCtx = new AudioContext();
 
-  let analyser = audioCtx.createAnalyser();
-  analyser.fftSize = 2048;
-  let dataArray = new Uint8Array(analyser.fftSize);
+    let analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 2048;
+    let dataArray = new Uint8Array(analyser.fftSize);
 
-  function drawWaveform() {
-    requestAnimationFrame(drawWaveform);
-    analyser.getByteTimeDomainData(dataArray);
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.beginPath();
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
-    let sliceWidth = canvas.width / dataArray.length;
-    let x = 0;
-    for (let i = 0; i < dataArray.length; i++) {
-      let v = dataArray[i] / 128.0;
-      let y = v * canvas.height / 2;
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-      x += sliceWidth;
+    function drawWaveform() {
+      requestAnimationFrame(drawWaveform);
+      analyser.getByteTimeDomainData(dataArray);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      ctx.beginPath();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+
+      let sliceWidth = canvas.width / dataArray.length;
+      let x = 0;
+      for (let i = 0; i < dataArray.length; i++) {
+        let v = dataArray[i] / 128.0;
+        let y = v * canvas.height / 2;
+        if (i === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+        x += sliceWidth;
+      }
+      ctx.stroke();
     }
-    ctx.stroke();
+    drawWaveform();
 
-    let sum = 0;
-    for (let i = 0; i < dataArray.length; i++) {
-      sum += Math.abs(dataArray[i] - 128);
+    let oscillator, gainNode, panner;
+    let mediaRecorder;
+    let chunks = [];
+    let mixedStream;
+    let previewPlaying = false;
+
+    const recordBtn = document.getElementById('recordBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const previewTone = document.getElementById('previewTone');
+    const audioPlayback = document.getElementById('audioPlayback');
+    const downloadLink = document.getElementById('downloadLink');
+    const frequencySelect = document.getElementById('frequencySelect');
+
+    function createOscillator(freq, fadeIn = 1.5, fadeOut = 1.5) {
+      oscillator = audioCtx.createOscillator();
+      gainNode = audioCtx.createGain();
+      panner = audioCtx.createStereoPanner();
+
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+      const now = audioCtx.currentTime;
+      gainNode.gain.setValueAtTime(0, now);
+      gainNode.gain.linearRampToValueAtTime(0.02, now + fadeIn);
+
+      oscillator.connect(panner).connect(gainNode);
+
+      oscillator.stopWithFade = () => {
+        const stopTime = audioCtx.currentTime + fadeOut;
+        gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
+        gainNode.gain.setValueAtTime(gainNode.gain.value, audioCtx.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0, stopTime);
+        oscillator.stop(stopTime);
+      };
+
+      return gainNode;
     }
-    let average = sum / dataArray.length;
-    let normalized = Math.min(average / 10, 1);
-    let inverse = 0.85 - (normalized * 0.85);
-    fadeLayer.style.opacity = inverse.toFixed(2);
-  }
-  drawWaveform();
 
-  let oscillator, gainNode, panner, mediaRecorder, chunks = [], mixedStream, previewPlaying = false;
+    function stopPreviewTone() {
+      if (oscillator && oscillator.stopWithFade) {
+        oscillator.stopWithFade();
+      } else if (oscillator) {
+        oscillator.stop();
+      }
+      previewPlaying = false;
+      previewTone.textContent = '🔊 Preview Tone';
+    }
 
-  const recordBtn = document.getElementById('recordBtn');
-  const stopBtn = document.getElementById('stopBtn');
-  const resetBtn = document.getElementById('resetBtn');
-  const previewTone = document.getElementById('previewTone');
-  const audioPlayback = document.getElementById('audioPlayback');
-  const downloadLink = document.getElementById('downloadLink');
-  const frequencySelect = document.getElementById('frequencySelect');
-
-  function createOscillator(freq, fadeIn = 1.5, fadeOut = 1.5) {
-    oscillator = audioCtx.createOscillator();
-    gainNode = audioCtx.createGain();
-    panner = audioCtx.createStereoPanner();
-    oscillator.type = 'sine';
-    oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
-    const now = audioCtx.currentTime;
-    gainNode.gain.setValueAtTime(0, now);
-    gainNode.gain.linearRampToValueAtTime(0.02, now + fadeIn);
-    oscillator.connect(panner).connect(gainNode);
-    oscillator.stopWithFade = () => {
-      const stopTime = audioCtx.currentTime + fadeOut;
-      gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
-      gainNode.gain.setValueAtTime(gainNode.gain.value, audioCtx.currentTime);
-      gainNode.gain.linearRampToValueAtTime(0, stopTime);
-      oscillator.stop(stopTime);
-    };
-    return gainNode;
-  }
-
-  function stopPreviewTone() {
-    if (oscillator && oscillator.stopWithFade) oscillator.stopWithFade();
-    else if (oscillator) oscillator.stop();
-    previewPlaying = false;
-    previewTone.textContent = '🔊 Preview Tone';
-  }
-
-  previewTone.onclick = () => {
-    const freq = parseFloat(frequencySelect.value);
-    if (freq === 0) return;
-    if (!previewPlaying) {
-      const node = createOscillator(freq);
-      node.connect(audioCtx.destination);
-      oscillator.start();
-      previewPlaying = true;
-      previewTone.textContent = '🛑 Stop Preview';
-    } else stopPreviewTone();
-  };
-
-  frequencySelect.addEventListener('change', () => {
-    const freq = parseFloat(frequencySelect.value);
-    previewTone.disabled = freq === 0;
-    previewTone.textContent = freq === 0 ? '🔇 Preview Disabled' : '🔊 Preview Tone';
-  });
-
-  recordBtn.onclick = async () => {
-    const startRecording = async () => {
+    previewTone.onclick = () => {
       const freq = parseFloat(frequencySelect.value);
-      const oscillatorNode = freq > 0 ? createOscillator(freq) : null;
-      try {
-        const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        const micSource = audioCtx.createMediaStreamSource(micStream);
-        micSource.connect(analyser);
-        const dest = audioCtx.createMediaStreamDestination();
-        micSource.connect(dest);
-        if (oscillatorNode) oscillatorNode.connect(dest);
-        mixedStream = dest.stream;
-        mediaRecorder = new MediaRecorder(mixedStream);
-        chunks = [];
-        mediaRecorder.ondataavailable = e => chunks.push(e.data);
-        mediaRecorder.onstop = () => {
-          const blob = new Blob(chunks, { type: 'audio/mp3' });
-          const url = URL.createObjectURL(blob);
-          audioPlayback.src = url;
-          audioPlayback.style.display = 'block';
-          const date = new Date().toISOString().split('T')[0];
-          downloadLink.href = url;
-          downloadLink.download = `highscore-frequency-${date}.mp3`;
-          downloadLink.style.display = 'inline-block';
-        };
-        mediaRecorder.start();
-        if (oscillatorNode) oscillator.start();
-        recordBtn.disabled = true;
-        stopBtn.disabled = false;
-        previewTone.disabled = true;
-        previewTone.textContent = '🔇 Preview Disabled';
-      } catch (e) {
-        alert('Mic access denied.');
+      if (freq === 0) return;
+
+      if (!previewPlaying) {
+        const node = createOscillator(freq);
+        node.connect(audioCtx.destination);
+        oscillator.start();
+        previewPlaying = true;
+        previewTone.textContent = '🛑 Stop Preview';
+      } else {
+        stopPreviewTone();
       }
     };
-    if (previewPlaying) {
-      stopPreviewTone();
-      setTimeout(startRecording, 1600);
-    } else startRecording();
-  };
 
-  stopBtn.onclick = () => {
-    mediaRecorder.stop();
-    if (oscillator && oscillator.stopWithFade) oscillator.stopWithFade();
-    else if (oscillator) oscillator.stop();
-    recordBtn.disabled = false;
-    stopBtn.disabled = true;
-    resetBtn.disabled = false;
-    const freq = parseFloat(frequencySelect.value);
-    previewTone.disabled = freq === 0;
-    previewTone.textContent = freq === 0 ? '🔇 Preview Disabled' : '🔊 Preview Tone';
-    previewPlaying = false;
-  };
+    frequencySelect.addEventListener('change', () => {
+      const freq = parseFloat(frequencySelect.value);
+      previewTone.disabled = freq === 0;
+      previewTone.textContent = freq === 0 ? '🔇 Preview Disabled' : '🔊 Preview Tone';
+    });
 
-  resetBtn.onclick = () => {
-    audioPlayback.pause();
-    audioPlayback.currentTime = 0;
-    audioPlayback.src = '';
-    audioPlayback.style.display = 'none';
-    downloadLink.href = '';
-    downloadLink.download = '';
-    downloadLink.style.display = 'none';
-    resetBtn.disabled = true;
-  };
-</script>
+    previewTone.disabled = parseFloat(frequencySelect.value) === 0;
+    previewTone.textContent = parseFloat(frequencySelect.value) === 0 ? '🔇 Preview Disabled' : '🔊 Preview Tone';
 
+    recordBtn.onclick = async () => {
+      const startRecording = async () => {
+        const freq = parseFloat(frequencySelect.value);
+        const oscillatorNode = freq > 0 ? createOscillator(freq) : null;
+
+        try {
+          const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          const micSource = audioCtx.createMediaStreamSource(micStream);
+          micSource.connect(analyser);
+
+          const dest = audioCtx.createMediaStreamDestination();
+          micSource.connect(dest);
+          if (oscillatorNode) oscillatorNode.connect(dest);
+
+          mixedStream = dest.stream;
+          mediaRecorder = new MediaRecorder(mixedStream);
+
+          chunks = [];
+          mediaRecorder.ondataavailable = e => chunks.push(e.data);
+          mediaRecorder.onstop = () => {
+            const blob = new Blob(chunks, { type: 'audio/mp3' });
+            const url = URL.createObjectURL(blob);
+            audioPlayback.src = url;
+            audioPlayback.style.display = 'block';
+
+            const date = new Date().toISOString().split('T')[0];
+            downloadLink.href = url;
+            downloadLink.download = `highscore-frequency-${date}.mp3`;
+            downloadLink.style.display = 'inline-block';
+          };
+
+          mediaRecorder.start();
+          if (oscillatorNode) oscillator.start();
+
+          recordBtn.disabled = true;
+          stopBtn.disabled = false;
+          previewTone.disabled = true;
+          previewTone.textContent = '🔇 Preview Disabled';
+        } catch (e) {
+          alert('Mic access denied.');
+        }
+      };
+
+      if (previewPlaying) {
+        stopPreviewTone();
+        setTimeout(startRecording, 1600);
+      } else {
+        startRecording();
+      }
+    };
+
+    stopBtn.onclick = () => {
+      mediaRecorder.stop();
+      if (oscillator && oscillator.stopWithFade) {
+        oscillator.stopWithFade();
+      } else if (oscillator) {
+        oscillator.stop();
+      }
+
+      recordBtn.disabled = false;
+      stopBtn.disabled = true;
+      resetBtn.disabled = false;
+
+      const freq = parseFloat(frequencySelect.value);
+      if (freq === 0) {
+        previewTone.disabled = true;
+        previewTone.textContent = '🔇 Preview Disabled';
+      } else {
+        previewTone.disabled = false;
+        previewTone.textContent = '🔊 Preview Tone';
+        previewPlaying = false;
+      }
+    };
+
+    resetBtn.onclick = () => {
+      audioPlayback.pause();
+      audioPlayback.currentTime = 0;
+      audioPlayback.src = '';
+      audioPlayback.style.display = 'none';
+
+      downloadLink.href = '';
+      downloadLink.download = '';
+      downloadLink.style.display = 'none';
+
+      resetBtn.disabled = true;
+    };
+  </script>
 </body>
 </html>
