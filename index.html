@@ -52,22 +52,23 @@
       z-index: 1;
     }
 
-    .content {
-      position: relative;
-      z-index: 2;
-      width: 500px;
-      max-width: 500px;
-        height: 500px;
-      padding: 30px;
-      border-radius: 50%;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      overflow: visible;
-    }
+.content {
+  position: relative;
+  z-index: 2;
+  width: 500px;
+  height: 500px;
+  max-width: 90vmin;
+  max-height: 90vmin;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: visible;
+  padding: 0; /* ⬅️ important */
+}
+
 
     .content-inner {
   padding: 30px;
