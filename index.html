@@ -139,7 +139,7 @@
   <div class="portal-wrapper">
     <div class="portal-image"></div>
     <div class="content">
-      <h2>🎧 High Score Voice Portal</h2>
+      <h2>🎙️ High Score Voice Portal</h2>
       <p>Choose your tone, speak it clear,<br>
       code your field, draw truth near.<br>
       This isn’t speech, it’s memory’s key,<br>
@@ -149,7 +149,7 @@
         <option value="528">528 Hz – 🧬 Cell Recalibration – Level Up to Wholeness</option>
         <option value="639">639 Hz – 💖 Heart Link Gateway – Sync Into Unity Field</option>
         <option value="963">963 Hz – 👑 Crown Signal – Access Divine Intelligence</option>
-        <option value="0">0 Hz – 🚄 Silence Mode – Record Without Tone</option>
+        <option value="0">0 Hz – 🕊️ Silence Mode – Record Without Tone</option>
       </select>
 
       <div class="button-group">
@@ -158,7 +158,7 @@
           <button id="recordBtn">🟢 Start Recording</button>
         </div>
         <div class="button-row">
-          <button id="stopBtn" disabled>🚩 Stop</button>
+          <button id="stopBtn" disabled>🛑 Stop</button>
           <button id="resetBtn" disabled>🔁 Reset</button>
         </div>
       </div>
@@ -172,11 +172,11 @@
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     const audioCtx = new AudioContext();
 
+    let oscillator, gainNode, panner;
     let mediaRecorder;
     let chunks = [];
     let mixedStream;
     let previewPlaying = false;
-    let oscillatorStopWithFade = null;
 
     const recordBtn = document.getElementById('recordBtn');
     const stopBtn = document.getElementById('stopBtn');
@@ -187,28 +187,28 @@
     const frequencySelect = document.getElementById('frequencySelect');
 
     function createOscillator(freq, fadeIn = 1.5, fadeOut = 1.5) {
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      const pan = audioCtx.createStereoPanner();
+      oscillator = audioCtx.createOscillator();
+      gainNode = audioCtx.createGain();
+      panner = audioCtx.createStereoPanner();
 
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
 
       const now = audioCtx.currentTime;
-      gain.gain.setValueAtTime(0, now);
-      gain.gain.linearRampToValueAtTime(0.02, now + fadeIn);
+      gainNode.gain.setValueAtTime(0, now);
+      gainNode.gain.linearRampToValueAtTime(0.02, now + fadeIn);
 
-      osc.connect(pan).connect(gain);
+      oscillator.connect(panner).connect(gainNode);
 
-      const stopWithFade = () => {
-        const stopTime = audioCtx.currentTime + fadeOut;
-        gain.gain.cancelScheduledValues(audioCtx.currentTime);
-        gain.gain.setValueAtTime(gain.gain.value, audioCtx.currentTime);
-        gain.gain.linearRampToValueAtTime(0, stopTime);
-        osc.stop(stopTime);
+      oscillator.stopWithFade = () => {
+        const currentTime = audioCtx.currentTime;
+        gainNode.gain.cancelScheduledValues(currentTime);
+        gainNode.gain.setValueAtTime(gainNode.gain.value, currentTime);
+        gainNode.gain.linearRampToValueAtTime(0, currentTime + fadeOut);
+        oscillator.stop(currentTime + fadeOut + 0.05); // Delay stop to allow fade
       };
 
-      return { output: gain, oscillator: osc, stopWithFade };
+      return gainNode;
     }
 
     previewTone.onclick = () => {
@@ -216,14 +216,13 @@
       if (freq === 0) return;
 
       if (!previewPlaying) {
-        const { output, oscillator, stopWithFade } = createOscillator(freq);
-        output.connect(audioCtx.destination);
+        const node = createOscillator(freq);
+        node.connect(audioCtx.destination);
         oscillator.start();
-        oscillatorStopWithFade = stopWithFade;
         previewPlaying = true;
-        previewTone.textContent = '🚩 Stop Preview';
+        previewTone.textContent = '🛑 Stop Preview';
       } else {
-        if (oscillatorStopWithFade) oscillatorStopWithFade();
+        if (oscillator.stopWithFade) oscillator.stopWithFade();
         previewPlaying = false;
         previewTone.textContent = '🔊 Preview Tone';
       }
@@ -235,27 +234,15 @@
       previewTone.textContent = freq === 0 ? '🔇 Preview Disabled' : '🔊 Preview Tone';
     });
 
-    previewTone.disabled = parseFloat(frequencySelect.value) === 0;
-    previewTone.textContent = parseFloat(frequencySelect.value) === 0 ? '🔇 Preview Disabled' : '🔊 Preview Tone';
-
     recordBtn.onclick = async () => {
       const freq = parseFloat(frequencySelect.value);
-      let oscillatorNode = null;
-
-      if (freq > 0) {
-        const { output, oscillator, stopWithFade } = createOscillator(freq);
-        oscillatorNode = output;
-        oscillator.start();
-        oscillatorStopWithFade = stopWithFade;
-      } else {
-        oscillatorStopWithFade = null;
-      }
+      const oscillatorNode = freq > 0 ? createOscillator(freq) : null;
 
       try {
         const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
         const micSource = audioCtx.createMediaStreamSource(micStream);
-        const dest = audioCtx.createMediaStreamDestination();
 
+        const dest = audioCtx.createMediaStreamDestination();
         micSource.connect(dest);
         if (oscillatorNode) oscillatorNode.connect(dest);
 
@@ -278,6 +265,8 @@
         };
 
         mediaRecorder.start();
+        if (oscillatorNode) oscillator.start();
+
         recordBtn.disabled = true;
         stopBtn.disabled = false;
       } catch (e) {
@@ -287,7 +276,7 @@
 
     stopBtn.onclick = () => {
       mediaRecorder.stop();
-      if (oscillatorStopWithFade) oscillatorStopWithFade();
+      if (oscillator && oscillator.stopWithFade) oscillator.stopWithFade();
       recordBtn.disabled = false;
       stopBtn.disabled = true;
       resetBtn.disabled = false;
