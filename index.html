@@ -8,14 +8,13 @@
     html, body {
       margin: 0;
       padding: 0;
-      min-height: 100%;
+      height: 100%;
       background: #f3f6f9;
       font-family: 'Unbounded', cursive;
       display: flex;
       justify-content: center;
       align-items: center;
-      overflow-x: hidden;
-      overflow-y: auto;
+      overflow: hidden;
     }
 
     .portal-wrapper {
@@ -43,8 +42,8 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 100%;
-      height: 100%;
+      width: 96%;
+      height: 96%;
       background-image: url('https://github.com/HighScoreFrequency/highscorefrequency/blob/main/portal.png?raw=true');
       background-size: contain;
       background-repeat: no-repeat;
@@ -143,58 +142,6 @@
     @keyframes fadeIn {
       to { opacity: 3; }
     }
-
-    /* === Mobile Enhancements === */
-   @media (max-width: 768px) {
-  .portal-wrapper {
-    width: 100vw;
-    height: 100vh;
-    padding: 10px;
-    box-sizing: border-box;
-  }
-
-  .content {
-    width: 100%;
-    max-width: none;
-    padding: 24px;
-    font-size: 18px;
-  }
-
-  h2 {
-    font-size: 26px;
-  }
-
-  p {
-    font-size: 16px;
-  }
-
-  button {
-    font-size: 16px;
-    padding: 14px 20px;
-    width: 100%;
-  }
-
-  select {
-    width: 100%;
-    font-size: 16px;
-  }
-
-  audio {
-    width: 100%;
-    max-width: none;
-  }
-
-  .button-row {
-    flex-direction: column;
-    gap: 10px;
-    width: 100%;
-  }
-
-  .button-group {
-    width: 100%;
-  }
-}
-
   </style>
 </head>
 <body>
@@ -231,7 +178,204 @@
     </div>
   </div>
 
-  <!-- Your existing JavaScript remains unchanged below this -->
-  <!-- ... (no edits made to JS) -->
+  <script>
+    const canvas = document.getElementById('waveform');
+    const ctx = canvas.getContext('2d');
+
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    const audioCtx = new AudioContext();
+
+    let analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 2048;
+    let dataArray = new Uint8Array(analyser.fftSize);
+
+    function drawWaveform() {
+      requestAnimationFrame(drawWaveform);
+      analyser.getByteTimeDomainData(dataArray);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      ctx.beginPath();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+
+      let sliceWidth = canvas.width / dataArray.length;
+      let x = 0;
+      for (let i = 0; i < dataArray.length; i++) {
+        let v = dataArray[i] / 128.0;
+        let y = v * canvas.height / 2;
+        if (i === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+        x += sliceWidth;
+      }
+      ctx.stroke();
+    }
+    drawWaveform();
+
+    let oscillator, gainNode, panner;
+    let mediaRecorder;
+    let chunks = [];
+    let mixedStream;
+    let previewPlaying = false;
+
+    const recordBtn = document.getElementById('recordBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const previewTone = document.getElementById('previewTone');
+    const audioPlayback = document.getElementById('audioPlayback');
+    const downloadLink = document.getElementById('downloadLink');
+    const frequencySelect = document.getElementById('frequencySelect');
+
+    function createOscillator(freq, fadeIn = 1.5, fadeOut = 1.5) {
+      oscillator = audioCtx.createOscillator();
+      gainNode = audioCtx.createGain();
+      panner = audioCtx.createStereoPanner();
+
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+      const now = audioCtx.currentTime;
+      gainNode.gain.setValueAtTime(0, now);
+      gainNode.gain.linearRampToValueAtTime(0.02, now + fadeIn);
+
+      oscillator.connect(panner).connect(gainNode);
+
+      oscillator.stopWithFade = () => {
+        const stopTime = audioCtx.currentTime + fadeOut;
+        gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
+        gainNode.gain.setValueAtTime(gainNode.gain.value, audioCtx.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0, stopTime);
+        oscillator.stop(stopTime);
+      };
+
+      return gainNode;
+    }
+
+    function stopPreviewTone() {
+      if (oscillator && oscillator.stopWithFade) {
+        oscillator.stopWithFade();
+      } else if (oscillator) {
+        oscillator.stop();
+      }
+      previewPlaying = false;
+      previewTone.textContent = '🔊 Preview Tone';
+    }
+
+    previewTone.onclick = () => {
+      const freq = parseFloat(frequencySelect.value);
+      if (freq === 0) return;
+
+      if (!previewPlaying) {
+        const node = createOscillator(freq);
+        node.connect(audioCtx.destination);
+        oscillator.start();
+        previewPlaying = true;
+        previewTone.textContent = '🛑 Stop Preview';
+      } else {
+        stopPreviewTone();
+      }
+    };
+
+    frequencySelect.addEventListener('change', () => {
+      const freq = parseFloat(frequencySelect.value);
+      previewTone.disabled = freq === 0;
+      previewTone.textContent = freq === 0 ? '🔇 Preview Disabled' : '🔊 Preview Tone';
+    });
+
+    previewTone.disabled = parseFloat(frequencySelect.value) === 0;
+    previewTone.textContent = parseFloat(frequencySelect.value) === 0 ? '🔇 Preview Disabled' : '🔊 Preview Tone';
+
+    recordBtn.onclick = async () => {
+      const startRecording = async () => {
+        const freq = parseFloat(frequencySelect.value);
+        const oscillatorNode = freq > 0 ? createOscillator(freq) : null;
+
+        try {
+          const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          const micSource = audioCtx.createMediaStreamSource(micStream);
+          micSource.connect(analyser);
+
+          const dest = audioCtx.createMediaStreamDestination();
+          micSource.connect(dest);
+          if (oscillatorNode) oscillatorNode.connect(dest);
+
+          mixedStream = dest.stream;
+          mediaRecorder = new MediaRecorder(mixedStream);
+
+          chunks = [];
+          mediaRecorder.ondataavailable = e => chunks.push(e.data);
+          mediaRecorder.onstop = () => {
+            const blob = new Blob(chunks, { type: 'audio/mp3' });
+            const url = URL.createObjectURL(blob);
+            audioPlayback.src = url;
+            audioPlayback.style.display = 'block';
+
+            const date = new Date().toISOString().split('T')[0];
+            downloadLink.href = url;
+            downloadLink.download = `highscore-frequency-${date}.mp3`;
+            downloadLink.style.display = 'inline-block';
+          };
+
+          mediaRecorder.start();
+          if (oscillatorNode) oscillator.start();
+
+          recordBtn.disabled = true;
+          stopBtn.disabled = false;
+          previewTone.disabled = true;
+          previewTone.textContent = '🔇 Preview Disabled';
+        } catch (e) {
+          alert('Mic access denied.');
+        }
+      };
+
+      if (previewPlaying) {
+        stopPreviewTone();
+        setTimeout(startRecording, 1600);
+      } else {
+        startRecording();
+      }
+    };
+
+    stopBtn.onclick = () => {
+      mediaRecorder.stop();
+      if (oscillator && oscillator.stopWithFade) {
+        oscillator.stopWithFade();
+      } else if (oscillator) {
+        oscillator.stop();
+      }
+
+      recordBtn.disabled = false;
+      stopBtn.disabled = true;
+      resetBtn.disabled = false;
+
+      const freq = parseFloat(frequencySelect.value);
+      if (freq === 0) {
+        previewTone.disabled = true;
+        previewTone.textContent = '🔇 Preview Disabled';
+      } else {
+        previewTone.disabled = false;
+        previewTone.textContent = '🔊 Preview Tone';
+        previewPlaying = false;
+      }
+    };
+
+    resetBtn.onclick = () => {
+      audioPlayback.pause();
+      audioPlayback.currentTime = 0;
+      audioPlayback.src = '';
+      audioPlayback.style.display = 'none';
+
+      downloadLink.href = '';
+      downloadLink.download = '';
+      downloadLink.style.display = 'none';
+
+      resetBtn.disabled = true;
+    };
+  </script>
 </body>
 </html>
