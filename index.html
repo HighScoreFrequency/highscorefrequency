@@ -228,7 +228,7 @@
       analyser.getByteTimeDomainData(dataArray);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-// 🎵 Draw waveform with slow-motion decay
+// 🎵 Draw waveform with slow-motion decay and reduced vertical height
 ctx.beginPath();
 ctx.lineWidth = 3;
 ctx.strokeStyle = '#deb64a'; // Gold color
@@ -249,7 +249,7 @@ for (let i = 0; i < dataArray.length; i++) {
   window.smoothedAmplitudes[i] = Math.max(Math.abs(v - 1.0), window.smoothedAmplitudes[i] * decayRate);
   // Use smoothed amplitude, preserving sign of original value
   let smoothedV = v > 1.0 ? 1.0 + window.smoothedAmplitudes[i] : 1.0 - window.smoothedAmplitudes[i];
-  let y = smoothedV * canvas.height / 2;
+  let y = (smoothedV - 1.0) * canvas.height / 8 + canvas.height / 2; // Reduced vertical height, centered
   if (i === 0) {
     ctx.moveTo(x, y);
   } else {
