@@ -169,131 +169,148 @@
   </div>
 
   <script>
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    const audioCtx = new AudioContext();
+  const AudioContext = window.AudioContext || window.webkitAudioContext;
+  const audioCtx = new AudioContext();
 
-    let oscillator, gainNode, panner;
-    let mediaRecorder;
-    let chunks = [];
-    let mixedStream;
-    let previewPlaying = false;
+  let oscillator, gainNode, panner;
+  let mediaRecorder;
+  let chunks = [];
+  let mixedStream;
+  let previewPlaying = false;
 
-    const recordBtn = document.getElementById('recordBtn');
-    const stopBtn = document.getElementById('stopBtn');
-    const resetBtn = document.getElementById('resetBtn');
-    const previewTone = document.getElementById('previewTone');
-    const audioPlayback = document.getElementById('audioPlayback');
-    const downloadLink = document.getElementById('downloadLink');
-    const frequencySelect = document.getElementById('frequencySelect');
+  const recordBtn = document.getElementById('recordBtn');
+  const stopBtn = document.getElementById('stopBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const previewTone = document.getElementById('previewTone');
+  const audioPlayback = document.getElementById('audioPlayback');
+  const downloadLink = document.getElementById('downloadLink');
+  const frequencySelect = document.getElementById('frequencySelect');
 
-    function createOscillator(freq, fadeIn = 1.5, fadeOut = 1.5) {
-      oscillator = audioCtx.createOscillator();
-      gainNode = audioCtx.createGain();
-      panner = audioCtx.createStereoPanner();
+  function createOscillator(freq, fadeIn = 1.5) {
+    oscillator = audioCtx.createOscillator();
+    gainNode = audioCtx.createGain();
+    panner = audioCtx.createStereoPanner();
 
-      oscillator.type = 'sine';
-      oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
 
+    const now = audioCtx.currentTime;
+    gainNode.gain.setValueAtTime(0, now);
+    gainNode.gain.linearRampToValueAtTime(0.02, now + fadeIn);
+
+    oscillator.connect(panner).connect(gainNode);
+
+    return gainNode;
+  }
+
+  function fadeOutTone(fadeOut = 1.5) {
+    if (oscillator && gainNode) {
       const now = audioCtx.currentTime;
-      gainNode.gain.setValueAtTime(0, now);
-      gainNode.gain.linearRampToValueAtTime(0.02, now + fadeIn);
+      gainNode.gain.cancelScheduledValues(now);
+      gainNode.gain.setValueAtTime(gainNode.gain.value, now);
+      gainNode.gain.linearRampToValueAtTime(0, now + fadeOut);
+      oscillator.stop(now + fadeOut);
+      oscillator = null;
+      gainNode = null;
+    }
+  }
 
-      oscillator.connect(panner).connect(gainNode);
+  previewTone.onclick = () => {
+    const freq = parseFloat(frequencySelect.value);
+    if (freq === 0) return;
 
-      oscillator.stopWithFade = () => {
-        const currentTime = audioCtx.currentTime;
-        gainNode.gain.cancelScheduledValues(currentTime);
-        gainNode.gain.setValueAtTime(gainNode.gain.value, currentTime);
-        gainNode.gain.linearRampToValueAtTime(0, currentTime + fadeOut);
-        oscillator.stop(currentTime + fadeOut + 0.05); // Delay stop to allow fade
-      };
+    if (!previewPlaying) {
+      const node = createOscillator(freq);
+      node.connect(audioCtx.destination);
+      oscillator.start();
+      previewPlaying = true;
+      previewTone.textContent = '🛑 Stop Preview';
+    } else {
+      fadeOutTone();
+      previewPlaying = false;
+      previewTone.textContent = '🔊 Preview Tone';
+    }
+  };
 
-      return gainNode;
+  frequencySelect.addEventListener('change', () => {
+    const freq = parseFloat(frequencySelect.value);
+    previewTone.disabled = freq === 0;
+    previewTone.textContent = freq === 0 ? '🔇 Preview Disabled' : '🔊 Preview Tone';
+  });
+
+  previewTone.disabled = parseFloat(frequencySelect.value) === 0;
+  previewTone.textContent = parseFloat(frequencySelect.value) === 0 ? '🔇 Preview Disabled' : '🔊 Preview Tone';
+
+  recordBtn.onclick = async () => {
+    const freq = parseFloat(frequencySelect.value);
+    const oscillatorNode = freq > 0 ? createOscillator(freq) : null;
+
+    // Stop preview if it’s playing
+    if (previewPlaying) {
+      fadeOutTone();
+      previewPlaying = false;
+      previewTone.textContent = '🔊 Preview Tone';
     }
 
-    previewTone.onclick = () => {
-      const freq = parseFloat(frequencySelect.value);
-      if (freq === 0) return;
+    try {
+      const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const micSource = audioCtx.createMediaStreamSource(micStream);
 
-      if (!previewPlaying) {
-        const node = createOscillator(freq);
-        node.connect(audioCtx.destination);
-        oscillator.start();
-        previewPlaying = true;
-        previewTone.textContent = '🛑 Stop Preview';
-      } else {
-        if (oscillator.stopWithFade) oscillator.stopWithFade();
-        previewPlaying = false;
-        previewTone.textContent = '🔊 Preview Tone';
-      }
-    };
+      const dest = audioCtx.createMediaStreamDestination();
+      micSource.connect(dest);
+      if (oscillatorNode) oscillatorNode.connect(dest);
 
-    frequencySelect.addEventListener('change', () => {
-      const freq = parseFloat(frequencySelect.value);
-      previewTone.disabled = freq === 0;
-      previewTone.textContent = freq === 0 ? '🔇 Preview Disabled' : '🔊 Preview Tone';
-    });
+      mixedStream = dest.stream;
+      mediaRecorder = new MediaRecorder(mixedStream);
 
-    recordBtn.onclick = async () => {
-      const freq = parseFloat(frequencySelect.value);
-      const oscillatorNode = freq > 0 ? createOscillator(freq) : null;
+      chunks = [];
+      mediaRecorder.ondataavailable = e => chunks.push(e.data);
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(chunks, { type: 'audio/mp3' });
+        const url = URL.createObjectURL(blob);
 
-      try {
-        const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        const micSource = audioCtx.createMediaStreamSource(micStream);
+        audioPlayback.src = url;
+        audioPlayback.style.display = 'block';
 
-        const dest = audioCtx.createMediaStreamDestination();
-        micSource.connect(dest);
-        if (oscillatorNode) oscillatorNode.connect(dest);
+        const date = new Date().toISOString().split('T')[0];
+        downloadLink.href = url;
+        downloadLink.download = `highscore-frequency-${date}.mp3`;
+        downloadLink.style.display = 'inline-block';
 
-        mixedStream = dest.stream;
-        mediaRecorder = new MediaRecorder(mixedStream);
+        // Ensure tone fades out even if recording was short or long
+        fadeOutTone();
+      };
 
-        chunks = [];
-        mediaRecorder.ondataavailable = e => chunks.push(e.data);
-        mediaRecorder.onstop = () => {
-          const blob = new Blob(chunks, { type: 'audio/mp3' });
-          const url = URL.createObjectURL(blob);
+      mediaRecorder.start();
+      if (oscillatorNode) oscillator.start();
 
-          audioPlayback.src = url;
-          audioPlayback.style.display = 'block';
+      recordBtn.disabled = true;
+      stopBtn.disabled = false;
+    } catch (e) {
+      alert('Mic access denied.');
+    }
+  };
 
-          const date = new Date().toISOString().split('T')[0];
-          downloadLink.href = url;
-          downloadLink.download = `highscore-frequency-${date}.mp3`;
-          downloadLink.style.display = 'inline-block';
-        };
-
-        mediaRecorder.start();
-        if (oscillatorNode) oscillator.start();
-
-        recordBtn.disabled = true;
-        stopBtn.disabled = false;
-      } catch (e) {
-        alert('Mic access denied.');
-      }
-    };
-
-    stopBtn.onclick = () => {
+  stopBtn.onclick = () => {
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
       mediaRecorder.stop();
-      if (oscillator && oscillator.stopWithFade) oscillator.stopWithFade();
-      recordBtn.disabled = false;
-      stopBtn.disabled = true;
-      resetBtn.disabled = false;
-    };
+    }
+    recordBtn.disabled = false;
+    stopBtn.disabled = true;
+    resetBtn.disabled = false;
+  };
 
-    resetBtn.onclick = () => {
-      audioPlayback.pause();
-      audioPlayback.currentTime = 0;
-      audioPlayback.src = '';
-      audioPlayback.style.display = 'none';
+  resetBtn.onclick = () => {
+    audioPlayback.pause();
+    audioPlayback.currentTime = 0;
+    audioPlayback.src = '';
+    audioPlayback.style.display = 'none';
 
-      downloadLink.href = '';
-      downloadLink.download = '';
-      downloadLink.style.display = 'none';
+    downloadLink.href = '';
+    downloadLink.download = '';
+    downloadLink.style.display = 'none';
 
-      resetBtn.disabled = true;
-    };
-  </script>
-</body>
-</html>
+    resetBtn.disabled = true;
+  };
+</script>
+
