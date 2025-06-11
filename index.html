@@ -235,13 +235,19 @@
       }
       ctx.stroke();
 
-      let sum = 0;
-      for (let i = 0; i < dataArray.length; i++) {
-        sum += Math.abs(dataArray[i] - 128);
-      }
-      let average = sum / dataArray.length;
-      let normalized = Math.min(average / 4, 10);
-      fadeLayer.style.opacity = '0.85'(normalized * normalized).toFixed(2); // quadratic curve
+let sum = 0;
+for (let i = 0; i < dataArray.length; i++) {
+  sum += Math.abs(dataArray[i] - 128);
+}
+let average = sum / dataArray.length;
+
+// Highly sensitive normalization (more reactive)
+let normalized = Math.min(average / 10, 1);
+
+// Inverse: louder voice = lower opacity
+let inverse = 0.85 - (normalized * 0.85);
+fadeLayer.style.opacity = inverse.toFixed(2);
+
 
     }
     drawWaveform();
