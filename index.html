@@ -241,9 +241,9 @@ function drawWaveform() {
   const centerY = canvas.height / 2;
   const half = dataArray.length / 2;
   const sliceWidth = canvas.width / dataArray.length;
-  const decayRate = 0.98;
-  const emaAlpha = 0.5;
-  const rippleSpread = canvas.width / 8;
+  const decayRate = 0.96;
+  const emaAlpha = 0.3;
+  const rippleSpread = canvas.width / 6;
 
   if (!window.smoothedAmplitudes)
     window.smoothedAmplitudes = new Float32Array(dataArray.length).fill(0.0);
@@ -254,14 +254,14 @@ function drawWaveform() {
 
   // Calculate smoothed ripple heights
   for (let i = 0; i < dataArray.length; i++) {
-    let v = Math.min(dataArray[i] / 128.0 * 1.2, 2);
+    let v = Math.min(dataArray[i] / 128.0;
     window.emaValues[i] = emaAlpha * v + (1 - emaAlpha) * window.emaValues[i];
     let smoothedV = window.emaValues[i];
     let deviation = Math.abs(smoothedV - 1.0);
     window.smoothedAmplitudes[i] = Math.max(deviation, window.smoothedAmplitudes[i] * decayRate);
     let finalV = smoothedV > 1.0 ? 1.0 + window.smoothedAmplitudes[i] : 1.0 - window.smoothedAmplitudes[i];
 
-    let baseY = (finalV - 1.0) * canvas.height * 0.8 + centerY;
+    let baseY = (finalV - 1.0) * canvas.height * 0.6 + centerY;
 
     let distanceFromCenter = Math.abs(i - half);
     let rippleFactor = Math.exp(-Math.pow(distanceFromCenter * sliceWidth, 2) / (2 * rippleSpread * rippleSpread));
