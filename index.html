@@ -146,10 +146,36 @@
 
 /* 🔧 Mobile-Only Overrides (Preserve desktop layout with smaller buttons + dropdown fix) */
 @media only screen and (max-width: 600px) {
-  .portal-wrapper {
-    width: 93vmin !important;
-    height: 93vmin !important;
+.portal-wrapper {
+  width: 100vw;
+  min-height: 100vh;
+  padding: 20px 0;
+  box-sizing: border-box;
+}
+
+  @media only screen and (max-width: 768px) {
+  html, body {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
   }
+
+  .portal-wrapper {
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+  }
+
+  .content {
+    width: 95vw !important;
+    max-width: 500px;
+    padding: 24px 16px !important;
+  }
+}
+
+  html {
+  scroll-behavior: smooth;
+}
+
 
   .content {
     width: 88% !important;
