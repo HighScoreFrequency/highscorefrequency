@@ -68,10 +68,11 @@
 }
 
 .title-overflow {
-  position: absolute;
-  top: -50px;
+  position: relative;
+  top: -40px;
   left: 50%;
   transform: translateX(-50%);
+  text-align: center;
   font-size: 32px;
   z-index: 3;
   white-space: nowrap;
@@ -79,13 +80,19 @@
 
 
 
-    .content-inner {
+
+.content-inner {
   padding: 30px;
   text-align: center;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   align-items: center;
+  height: 100%;
+  width: 100%;
+  gap: 16px;
 }
+
 
 
     .fade-layer {
@@ -187,7 +194,6 @@
     <canvas id="waveform"></canvas>
     <div class="portal-image"></div>
 <h2 class="title-overflow">🎙️ High Score Voice Portal</h2> <!-- ← outside -->
-
 <div class="content">
   <div class="fade-layer"></div>
   <div class="content-inner">...</div>
