@@ -261,7 +261,7 @@ function drawWaveform() {
     window.smoothedAmplitudes[i] = Math.max(deviation, window.smoothedAmplitudes[i] * decayRate);
     let finalV = smoothedV > 1.0 ? 1.0 + window.smoothedAmplitudes[i] : 1.0 - window.smoothedAmplitudes[i];
 
-    let baseY = (finalV - 1.0) * canvas.height * 0.3 + centerY;
+    let baseY = (finalV - 1.0) * canvas.height * 0.5 + centerY;
 
     let distanceFromCenter = Math.abs(i - half);
     let rippleFactor = Math.exp(-Math.pow(distanceFromCenter * sliceWidth, 2) / (2 * rippleSpread * rippleSpread));
@@ -315,7 +315,7 @@ function drawWaveform() {
   }
   let average = sum / dataArray.length;
   let normalized = Math.min(average / 2, 1);
-  let targetOpacity = 0.99 - (normalized * 0.99);
+  let targetOpacity = 1 - (normalized * 1);
   let smoothing = 0.5;
   let smoothedOpacity = previousOpacity + (targetOpacity - previousOpacity) * smoothing;
   previousOpacity = smoothedOpacity;
