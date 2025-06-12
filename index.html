@@ -840,8 +840,8 @@ activateButton.addEventListener('click', async () => {
   }
 });
 
-// Initialize declaration text
-(function initializeDeclaration() {
+// Initialize declaration text after DOM is fully loaded
+document.addEventListener('DOMContentLoaded', () => {
   const declarations = {
     '': 'Choose your tone, speak it clear,\ncode your vibe, draw truth near.\nThis isn’t sound, it’s memory’s key,\nA voice-crafted path to mastery.',
     '1': '⚡️ Unlock My Final Form\n\nI release the scripts that kept me small...',
@@ -858,14 +858,19 @@ activateButton.addEventListener('click', async () => {
     return;
   }
 
-  // Set initial text
+  // Set initial text and log to verify
+  console.log('Initial prompt value:', promptSelect.value);
   declarationText.innerText = declarations[promptSelect.value] || '';
+  console.log('Set text:', declarationText.innerText);
 
   // Update text on change
   promptSelect.addEventListener('change', () => {
+    console.log('Changed to:', promptSelect.value);
     declarationText.innerText = declarations[promptSelect.value] || '';
+    console.log('Updated text:', declarationText.innerText);
   });
-})();
+});
+  
 </script>
   <button id="activate-visualizer" style="
   position: fixed;
