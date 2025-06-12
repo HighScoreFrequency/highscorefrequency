@@ -37,18 +37,17 @@
       background: transparent;
     }
     
-   .ring {
+.ring {
   position: absolute;
-       animation: goldPulse 3s ease-in-out infinite;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   box-sizing: content-box;
-    border: 4px solid transparent;
-  border-image: linear-gradient(135deg, #ffcc33, #a9712c, #ffd700) 1;
+  border: 4px solid transparent;
   pointer-events: none;
   background: transparent;
 }
+
 
 /* Outer ring - circle */
 .ring1 {
@@ -356,21 +355,6 @@
   document.getElementById('ring4')
 ];
 
-function updateRingGlow(intensity) {
-  const base = 3; // Brighter minimum glow
-  const max = 12; // More intense max glow
-  const glow = base + intensity * (max - base);
-
-  const shadow = `
-    0 0 ${glow}px rgba(255, 215, 0, ${0.65 + 0.35 * intensity}),
-    0 0 ${glow * 1.5}px rgba(255, 215, 0, ${0.3 + 0.2 * intensity})
-  `;
-
-  rings.forEach(ring => {
-    ring.style.boxShadow = shadow;
-  });
-}
-
 
   const fadeLayer = document.querySelector('.fade-layer');
 
@@ -488,9 +472,6 @@ let smoothing = 0.5;
 let smoothedOpacity = previousOpacity + (targetOpacity - previousOpacity) * smoothing;
 previousOpacity = smoothedOpacity;
 fadeLayer.style.opacity = smoothedOpacity.toFixed(2);
-
-// 👑 NEW: Pulse glow intensity based on volume
-updateRingGlow(normalized);
 
 }
 
