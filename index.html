@@ -56,40 +56,44 @@
 .ring1 {
   width: 78vmin;
   height: 70vmin;
-  border-radius: 50%;
+  border-radius: 50%; /* Restore oval shape */
   border-image: linear-gradient(135deg, #ffd700, #ffcc33, #a9712c) 1;
   animation: rotateCounter 99s linear infinite;
   z-index: 1;
+  mask-image: radial-gradient(circle, rgba(0,0,0,1) 80%, rgba(0,0,0,0) 100%); /* Adjusted for subtle fade */
 }
 
 /* Middle ring - oval */
 .ring2 {
   width: 74vmin;
   height: 68vmin;
-  border-radius: 50%;
+  border-radius: 50%; /* Restore oval shape */
   border-image: linear-gradient(135deg, #ffd700, #ffcc33, #a9712c) 1;
   animation: rotateCounter 69s linear infinite;
   z-index: 1;
+  mask-image: radial-gradient(circle, rgba(0,0,0,1) 80%, rgba(0,0,0,0) 100%); /* Adjusted for subtle fade */
 }
 
 /* Inner ring - oval */
 .ring3 {
   width: 74vmin;
   height: 68vmin;
-  border-radius: 50%;
+  border-radius: 50%; /* Restore oval shape */
   border-image: linear-gradient(225deg, #ffd700, #ffcc33, #a9712c) 1;
   animation: rotateClockwise 77s linear infinite;
   z-index: 1;
+  mask-image: radial-gradient(circle, rgba(0,0,0,1) 80%, rgba(0,0,0,0) 100%); /* Adjusted for subtle fade */
 }
 
 /* Additional ring - oval */
 .ring4 {
   width: 78vmin;
   height: 70vmin;
-  border-radius: 50%;
+  border-radius: 50%; /* Restore oval shape */
   border-image: linear-gradient(135deg, #ffd700, #ffcc33, #a9712c) 1;
   animation: rotateClockwise 111s linear infinite;
   z-index: 1;
+  mask-image: radial-gradient(circle, rgba(0,0,0,1) 80%, rgba(0,0,0,0) 100%); /* Adjusted for subtle fade */
 }
 
 @keyframes rotateClockwise {
