@@ -37,7 +37,7 @@
       z-index: 0;
       background: transparent;
     }
-
+    
 .ring {
   position: absolute;
   top: 50%;
@@ -60,7 +60,6 @@
   border-image: linear-gradient(135deg, #ffd700, #ffcc33, #a9712c) 1;
   animation: rotateCounter 99s linear infinite;
   z-index: 1;
-  mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
 }
 
 /* Middle ring - oval */
@@ -71,7 +70,6 @@
   border-image: linear-gradient(135deg, #ffd700, #ffcc33, #a9712c) 1;
   animation: rotateCounter 69s linear infinite;
   z-index: 1;
-  mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
 }
 
 /* Inner ring - oval */
@@ -79,10 +77,9 @@
   width: 74vmin;
   height: 68vmin;
   border-radius: 50%;
-  border-image: linear-gradient(225deg, #ffd700, #ffcc33, #a9712c) 1; /* Slight angle variation */
+  border-image: linear-gradient(225deg, #ffd700, #ffcc33, #a9712c) 1;
   animation: rotateClockwise 77s linear infinite;
   z-index: 1;
-  mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
 }
 
 /* Additional ring - oval */
@@ -93,7 +90,6 @@
   border-image: linear-gradient(135deg, #ffd700, #ffcc33, #a9712c) 1;
   animation: rotateClockwise 111s linear infinite;
   z-index: 1;
-  mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
 }
 
 @keyframes rotateClockwise {
