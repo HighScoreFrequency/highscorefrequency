@@ -46,66 +46,54 @@
   box-sizing: content-box;
   border-width: 4px;
   border-style: solid;
+  border-color: transparent; /* Prevent default black border */
   pointer-events: none;
   box-shadow: 0 0 12px rgba(255, 215, 0, 0.2);
   background: transparent;
 }
 
-/* Outer ring - circle */
+/* Outer ring - oval */
 .ring1 {
-  position: absolute;
-  top: 50%;
-  left: 50%;
   width: 78vmin;
   height: 70vmin;
-  transform: translate(-50%, -50%);
   border-radius: 50%;
+  border-image: linear-gradient(135deg, #ffd700, #ffcc33, #a9712c) 1;
   animation: rotateCounter 99s linear infinite;
   z-index: 1;
-     mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
-
+  mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
 }
 
-/* Middle ring - square */
+/* Middle ring - oval */
 .ring2 {
-  position: absolute;
-  top: 50%;
-  left: 50%;
   width: 74vmin;
   height: 68vmin;
-  transform: translate(-50%, -50%);
   border-radius: 50%;
+  border-image: linear-gradient(135deg, #ffd700, #ffcc33, #a9712c) 1;
   animation: rotateCounter 69s linear infinite;
   z-index: 1;
-     mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
+  mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
 }
 
-/* Inner ring - circle */
+/* Inner ring - oval */
 .ring3 {
-  position: absolute;
-  top: 50%;
-  left: 50%;
   width: 74vmin;
   height: 68vmin;
-  transform: translate(-50%, -50%);
   border-radius: 50%;
+  border-image: linear-gradient(225deg, #ffd700, #ffcc33, #a9712c) 1; /* Slight angle variation */
   animation: rotateClockwise 77s linear infinite;
   z-index: 1;
-     mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
+  mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
 }
 
-/* Additional ring - circle */
+/* Additional ring - oval */
 .ring4 {
-  position: absolute;
-  top: 50%;
-  left: 50%;
   width: 78vmin;
   height: 70vmin;
-  transform: translate(-50%, -50%);
   border-radius: 50%;
+  border-image: linear-gradient(135deg, #ffd700, #ffcc33, #a9712c) 1;
   animation: rotateClockwise 111s linear infinite;
   z-index: 1;
-     mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
+  mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
 }
 
 @keyframes rotateClockwise {
