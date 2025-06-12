@@ -521,7 +521,7 @@ button:hover:not(:disabled) {
   analyser.fftSize = 2048;
   let dataArray = new Uint8Array(analyser.fftSize);
 
-  let previousOpacity = 0.99; // Start at base opacity
+  let previousOpacity = 0.96; // Start at base opacity
 
   function resizeCanvas() {
     canvas.width = window.innerWidth;
@@ -623,7 +623,7 @@ function drawWaveform() {
   }
   let average = sum / dataArray.length;
 let normalized = Math.min(average / 2, 1);
-let targetOpacity = .88 - (normalized * .88);
+let targetOpacity = .96 - (normalized * .96);
 let smoothing = 0.5;
 let smoothedOpacity = previousOpacity + (targetOpacity - previousOpacity) * smoothing;
 previousOpacity = smoothedOpacity;
