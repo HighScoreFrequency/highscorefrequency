@@ -126,22 +126,26 @@
 
     }
 
-    .content {
-      position: relative;
-      z-index: 2;
-      width: 90%;
-      max-width: 500px;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      overflow: hidden;
-      background: white;
-    }
+.content {
+  position: absolute; /* ← changed from relative */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10; /* higher than rings */
+  width: 90%;
+  max-width: 500px;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.85); /* optional soft white */
+}
+
 
     .fade-layer {
       position: absolute;
@@ -326,9 +330,11 @@
   <div class="ring ring3" id="ring3"></div>
 </div>
 <div class="ring-scale-wrapper" id="scale4">
-<div class="ring ring4" id="ring4"></div> <!-- stays unscaled -->
+  <div class="ring ring4" id="ring4"></div>
+</div>
 
-    <div class="content">
+<!-- Place content AFTER all rings, still inside portal-wrapper -->
+<div class="content">
       <div class="fade-layer"></div>
       <h2>🎙️ High Score Voice Portal</h2>
       <p>Choose your tone, speak it clear,<br>
