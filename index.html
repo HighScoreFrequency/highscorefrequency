@@ -244,6 +244,53 @@
       to { opacity: 1; }
     }
 
+    #declaration-box {
+  margin-top: 12px;
+  max-width: 100% !important;
+  max-height: 100px;
+  min-height: 50px;
+  padding: 14px;
+  border-radius: 10px;
+  font-size: 11px;
+  text-align: left;
+  color: #222;
+  line-height: 1.1;
+  white-space: pre-wrap;
+  background: rgba(255, 255, 255, 0.95);
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  border: 1px solid #ccc;
+  resize: vertical;
+  transition: box-shadow 0.2s ease;
+  box-sizing: border-box;
+}
+
+#declaration-box:focus-within {
+  box-shadow: 0 0 8px rgba(90, 159, 230, 0.4);
+
+#declaration-text {
+  max-height: 369px;
+  padding-right: 8px;
+  max-width: 100% !important;
+  overflow-y: auto;
+}
+
+  #prompt-section .row button {
+  font-size: 11px;
+  padding: 8px 14px;
+  background: #1a1a1a;
+  border-radius: 6px;
+  color: white;
+  white-space: nowrap;
+  max-width: 100% !important;
+}
+
+  #promptSelect, #frequencySelect {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+
     /* 🔧 Mobile-Only Overrides */
     @media only screen and (max-width: 768px) {
       html, body {
@@ -322,53 +369,6 @@
         max-width: 100% !important;
       }
     }
-
-#declaration-box {
-  margin-top: 12px;
-  max-width: 100% !important;
-  max-height: 100px;
-  min-height: 50px;
-  padding: 14px;
-  border-radius: 10px;
-  font-size: 11px;
-  text-align: left;
-  color: #222;
-  line-height: 1.1;
-  white-space: pre-wrap;
-  background: rgba(255, 255, 255, 0.95);
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-  border: 1px solid #ccc;
-  resize: vertical;
-  transition: box-shadow 0.2s ease;
-  box-sizing: border-box;
-}
-
-#declaration-box:focus-within {
-  box-shadow: 0 0 8px rgba(90, 159, 230, 0.4);
-
-#declaration-text {
-  max-height: 369px;
-  padding-right: 8px;
-  max-width: 100% !important;
-  overflow-y: auto;
-}
-
-  #prompt-section .row button {
-  font-size: 11px;
-  padding: 8px 14px;
-  background: #1a1a1a;
-  border-radius: 6px;
-  color: white;
-  white-space: nowrap;
-  max-width: 100% !important;
-}
-
-  #promptSelect, #frequencySelect {
-  width: 100%;
-  box-sizing: border-box;
-}
-
     
   </style>
 </head>
