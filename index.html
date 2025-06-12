@@ -703,25 +703,28 @@ fadeLayer.style.opacity = smoothedOpacity.toFixed(2);
 frequencySelect.addEventListener('change', async () => {
   const freq = parseFloat(frequencySelect.value);
 
-  // If a tone is currently playing, stop it instantly
-  if (previewPlaying) {
-    if (oscillator) {
-      oscillator.stop();
-      oscillator.disconnect();
-    }
+  // Always stop tone if preview is playing
+  if (previewPlaying && oscillator) {
+    oscillator.stop();
+    oscillator.disconnect();
     previewPlaying = false;
   }
 
-  // Handle 0 Hz (no tone)
+  // Handle 0 Hz (Silence Mode)
   if (freq === 0) {
     previewTone.disabled = true;
     previewTone.textContent = '🔇 Preview Disabled';
+
+    // Reset label back to default in case user re-selects a tone later
+    previewTone.textContent = '🔊 Preview Tone';
     return;
   }
 
-  // Handle real tone switch
+  // Handle non-zero tones
   previewTone.disabled = false;
-  previewTone.textContent = '🛑 Stop Preview';
+  previewTone.textContent = '🔊 Preview Tone';
+});
+
 
   // Auto-play new tone immediately
   if (audioCtx.state === 'suspended') await audioCtx.resume();
@@ -730,6 +733,16 @@ frequencySelect.addEventListener('change', async () => {
   oscillator.start();
   previewPlaying = true;
 });
+
+  function stopPreviewTone() {
+  if (oscillator) {
+    oscillator.stop();
+    oscillator.disconnect();
+  }
+  previewPlaying = false;
+  previewTone.textContent = '🔊 Preview Tone';
+}
+
 
 
 
@@ -808,6 +821,24 @@ frequencySelect.addEventListener('change', async () => {
     previewTone.textContent = freq === 0 ? '🔇 Preview Disabled' : '🔊 Preview tone';
     previewPlaying = false;
   };
+
+  previewTone.onclick = async () => {
+  const freq = parseFloat(frequencySelect.value);
+  if (freq === 0) return;
+
+  if (audioCtx.state === 'suspended') await audioCtx.resume();
+
+  if (!previewPlaying) {
+    oscillator = createOscillator(freq); // Assign to global oscillator
+    oscillator.connect(audioCtx.destination);
+    oscillator.start();
+    previewPlaying = true;
+    previewTone.textContent = '🛑 Stop Preview';
+  } else {
+    stopPreviewTone();
+  }
+};
+
 
   resetBtn.onclick = () => {
     audioPlayback.pause();
