@@ -45,6 +45,27 @@
   will-change: transform;
 }
 
+    .ripple {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 10px;
+  height: 10px;
+  border: 2px solid #ffd700;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+  pointer-events: none;
+  animation: rippleExpand 1s ease-out forwards;
+  z-index: 0;
+}
+
+@keyframes rippleExpand {
+  to {
+    transform: translate(-50%, -50%) scale(6);
+    opacity: 0;
+  }
+}
+
     
    .ring {
   position: absolute;
@@ -374,19 +395,20 @@ const ringWrappers = [
 ];
 
 
-let previousScale = 1;
+function triggerRipple(intensity) {
+  if (intensity < 0.2) return; // only ripple on stronger input
 
-function updateRingGlow(intensity) {
-  const targetScale = 1 + intensity * 0.01;
-  const smoothing = 0.1; // smaller = smoother (0.05 to 0.2 range works well)
+  const ripple = document.createElement('div');
+  ripple.className = 'ripple';
 
-  // Apply decay interpolation
-  previousScale = previousScale + (targetScale - previousScale) * smoothing;
+  document.querySelector('.portal-wrapper').appendChild(ripple);
 
-  ringWrappers.forEach(wrapper => {
-    wrapper.style.transform = `translate(-50%, -50%) scale(${previousScale})`;
+  ripple.addEventListener('animationend', () => {
+    ripple.remove();
   });
 }
+
+
 
 
 
@@ -510,7 +532,8 @@ previousOpacity = smoothedOpacity;
 fadeLayer.style.opacity = smoothedOpacity.toFixed(2);
 
 // 👑 NEW: Pulse glow intensity based on volume
-updateRingGlow(normalized);
+triggerRipple(normalized);
+
 
 }
 
