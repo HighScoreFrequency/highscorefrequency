@@ -144,7 +144,7 @@
 
     .content {
       position: relative;
-      z-index: 0;
+      z-index: 2;
       width: 90%;
       max-width: 500px;
       padding: 30px;
@@ -159,24 +159,6 @@
       background: white;
     }
 
-.content::before {
-  content: "";
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  pointer-events: none;
-  z-index: 2;
-  border-radius: inherit;
-  background:
-    radial-gradient(circle at top left, rgba(255, 215, 0, 0.15) 0%, transparent 35%),
-    radial-gradient(circle at top right, rgba(255, 215, 0, 0.15) 0%, transparent 35%),
-    radial-gradient(circle at bottom left, rgba(255, 215, 0, 0.15) 0%, transparent 35%),
-    radial-gradient(circle at bottom right, rgba(255, 215, 0, 0.15) 0%, transparent 35%);
-}
-
-
-
-
     .fade-layer {
       position: absolute;
       top: 0; left: 0;
@@ -184,14 +166,14 @@
       height: 100%;
       background: white;
       opacity: 0;
-      z-index: 4;
+      z-index: 0;
       transition: opacity 0.3s ease;
       pointer-events: none;
     }
 
     .content > *:not(.fade-layer) {
       position: relative;
-      z-index: 3;
+      z-index: 1;
     }
 
     h2 {
