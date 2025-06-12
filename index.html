@@ -36,23 +36,13 @@
       z-index: 0;
       background: transparent;
     }
-
-
-  .ring-scale {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  transition: transform 0.1s ease-out;
-}
-
     
    .ring {
   position: absolute;
        animation: goldPulse 3s ease-in-out infinite;
-       transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
   top: 50%;
   left: 50%;
+  transform: translate(-50%, -50%);
   box-sizing: content-box;
     border: 4px solid transparent;
   border-image: linear-gradient(135deg, #ffcc33, #a9712c, #ffd700) 1;
@@ -67,6 +57,7 @@
   left: 50%;
   width: 84vmin;
   height: 74vmin;
+  transform: translate(-50%, -50%);
   border-radius: 50%;
   border: 4px solid #ffd700;
   animation: rotateCounter 99s linear infinite;
@@ -83,6 +74,7 @@
   left: 50%;
   width: 84vmin;
   height: 74vmin;
+  transform: translate(-50%, -50%);
   border-radius: 50%;
   border: 4px solid #a9712c;
   animation: rotateCounter 69s linear infinite;
@@ -97,6 +89,7 @@
   left: 50%;
   width: 84vmin;
   height: 74vmin;
+  transform: translate(-50%, -50%);
   border-radius: 50%;
   border: 4px solid #ffcc33;
   animation: rotateClockwise 77s linear infinite;
@@ -111,6 +104,7 @@
   left: 50%;
   width: 84vmin;
   height: 74vmin;
+  transform: translate(-50%, -50%);
   border-radius: 50%;
   border: 4px solid #a9712c;
   animation: rotateClockwise 111s linear infinite;
@@ -317,10 +311,10 @@
 <body>
   <div class="portal-wrapper">
     <canvas id="waveform"></canvas>
-<div class="ring-scale"><div class="ring ring1" id="ring1"></div></div>
-<div class="ring-scale"><div class="ring ring2" id="ring2"></div></div>
-<div class="ring-scale"><div class="ring ring3" id="ring3"></div></div>
-<div class="ring-scale"><div class="ring ring4" id="ring4"></div></div>
+<div class="ring ring1" id="ring1"></div>
+<div class="ring ring2" id="ring2"></div>
+<div class="ring ring3" id="ring3"></div>
+<div class="ring ring4" id="ring4"></div>
     <div class="content">
       <div class="fade-layer"></div>
       <h2>🎙️ High Score Voice Portal</h2>
@@ -355,13 +349,16 @@
 <script>
   const canvas = document.getElementById('waveform');
   const ctx = canvas.getContext('2d');
-const rings = Array.from(document.querySelectorAll('.ring-scale'));
-
+  const rings = [
+  document.getElementById('ring1'),
+  document.getElementById('ring2'),
+  document.getElementById('ring3'),
+  document.getElementById('ring4')
 ];
 
 function updateRingGlow(intensity) {
-  const base = 1;
-  const max = 6;
+  const base = 3; // Brighter minimum glow
+  const max = 12; // More intense max glow
   const glow = base + intensity * (max - base);
 
   const shadow = `
@@ -369,16 +366,10 @@ function updateRingGlow(intensity) {
     0 0 ${glow * 1.5}px rgba(255, 215, 0, ${0.3 + 0.2 * intensity})
   `;
 
-  const scale = 1 + intensity * 1.2;
-
-  rings.forEach(scaleWrapper => {
-    const ring = scaleWrapper.querySelector('.ring');
+  rings.forEach(ring => {
     ring.style.boxShadow = shadow;
-    scaleWrapper.style.transform = `translate(-50%, -50%) scale(${scale})`;
   });
 }
-
-
 
 
   const fadeLayer = document.querySelector('.fade-layer');
