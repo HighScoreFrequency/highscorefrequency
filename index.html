@@ -144,7 +144,7 @@
       max-width: 360px !important;
       padding: 15px !important;
       border-radius: 12px !important;
-      background: rgba(255, 255, 255, 0.35) !important;
+      background: rgba(255, 255, 255, 0.28) !important;
       text-align: center;
       display: flex;
       flex-direction: column;
@@ -521,7 +521,7 @@ button:hover:not(:disabled) {
   analyser.fftSize = 2048;
   let dataArray = new Uint8Array(analyser.fftSize);
 
-  let previousOpacity = 0.96; // Start at base opacity
+  let previousOpacity = 0.99; // Start at base opacity
 
   function resizeCanvas() {
     canvas.width = window.innerWidth;
@@ -623,8 +623,8 @@ function drawWaveform() {
   }
   let average = sum / dataArray.length;
 let normalized = Math.min(average / 2, 1);
-let targetOpacity = .96 - (normalized * .96);
-let smoothing = 0.3;
+let targetOpacity = .99 - (normalized * .99);
+let smoothing = 0.1;
 let smoothedOpacity = previousOpacity + (targetOpacity - previousOpacity) * smoothing;
 previousOpacity = smoothedOpacity;
 fadeLayer.style.opacity = smoothedOpacity.toFixed(2);
