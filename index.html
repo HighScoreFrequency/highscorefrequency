@@ -79,6 +79,7 @@
   border: 4px solid #a9712c;
   animation: rotateCounter 69s linear infinite;
   z-index: 1;
+  mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
 }
 
 /* Inner ring - circle */
@@ -108,7 +109,6 @@
   border: 4px solid #a9712c;
   animation: rotateClockwise 111s linear infinite;
   z-index: 1;
-     mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
 }
     @keyframes rotateClockwise {
       from { transform: translate(-50%, -50%) rotate(0deg); }
@@ -381,7 +381,7 @@ function updateRingGlow(intensity) {
   analyser.fftSize = 2048;
   let dataArray = new Uint8Array(analyser.fftSize);
 
-  let previousOpacity = 0.63; // Start at base opacity
+  let previousOpacity = 0.99; // Start at base opacity
 
   function resizeCanvas() {
     canvas.width = window.innerWidth;
