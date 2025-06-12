@@ -623,8 +623,8 @@ function drawWaveform() {
   }
   let average = sum / dataArray.length;
 let normalized = Math.min(average / 2, 1);
-let targetOpacity = .69 - (normalized * .69);
-let smoothing = 0.2;
+let targetOpacity = .06 - (normalized * .06);
+let smoothing = 0.9;
 let smoothedOpacity = previousOpacity + (targetOpacity - previousOpacity) * smoothing;
 previousOpacity = smoothedOpacity;
 fadeLayer.style.opacity = smoothedOpacity.toFixed(2);
