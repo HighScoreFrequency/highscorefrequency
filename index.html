@@ -678,7 +678,6 @@ fadeLayer.style.opacity = smoothedOpacity.toFixed(2);
       oscillator.stopWithFade();
     } else if (oscillator) {
       oscillator.stop();
-      oscillator.disconnect();
     }
     previewPlaying = false;
     previewTone.textContent = '🔊 Preview tone';
@@ -691,7 +690,7 @@ fadeLayer.style.opacity = smoothedOpacity.toFixed(2);
     if (freq === 0) return;
 
     if (!previewPlaying) {
-      const node = createOscillator(freq, 0, 0);
+      const node = createOscillator(freq);
       node.connect(audioCtx.destination);
       oscillator.start();
       previewPlaying = true;
@@ -701,7 +700,7 @@ fadeLayer.style.opacity = smoothedOpacity.toFixed(2);
     }
   };
 
-  frequencySelect.addEventListener('change', async () => {
+frequencySelect.addEventListener('change', async () => {
   const freq = parseFloat(frequencySelect.value);
 
   // If a tone is currently playing, stop it instantly
@@ -733,20 +732,9 @@ fadeLayer.style.opacity = smoothedOpacity.toFixed(2);
 });
 
 
-  // Immediately check current value
-  const currentFreq = parseFloat(frequencySelect.value);
-  if (currentFreq !== 0) {
-    previewTone.disabled = false;
-    previewTone.textContent = '🛑 Stop Preview';
-    if (audioCtx.state === 'suspended') await audioCtx.resume();
-    const node = createOscillator(currentFreq, 0, 0);
-    node.connect(audioCtx.destination);
-    oscillator.start();
-    previewPlaying = true;
-  } else {
-    previewTone.disabled = true;
-    previewTone.textContent = '🔇 Preview Disabled';
-  }
+
+  previewTone.disabled = parseFloat(frequencySelect.value) === 0;
+  previewTone.textContent = parseFloat(frequencySelect.value) === 0 ? '🔇 Preview Disabled' : '🔊 Preview tone';
 
   recordBtn.onclick = async () => {
     if (audioCtx.state === 'suspended') await audioCtx.resume();
