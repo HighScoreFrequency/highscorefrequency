@@ -875,21 +875,15 @@ button:hover:not(:disabled) {
         "4": `👑 Equip Divine Union Mode\n\nAligned in heart, in body, in soul,\nI enter love that makes me whole.`
       };
 
-function updateDeclaration() {
-  const selected = promptSelect.value;
-  const isFirst = selected === "";
-  declarationText.textContent = declarations[selected] || declarations[""];
+      function updateDeclaration() {
+        const selected = promptSelect.value;
+        declarationText.textContent = declarations[selected] || declarations[""];
+        console.log("Updated text to:", declarationText.textContent); // Debug
+      }
 
-  // Add or remove the special class based on selection
-  const declarationBox = document.getElementById("declaration-box");
-  if (isFirst) {
-    declarationBox.classList.add("first-prompt");
-  } else {
-    declarationBox.classList.remove("first-prompt");
-  }
-}
-
-
+      updateDeclaration(); // Set initial text
+      promptSelect.addEventListener("change", updateDeclaration);
+    });
 
 </script>
   <button id="activate-visualizer" style="
