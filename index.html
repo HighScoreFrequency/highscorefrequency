@@ -28,6 +28,24 @@
       align-items: center;
     }
 
+      #activate-visualizer {
+    position: absolute;
+    top: 12%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    padding: 12px 20px;
+    font-size: 16px;
+    background-color: #1a1a1a;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    cursor: pointer;
+    display: none;
+    transition: opacity 0.3s ease;
+  }
+
     canvas#waveform {
       position: fixed;
       top: 0;
