@@ -644,6 +644,53 @@ function drawWaveform() {
 
     resetBtn.disabled = true;
   };
+
+  const activateButton = document.getElementById('activate-visualizer');
+
+// Try to auto-start waveform visualizer on page load
+(async function autoStartWaveform() {
+  try {
+    const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    if (audioCtx.state === 'suspended') await audioCtx.resume();
+    const micSource = audioCtx.createMediaStreamSource(micStream);
+    micSource.connect(analyser);
+  } catch (err) {
+    // Show fallback button if access blocked
+    activateButton.style.display = 'block';
+  }
+})();
+
+// Manual fallback for user activation
+activateButton.addEventListener('click', async () => {
+  try {
+    const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    if (audioCtx.state === 'suspended') await audioCtx.resume();
+    const micSource = audioCtx.createMediaStreamSource(micStream);
+    micSource.connect(analyser);
+    activateButton.style.display = 'none';
+  } catch (err) {
+    alert('Microphone access is required to activate the visualizer.');
+  }
+});
+
 </script>
+  <button id="activate-visualizer" style="
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  padding: 14px 22px;
+  font-size: 18px;
+  background-color: #1a1a1a;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  cursor: pointer;
+  display: none;
+">
+  🔓 Tap to Activate Voice Visualizer
+</button>
 </body>
 </html>
