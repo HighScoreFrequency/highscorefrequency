@@ -36,35 +36,6 @@
       z-index: 0;
       background: transparent;
     }
-
-    .ripple-layer {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-  z-index: 2;
-}
-
-.ripple-circle {
-  position: absolute;
-  width: 80vmin;
-  height: 80vmin;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.3);
-  animation: rippleAnim 0.6s ease-out forwards;
-}
-
-@keyframes rippleAnim {
-  0% {
-    transform: scale(0.5);
-    opacity: 0.8;
-  }
-  100% {
-    transform: scale(3);
-    opacity: 0;
-  }
-}
     
    .ring {
   position: absolute;
@@ -344,7 +315,6 @@
 <div class="ring ring2" id="ring2"></div>
 <div class="ring ring3" id="ring3"></div>
 <div class="ring ring4" id="ring4"></div>
-    <div class="ripple-layer"></div>
     <div class="content">
       <div class="fade-layer"></div>
       <h2>🎙️ High Score Voice Portal</h2>
@@ -379,29 +349,27 @@
 <script>
   const canvas = document.getElementById('waveform');
   const ctx = canvas.getContext('2d');
-  
+  const rings = [
+  document.getElementById('ring1'),
+  document.getElementById('ring2'),
+  document.getElementById('ring3'),
+  document.getElementById('ring4')
 ];
 
-const rippleLayer = document.querySelector('.ripple-layer');
-let rippleCooldown = 0;
+function updateRingGlow(intensity) {
+  const base = 3; // Brighter minimum glow
+  const max = 12; // More intense max glow
+  const glow = base + intensity * (max - base);
 
-  function triggerRipple() {
-  if (rippleCooldown > 0) return;
+  const shadow = `
+    0 0 ${glow}px rgba(255, 215, 0, ${0.65 + 0.35 * intensity}),
+    0 0 ${glow * 1.5}px rgba(255, 215, 0, ${0.3 + 0.2 * intensity})
+  `;
 
-  const ripple = document.createElement('div');
-  ripple.className = 'ripple-circle';
-  rippleLayer.appendChild(ripple);
-  setTimeout(() => ripple.remove(), 600);
-  rippleCooldown = 10; // prevent too many ripples in a row
+  rings.forEach(ring => {
+    ring.style.boxShadow = shadow;
+  });
 }
-function drawWaveform() {
-  requestAnimationFrame(drawWaveform);
-  analyser.getByteTimeDomainData(dataArray);
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-    let average = sum / dataArray.length;
-  let normalized = Math.min(average / 2, 1);
-
-  if (normalized > 0.4) triggerRipple();
 
 
   const fadeLayer = document.querySelector('.fade-layer');
@@ -521,6 +489,8 @@ let smoothedOpacity = previousOpacity + (targetOpacity - previousOpacity) * smoo
 previousOpacity = smoothedOpacity;
 fadeLayer.style.opacity = smoothedOpacity.toFixed(2);
 
+// 👑 NEW: Pulse glow intensity based on volume
+updateRingGlow(normalized);
 
 }
 
