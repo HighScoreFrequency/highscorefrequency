@@ -68,6 +68,20 @@
      mask-image: radial-gradient(circle, (135deg, #ffcc33, #a9712c, #ffd700) 1);
 }
 
+    .ring4 {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 78vmin;
+  height: 70vmin;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  animation: rotateClockwise 99s linear infinite;
+  z-index: 0; /* set this below .ring1 to layer it properly */
+  mask-image: radial-gradient(circle, (135deg, #ffcc33, #a9712c, #ffd700) 1);
+}
+
+
 /* Middle ring - square */
 .ring2 {
   width: 55vmin;
@@ -216,7 +230,9 @@
 <body>
   <div class="portal-wrapper">
     <canvas id="waveform"></canvas>
-      <div class="ring ring1"></div>
+    <div class="ring ring4"></div>
+  
+    <div class="ring ring1"></div>
 
   <!-- Middle ring (counterclockwise) -->
   <div class="ring ring2"></div>
