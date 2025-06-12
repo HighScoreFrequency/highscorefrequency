@@ -25,7 +25,6 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      overflow: visible !important;
     }
 
     canvas#waveform {
@@ -37,36 +36,6 @@
       z-index: 0;
       background: transparent;
     }
-
-.ring-scale-wrapper {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  will-change: transform;
-}
-
-    .ripple {
-  position: fixed;
-  top: 50%; left: 50%;
-  width: 10px;
-  height: 10px;
-  border: 2px solid #ffd700;
-  border-radius: 50%;
-  transform: translate(-50%, -50%) scale(1);
-  opacity: 1;
-  pointer-events: none;
-  animation: rippleExpand 1s ease-out forwards;
-  z-index: 5 !important;
-}
-
-@keyframes rippleExpand {
-  to {
-    transform: translate(-50%, -50%) scale(6);
-    opacity: 0;
-  }
-}
-
     
    .ring {
   position: absolute;
@@ -76,7 +45,6 @@
   transform: translate(-50%, -50%);
   box-sizing: content-box;
     border: 4px solid transparent;
-       box-shadow: none !important;
   border-image: linear-gradient(135deg, #ffcc33, #a9712c, #ffd700) 1;
   pointer-events: none;
   background: transparent;
@@ -94,7 +62,9 @@
   border: 4px solid #ffd700;
   animation: rotateCounter 99s linear infinite;
   z-index: 1;
-  mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
+     
+
+
 }
 
 /* Middle ring - square */
@@ -104,10 +74,12 @@
   left: 50%;
   width: 84vmin;
   height: 74vmin;
+  transform: translate(-50%, -50%);
   border-radius: 50%;
   border: 4px solid #a9712c;
   animation: rotateCounter 69s linear infinite;
   z-index: 1;
+  mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
 }
 
 /* Inner ring - circle */
@@ -117,6 +89,7 @@
   left: 50%;
   width: 84vmin;
   height: 74vmin;
+  transform: translate(-50%, -50%);
   border-radius: 50%;
   border: 4px solid #ffcc33;
   animation: rotateClockwise 77s linear infinite;
@@ -148,26 +121,22 @@
 
     }
 
-.content {
-  position: absolute; /* ← changed from relative */
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 10; /* higher than rings */
-  width: 90%;
-  max-width: 500px;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  overflow: hidden;
-  background: rgba(255, 255, 255, 0.85); /* optional soft white */
-}
-
+    .content {
+      position: relative;
+      z-index: 2;
+      width: 90%;
+      max-width: 500px;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      background: white;
+    }
 
     .fade-layer {
       position: absolute;
@@ -342,25 +311,11 @@
 <body>
   <div class="portal-wrapper">
     <canvas id="waveform"></canvas>
-<div class="ring-scale-wrapper" id="scale1">
-<!-- Ring 1 inside wrapper (scales) -->
-<div class="ring-scale-wrapper" id="scale1">
-  <div class="ring ring1" id="ring1"></div>
-</div>
-
-<!-- Ring 2 outside any wrapper (static) -->
+<div class="ring ring1" id="ring1"></div>
 <div class="ring ring2" id="ring2"></div>
-
-<!-- Ring 3 outside any wrapper (static) -->
 <div class="ring ring3" id="ring3"></div>
-
-<!-- Ring 4 inside wrapper (scales) -->
-<div class="ring-scale-wrapper" id="scale4">
-  <div class="ring ring4" id="ring4"></div>
-</div>
-
-<!-- Place content AFTER all rings, still inside portal-wrapper -->
-<div class="content">
+<div class="ring ring4" id="ring4"></div>
+    <div class="content">
       <div class="fade-layer"></div>
       <h2>🎙️ High Score Voice Portal</h2>
       <p>Choose your tone, speak it clear,<br>
@@ -394,30 +349,23 @@
 <script>
   const canvas = document.getElementById('waveform');
   const ctx = canvas.getContext('2d');
-const ringWrappers = [
-  document.getElementById('scale1'),
-  document.getElementById('scale4')
+  
 ];
 
+function updateRingGlow(intensity) {
+  const base = 3; // Brighter minimum glow
+  const max = 12; // More intense max glow
+  const glow = base + intensity * (max - base);
 
-function triggerRipple(intensity) {
-  if (intensity < 0.15) return;
+  const shadow = `
+    0 0 ${glow}px rgba(255, 215, 0, ${0.65 + 0.35 * intensity}),
+    0 0 ${glow * 1.5}px rgba(255, 215, 0, ${0.3 + 0.2 * intensity})
+  `;
 
-  const ripple = document.createElement('div');
-  ripple.className = 'ripple';
-
-  ripple.style.transform = `translate(-50%, -50%) scale(${0.8 + intensity * 0.5})`;
-  ripple.style.opacity = Math.min(1, intensity + 0.3);
-
-  document.querySelector('.portal-wrapper').appendChild(ripple);
-  ripple.addEventListener('animationend', () => ripple.remove());
+  rings.forEach(ring => {
+    ring.style.boxShadow = shadow;
+  });
 }
-
-
-
-
-
-
 
 
   const fadeLayer = document.querySelector('.fade-layer');
@@ -536,9 +484,6 @@ let smoothing = 0.5;
 let smoothedOpacity = previousOpacity + (targetOpacity - previousOpacity) * smoothing;
 previousOpacity = smoothedOpacity;
 fadeLayer.style.opacity = smoothedOpacity.toFixed(2);
-
-// 👑 NEW: Pulse glow intensity based on volume
-triggerRipple(normalized);
 
 
 }
