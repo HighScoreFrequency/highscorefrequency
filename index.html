@@ -325,10 +325,10 @@
 <body>
   <div class="portal-wrapper">
     <canvas id="waveform"></canvas>
-<div class="ring ring1" data-ring></div>
-<div class="ring ring2" data-ring></div>
-<div class="ring ring3" data-ring></div>
-<div class="ring ring4" data-ring></div>
+<div class="ring ring1" id="ring1"></div>
+<div class="ring ring2" id="ring2"></div>
+<div class="ring ring3" id="ring3"></div>
+<div class="ring ring4" id="ring4"></div>
     <div class="content">
       <div class="fade-layer"></div>
       <h2>🎙️ High Score Voice Portal</h2>
@@ -363,8 +363,25 @@
 <script>
   const canvas = document.getElementById('waveform');
   const ctx = canvas.getContext('2d');
+  const rings = [
+  document.getElementById('ring1'),
+  document.getElementById('ring2'),
+  document.getElementById('ring3'),
+  document.getElementById('ring4')
+];
+
+function updateRingGlow(intensity) {
+  const base = 12; // Minimum glow
+  const max = 60;  // Maximum glow
+  const glow = base + intensity * (max - base);
+  const shadow = `0 0 ${glow}px rgba(255, 215, 0, ${0.4 + 0.4 * intensity})`;
+
+  rings.forEach(ring => {
+    ring.style.boxShadow = shadow;
+  });
+}
+
   const fadeLayer = document.querySelector('.fade-layer');
-  const rings = document.querySelectorAll('[data-ring]');
 
   const AudioContext = window.AudioContext || window.webkitAudioContext;
   const audioCtx = new AudioContext({ latencyHint: 'interactive' });
@@ -474,20 +491,16 @@ function drawWaveform() {
     sum += Math.abs(dataArray[i] - 128);
   }
   let average = sum / dataArray.length;
-  let normalized = Math.min(average / 2, 1);
+let normalized = Math.min(average / 2, 1);
+let targetOpacity = 1 - (normalized * 1);
+let smoothing = 0.5;
+let smoothedOpacity = previousOpacity + (targetOpacity - previousOpacity) * smoothing;
+previousOpacity = smoothedOpacity;
+fadeLayer.style.opacity = smoothedOpacity.toFixed(2);
 
-  // 🔄 Animate rings based on volume
-const scaleFactor = 1 + normalized * 0.4; // up to 1.4x scale
-rings.forEach((ring, i) => {
-  ring.style.transform = `translate(-50%, -50%) scale(${scaleFactor}) rotate(${Date.now() / (2000 + i * 300)}deg)`;
-});
+// 👑 NEW: Pulse glow intensity based on volume
+updateRingGlow(normalized);
 
-  
-  let targetOpacity = 1 - (normalized * 1);
-  let smoothing = 0.5;
-  let smoothedOpacity = previousOpacity + (targetOpacity - previousOpacity) * smoothing;
-  previousOpacity = smoothedOpacity;
-  fadeLayer.style.opacity = smoothedOpacity.toFixed(2);
 }
 
 
