@@ -370,15 +370,20 @@
 ];
 
 function updateRingGlow(intensity) {
-  const base = 12; // Minimum glow
-  const max = 60;  // Maximum glow
+  const base = 24; // Brighter minimum glow
+  const max = 120; // More intense max glow
   const glow = base + intensity * (max - base);
-  const shadow = `0 0 ${glow}px rgba(255, 215, 0, ${0.4 + 0.4 * intensity})`;
+
+  const shadow = `
+    0 0 ${glow}px rgba(255, 215, 0, ${0.65 + 0.35 * intensity}),
+    0 0 ${glow * 1.5}px rgba(255, 215, 0, ${0.3 + 0.2 * intensity})
+  `;
 
   rings.forEach(ring => {
     ring.style.boxShadow = shadow;
   });
 }
+
 
   const fadeLayer = document.querySelector('.fade-layer');
 
