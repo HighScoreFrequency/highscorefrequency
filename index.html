@@ -514,412 +514,363 @@ button:hover:not(:disabled) {
         </div>
       </div>
 
+  <button id="activate-visualizer" style="
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+    padding: 14px 22px;
+    font-size: 18px;
+    background-color: #1a1a1a;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    cursor: pointer;
+    display: none;
+  ">
+    🔓 Tap to Activate Voice Visualizer
+  </button>
+  
       <audio id="audioPlayback" controls style="display: none;"></audio>
       <a id="downloadLink" style="display: none;">⬇️ Download Your Recording</a>
     </div>
   </div>
 
 <script>
-  const canvas = document.getElementById('waveform');
-  const ctx = canvas.getContext('2d');
-  const rings = [
-  document.getElementById('ring1'),
-  document.getElementById('ring2'),
-  document.getElementById('ring3'),
-  document.getElementById('ring4')
-];
+  document.addEventListener("DOMContentLoaded", function () {
+      const canvas = document.getElementById('waveform');
+      const ctx = canvas.getContext('2d');
+      const rings = [
+        document.getElementById('ring1'),
+        document.getElementById('ring2'),
+        document.getElementById('ring3'),
+        document.getElementById('ring4')
+      ];
+      const fadeLayer = document.querySelector('.fade-layer');
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      const audioCtx = new AudioContext({ latencyHint: 'interactive' });
 
+      let analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 2048;
+      let dataArray = new Uint8Array(analyser.fftSize);
+      let previousOpacity = 0.99;
 
-  const fadeLayer = document.querySelector('.fade-layer');
+      function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
 
-  const AudioContext = window.AudioContext || window.webkitAudioContext;
-  const audioCtx = new AudioContext({ latencyHint: 'interactive' });
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas);
 
-  let analyser = audioCtx.createAnalyser();
-  analyser.fftSize = 2048;
-  let dataArray = new Uint8Array(analyser.fftSize);
+      function drawWaveform() {
+        requestAnimationFrame(drawWaveform);
+        analyser.getByteTimeDomainData(dataArray);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  let previousOpacity = 0.99; // Start at base opacity
+        ctx.beginPath();
+        ctx.lineWidth = 3;
+        const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
+        gradient.addColorStop(0, '#5a9fe6');
+        gradient.addColorStop(1, '#5aecc6');
+        ctx.strokeStyle = gradient;
+        ctx.shadowColor = '#5a9fe6';
+        ctx.shadowBlur = 12;
 
-  function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-  }
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const half = dataArray.length / 2;
+        const sliceWidth = canvas.width / dataArray.length;
+        const decayRate = 0.95;
+        const emaAlpha = 0.2;
+        const rippleSpread = canvas.width / 4;
 
-  resizeCanvas();
-  window.addEventListener('resize', resizeCanvas);
+        if (!window.smoothedAmplitudes)
+          window.smoothedAmplitudes = new Float32Array(dataArray.length).fill(0.0);
+        if (!window.emaValues)
+          window.emaValues = new Float32Array(dataArray.length).fill(1.0);
 
-function drawWaveform() {
-  requestAnimationFrame(drawWaveform);
-  analyser.getByteTimeDomainData(dataArray);
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const smoothedY = new Float32Array(dataArray.length);
 
-  ctx.beginPath();
-  ctx.lineWidth = 3;
-  const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
-  gradient.addColorStop(0, '#5a9fe6');
-  gradient.addColorStop(1, '#5aecc6');
-  ctx.strokeStyle = gradient;
-  ctx.shadowColor = '#5a9fe6';
-  ctx.shadowBlur = 12;
+        for (let i = 0; i < dataArray.length; i++) {
+          let v = Math.min(dataArray[i] / 128.0 * 1.2, 2);
+          window.emaValues[i] = emaAlpha * v + (1 - emaAlpha) * window.emaValues[i];
+          let smoothedV = window.emaValues[i];
+          let deviation = Math.abs(smoothedV - 1.0);
+          window.smoothedAmplitudes[i] = Math.max(deviation, window.smoothedAmplitudes[i] * decayRate);
+          let finalV = smoothedV > 1.0 ? 1.0 + window.smoothedAmplitudes[i] : 1.0 - window.smoothedAmplitudes[i];
 
-  const centerX = canvas.width / 2;
-  const centerY = canvas.height / 2;
-  const half = dataArray.length / 2;
-  const sliceWidth = canvas.width / dataArray.length;
-  const decayRate = 0.95;
-  const emaAlpha = 0.2;
-  const rippleSpread = canvas.width / 4;
+          let baseY = (finalV - 1.0) * canvas.height * 0.6 + centerY;
+          let distanceFromCenter = Math.abs(i - half);
+          let rippleFactor = Math.exp(-Math.pow(distanceFromCenter * sliceWidth, 2) / (2 * rippleSpread * rippleSpread));
 
-  if (!window.smoothedAmplitudes)
-    window.smoothedAmplitudes = new Float32Array(dataArray.length).fill(0.0);
-  if (!window.emaValues)
-    window.emaValues = new Float32Array(dataArray.length).fill(1.0);
+          if (i > 0) {
+            smoothedY[i] = emaAlpha * (centerY + (baseY - centerY) * rippleFactor) +
+                           (1 - emaAlpha) * smoothedY[i - 1];
+          } else {
+            smoothedY[i] = centerY + (baseY - centerY) * rippleFactor;
+          }
+        }
 
-  const smoothedY = new Float32Array(dataArray.length);
+        let x = centerX;
+        let prevX = centerX;
+        let prevY = smoothedY[0];
+        for (let i = 0; i < half; i++) {
+          let y = smoothedY[i];
+          let xc = (prevX + x) / 2;
+          let yc = (prevY + y) / 2;
+          ctx.quadraticCurveTo(prevX, prevY, xc, yc);
+          prevX = x;
+          prevY = y;
+          x += sliceWidth;
+        }
 
-  // Calculate smoothed ripple heights
-  for (let i = 0; i < dataArray.length; i++) {
-    let v = Math.min(dataArray[i] / 128.0 * 1.2, 2);
-    window.emaValues[i] = emaAlpha * v + (1 - emaAlpha) * window.emaValues[i];
-    let smoothedV = window.emaValues[i];
-    let deviation = Math.abs(smoothedV - 1.0);
-    window.smoothedAmplitudes[i] = Math.max(deviation, window.smoothedAmplitudes[i] * decayRate);
-    let finalV = smoothedV > 1.0 ? 1.0 + window.smoothedAmplitudes[i] : 1.0 - window.smoothedAmplitudes[i];
+        ctx.moveTo(centerX, smoothedY[0]);
 
-    let baseY = (finalV - 1.0) * canvas.height * 0.6 + centerY;
+        x = centerX;
+        prevX = centerX;
+        prevY = smoothedY[0];
+        for (let i = 0; i < half; i++) {
+          let y = smoothedY[i];
+          let xc = (prevX + x) / 2;
+          let yc = (prevY + y) / 2;
+          ctx.quadraticCurveTo(prevX, prevY, xc, yc);
+          prevX = x;
+          prevY = y;
+          x -= sliceWidth;
+        }
 
-    let distanceFromCenter = Math.abs(i - half);
-    let rippleFactor = Math.exp(-Math.pow(distanceFromCenter * sliceWidth, 2) / (2 * rippleSpread * rippleSpread));
+        ctx.stroke();
+        ctx.shadowBlur = 0;
 
-    if (i > 0) {
-      smoothedY[i] = emaAlpha * (centerY + (baseY - centerY) * rippleFactor) +
-                     (1 - emaAlpha) * smoothedY[i - 1];
-    } else {
-      smoothedY[i] = centerY + (baseY - centerY) * rippleFactor;
-    }
-  }
+        let sum = 0;
+        for (let i = 0; i < dataArray.length; i++) {
+          sum += Math.abs(dataArray[i] - 128);
+        }
+        let average = sum / dataArray.length;
+        let normalized = Math.min(average / 2, 1);
+        let targetOpacity = 0.99 - (normalized * 0.99);
+        let smoothing = 0.1;
+        let smoothedOpacity = previousOpacity + (targetOpacity - previousOpacity) * smoothing;
+        previousOpacity = smoothedOpacity;
+        fadeLayer.style.opacity = smoothedOpacity.toFixed(2);
+      }
 
-  // Draw from center to right
-  let x = centerX;
-  let prevX = centerX;
-  let prevY = smoothedY[0];
-  for (let i = 0; i < half; i++) {
-    let y = smoothedY[i];
-    let xc = (prevX + x) / 2;
-    let yc = (prevY + y) / 2;
-    ctx.quadraticCurveTo(prevX, prevY, xc, yc);
-    prevX = x;
-    prevY = y;
-    x += sliceWidth;
-  }
+      drawWaveform();
 
-  // Move back to center
-  ctx.moveTo(centerX, smoothedY[0]);
+      let oscillator, gainNode, panner;
+      let mediaRecorder;
+      let chunks = [];
+      let mixedStream = null;
+      let previewPlaying = false;
 
-  // Draw from center to left
-  x = centerX;
-  prevX = centerX;
-  prevY = smoothedY[0];
-  for (let i = 0; i < half; i++) {
-    let y = smoothedY[i];
-    let xc = (prevX + x) / 2;
-    let yc = (prevY + y) / 2;
-    ctx.quadraticCurveTo(prevX, prevY, xc, yc);
-    prevX = x;
-    prevY = y;
-    x -= sliceWidth;
-  }
+      const recordBtn = document.getElementById('record-btn');
+      const stopBtn = document.getElementById('stopBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const previewTone = document.getElementById('preview-btn');
+      const audioPlayback = document.getElementById('audioPlayback');
+      const downloadLink = document.getElementById('downloadLink');
+      const frequencySelect = document.getElementById('frequencySelect');
 
-  ctx.stroke();
-  ctx.shadowBlur = 0;
+      function createOscillator(freq, fadeIn = 0.5, fadeOut = 0.5) {
+        oscillator = audioCtx.createOscillator();
+        gainNode = audioCtx.createGain();
+        panner = audioCtx.createStereoPanner();
 
-  // 🔊 Audio-based fade
-  let sum = 0;
-  for (let i = 0; i < dataArray.length; i++) {
-    sum += Math.abs(dataArray[i] - 128);
-  }
-  let average = sum / dataArray.length;
-let normalized = Math.min(average / 2, 1);
-let targetOpacity = .99 - (normalized * .99);
-let smoothing = 0.1;
-let smoothedOpacity = previousOpacity + (targetOpacity - previousOpacity) * smoothing;
-previousOpacity = smoothedOpacity;
-fadeLayer.style.opacity = smoothedOpacity.toFixed(2);
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
 
-}
+        const now = audioCtx.currentTime;
+        gainNode.gain.setValueAtTime(0, now);
+        gainNode.gain.linearRampToValueAtTime(0.02, now + fadeIn);
 
+        oscillator.connect(panner).connect(gainNode);
 
-  drawWaveform();
-
-  let oscillator, gainNode, panner;
-  let mediaRecorder;
-  let chunks = [];
-  let mixedStream = null;
-  let previewPlaying = false;
-
-  const recordBtn = document.getElementById('record-btn');
-  const stopBtn = document.getElementById('stopBtn');
-  const resetBtn = document.getElementById('resetBtn');
-  const previewTone = document.getElementById('preview-btn');
-  const audioPlayback = document.getElementById('audioPlayback');
-  const downloadLink = document.getElementById('downloadLink');
-  const frequencySelect = document.getElementById('frequencySelect');
-
-  function createOscillator(freq, fadeIn = 0.5, fadeOut = 0.5) {
-  oscillator = audioCtx.createOscillator();
-  gainNode = audioCtx.createGain();
-  panner = audioCtx.createStereoPanner();
-
-  oscillator.type = 'sine';
-  oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
-
-  const now = audioCtx.currentTime;
-  gainNode.gain.setValueAtTime(0, now);
-  gainNode.gain.linearRampToValueAtTime(0.02, now + fadeIn);
-
-  oscillator.connect(panner).connect(gainNode);
-
-  oscillator.stopWithFade = () => {
-    const stopTime = audioCtx.currentTime + fadeOut;
-    gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
-    gainNode.gain.setValueAtTime(gainNode.gain.value, audioCtx.currentTime);
-    gainNode.gain.linearRampToValueAtTime(0, stopTime);
-    oscillator.stop(stopTime);
-  };
-
-  return gainNode;
-}
-
-function stopPreviewTone(instant = false) {
-  if (oscillator) {
-    if (instant) {
-      oscillator.stop();
-      previewPlaying = false;
-      previewTone.textContent = '🔊 Preview Tone';
-    } else {
-      oscillator.stopWithFade();
-      setTimeout(() => {
-        previewPlaying = false;
-        previewTone.textContent = '🔊 Preview Tone';
-      }, 500); // Match 0.5s fade-out
-    }
-    oscillator = null; // Clear oscillator reference
-  }
-}
-
-previewTone.onclick = async () => {
-  if (audioCtx.state === 'suspended') await audioCtx.resume();
-
-  const freq = parseFloat(frequencySelect.value);
-  if (freq === 0) return;
-
-  if (!previewPlaying) {
-    const node = createOscillator(freq);
-    node.connect(audioCtx.destination);
-    oscillator.start();
-    previewPlaying = true;
-    previewTone.textContent = '🛑 Stop Preview';
-  } else {
-    stopPreviewTone(); // Fade out over 0.5s
-  }
-};
-
-frequencySelect.addEventListener('change', () => {
-  const freq = parseFloat(frequencySelect.value);
-
-  if (freq === 0) {
-    stopPreviewTone(true); // Instant stop for "No Tone"
-    previewTone.disabled = true;
-    previewTone.textContent = '🔇 Preview Disabled';
-    return;
-  }
-
-  // If previewing, switch tone instantly
-  if (previewPlaying) {
-    stopPreviewTone(true); // Instant stop
-    const node = createOscillator(freq, 0, 0.5); // No fade-in, 1.5s fade-out
-    node.connect(audioCtx.destination);
-    oscillator.start();
-    previewPlaying = true;
-    previewTone.textContent = '🛑 Stop Preview';
-  } else {
-    previewTone.disabled = false;
-    previewTone.textContent = '🔊 Preview Tone';
-  }
-});
-
-previewTone.disabled = parseFloat(frequencySelect.value) === 0;
-previewTone.textContent = parseFloat(frequencySelect.value) === 0 ? '🔇 Preview Disabled' : '🔊 Preview Tone';
-
-recordBtn.onclick = async () => {
-  if (audioCtx.state === 'suspended') await audioCtx.resume();
-
-  const startRecording = async () => {
-    const freq = parseFloat(frequencySelect.value);
-    const oscillatorNode = freq > 0 ? createOscillator(freq) : null;
-
-    try {
-      const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const micSource = audioCtx.createMediaStreamSource(micStream);
-      micSource.connect(analyser);
-
-      const dest = audioCtx.createMediaStreamDestination();
-      micSource.connect(dest);
-      if (oscillatorNode) oscillatorNode.connect(dest);
-
-      mixedStream = dest.stream;
-      mediaRecorder = new MediaRecorder(mixedStream);
-
-      chunks = [];
-      mediaRecorder.ondataavailable = e => chunks.push(e.data);
-      mediaRecorder.onstop = () => {
-        const blob = new Blob(chunks, { type: 'audio/mp3' });
-        const url = URL.createObjectURL(blob);
-        audioPlayback.src = url;
-        audioPlayback.style.display = 'block';
-
-        const date = new Date().toISOString().split('T')[0];
-        downloadLink.href = url;
-        downloadLink.download = `highscore-frequency-${date}.mp3`;
-        downloadLink.style.display = 'inline-block';
-      };
-
-      mediaRecorder.start();
-      if (oscillatorNode) oscillatorNode.start();
-
-      recordBtn.disabled = true;
-      stopBtn.disabled = false;
-      previewTone.disabled = true;
-      previewTone.textContent = '🔇 Preview Disabled';
-    } catch (e) {
-      alert('Microphone access denied.');
-    }
-  };
-
-  if (previewPlaying) {
-    stopPreviewTone();
-    setTimeout(startRecording, 500); // Wait for 0.5s fade-out
-  } else {
-    startRecording();
-  }
-};
-  recordBtn.onclick = async () => {
-    if (audioCtx.state === 'suspended') await audioCtx.resume();
-
-    const startRecording = async () => {
-      const freq = parseFloat(frequencySelect.value);
-      const oscillatorNode = freq > 0 ? createOscillator(freq) : null;
-
-      try {
-        const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        const micSource = audioCtx.createMediaStreamSource(micStream);
-        micSource.connect(analyser);
-
-        const dest = audioCtx.createMediaStreamDestination();
-        micSource.connect(dest);
-        if (oscillatorNode) oscillatorNode.connect(dest);
-
-        mixedStream = dest.stream;
-        mediaRecorder = new MediaRecorder(mixedStream);
-
-        chunks = [];
-        mediaRecorder.ondataavailable = e => chunks.push(e.data);
-        mediaRecorder.onstop = () => {
-          const blob = new Blob(chunks, { type: 'audio/mp3' });
-          const url = URL.createObjectURL(blob);
-          audioPlayback.src = url;
-          audioPlayback.style.display = 'block';
-
-          const date = new Date().toISOString().split('T')[0];
-          downloadLink.href = url;
-          downloadLink.download = `highscore-frequency-${date}.mp3`; // Fixed syntax
-          downloadLink.style.display = 'inline-block';
+        oscillator.stopWithFade = () => {
+          const stopTime = audioCtx.currentTime + fadeOut;
+          gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
+          gainNode.gain.setValueAtTime(gainNode.gain.value, audioCtx.currentTime);
+          gainNode.gain.linearRampToValueAtTime(0, stopTime);
+          oscillator.stop(stopTime);
         };
 
-        mediaRecorder.start();
-        if (oscillatorNode) oscillator.start();
-
-        recordBtn.disabled = true;
-        stopBtn.disabled = false;
-        previewTone.disabled = true;
-        previewTone.textContent = '🔇 Preview Disabled';
-      } catch (e) {
-        alert('Microphone access denied.');
+        return gainNode;
       }
-    };
 
-    if (previewPlaying) {
-      stopPreviewTone();
-      setTimeout(startRecording, 600);
-    } else {
-      startRecording();
-    }
-  };
+      function stopPreviewTone(instant = false) {
+        if (oscillator) {
+          if (instant) {
+            oscillator.stop();
+            previewPlaying = false;
+            previewTone.textContent = '🔊 Preview Tone';
+          } else {
+            oscillator.stopWithFade();
+            setTimeout(() => {
+              previewPlaying = false;
+              previewTone.textContent = '🔊 Preview Tone';
+            }, 500);
+          }
+          oscillator = null;
+        }
+      }
 
-  stopBtn.onclick = () => {
-    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-      mediaRecorder.stop();
-    }
-    if (oscillator && oscillator.stopWithFade) {
-      oscillator.stopWithFade();
-    } else if (oscillator) {
-      oscillator.stop();
-    }
+      previewTone.onclick = async () => {
+        if (audioCtx.state === 'suspended') await audioCtx.resume();
 
-    recordBtn.disabled = false;
-    stopBtn.disabled = true;
-    resetBtn.disabled = false;
+        const freq = parseFloat(frequencySelect.value);
+        if (freq === 0) return;
 
-    const freq = parseFloat(frequencySelect.value);
-    previewTone.disabled = freq === 0;
-    previewTone.textContent = freq === 0 ? '🔇 Preview Disabled' : '🔊 Preview tone';
-    previewPlaying = false;
-  };
+        if (!previewPlaying) {
+          const node = createOscillator(freq);
+          node.connect(audioCtx.destination);
+          oscillator.start();
+          previewPlaying = true;
+          previewTone.textContent = '🛑 Stop Preview';
+        } else {
+          stopPreviewTone();
+        }
+      };
 
-  resetBtn.onclick = () => {
-    audioPlayback.pause();
-    audioPlayback.currentTime = 0;
-    audioPlayback.src = '';
-    audioPlayback.style.display = 'none';
+      frequencySelect.addEventListener('change', () => {
+        const freq = parseFloat(frequencySelect.value);
 
-    downloadLink.href = '';
-    downloadLink.download = '';
-    downloadLink.style.display = 'none';
+        if (freq === 0) {
+          stopPreviewTone(true);
+          previewTone.disabled = true;
+          previewTone.textContent = '🔇 Preview Disabled';
+          return;
+        }
 
-    resetBtn.disabled = true;
-  };
+        if (previewPlaying) {
+          stopPreviewTone(true);
+          const node = createOscillator(freq, 0, 0.5);
+          node.connect(audioCtx.destination);
+          oscillator.start();
+          previewPlaying = true;
+          previewTone.textContent = '🛑 Stop Preview';
+        } else {
+          previewTone.disabled = false;
+          previewTone.textContent = '🔊 Preview Tone';
+        }
+      });
 
-  const activateButton = document.getElementById('activate-visualizer');
+      previewTone.disabled = parseFloat(frequencySelect.value) === 0;
+      previewTone.textContent = parseFloat(frequencySelect.value) === 0 ? '🔇 Preview Disabled' : '🔊 Preview Tone';
 
-// Try to auto-start waveform visualizer on page load
-(async function autoStartWaveform() {
-  try {
-    const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    if (audioCtx.state === 'suspended') await audioCtx.resume();
-    const micSource = audioCtx.createMediaStreamSource(micStream);
-    micSource.connect(analyser);
-  } catch (err) {
-    // Show fallback button if access blocked
-    activateButton.style.display = 'block';
-  }
-})();
+      recordBtn.onclick = async () => {
+        if (audioCtx.state === 'suspended') await audioCtx.resume();
 
-// Manual fallback for user activation
-activateButton.addEventListener('click', async () => {
-  try {
-    const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    if (audioCtx.state === 'suspended') await audioCtx.resume();
-    const micSource = audioCtx.createMediaStreamSource(micStream);
-    micSource.connect(analyser);
-    activateButton.style.display = 'none';
-  } catch (err) {
-    alert('Microphone access is required to activate the visualizer.');
-  }
-});
+        const startRecording = async () => {
+          const freq = parseFloat(frequencySelect.value);
+          const oscillatorNode = freq > 0 ? createOscillator(freq) : null;
 
+          try {
+            const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const micSource = audioCtx.createMediaStreamSource(micStream);
+            micSource.connect(analyser);
 
-    document.addEventListener("DOMContentLoaded", function () {
+            const dest = audioCtx.createMediaStreamDestination();
+            micSource.connect(dest);
+            if (oscillatorNode) oscillatorNode.connect(dest);
+
+            mixedStream = dest.stream;
+            mediaRecorder = new MediaRecorder(mixedStream);
+
+            chunks = [];
+            mediaRecorder.ondataavailable = e => chunks.push(e.data);
+            mediaRecorder.onstop = () => {
+              const blob = new Blob(chunks, { type: 'audio/mp3' });
+              const url = URL.createObjectURL(blob);
+              audioPlayback.src = url;
+              audioPlayback.style.display = 'block';
+
+              const date = new Date().toISOString().split('T')[0];
+              downloadLink.href = url;
+              downloadLink.download = `highscore-frequency-${date}.mp3`;
+              downloadLink.style.display = 'inline-block';
+            };
+
+            mediaRecorder.start();
+            if (oscillatorNode) oscillatorNode.start();
+
+            recordBtn.disabled = true;
+            stopBtn.disabled = false;
+            previewTone.disabled = true;
+            previewTone.textContent = '🔇 Preview Disabled';
+          } catch (e) {
+            alert('Microphone access denied.');
+          }
+        };
+
+        if (previewPlaying) {
+          stopPreviewTone();
+          setTimeout(startRecording, 500);
+        } else {
+          startRecording();
+        }
+      };
+
+      stopBtn.onclick = () => {
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+          mediaRecorder.stop();
+        }
+        if (oscillator && oscillator.stopWithFade) {
+          oscillator.stopWithFade();
+        } else if (oscillator) {
+          oscillator.stop();
+        }
+
+        recordBtn.disabled = false;
+        stopBtn.disabled = true;
+        resetBtn.disabled = false;
+
+        const freq = parseFloat(frequencySelect.value);
+        previewTone.disabled = freq === 0;
+        previewTone.textContent = freq === 0 ? '🔇 Preview Disabled' : '🔊 Preview Tone';
+        previewPlaying = false;
+      };
+
+      resetBtn.onclick = () => {
+        audioPlayback.pause();
+        audioPlayback.currentTime = 0;
+        audioPlayback.src = '';
+        audioPlayback.style.display = 'none';
+
+        downloadLink.href = '';
+        downloadLink.download = '';
+        downloadLink.style.display = 'none';
+
+        resetBtn.disabled = true;
+      };
+
+      const activateButton = document.getElementById('activate-visualizer');
+
+      (async function autoStartWaveform() {
+        try {
+          const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          if (audioCtx.state === 'suspended') await audioCtx.resume();
+          const micSource = audioCtx.createMediaStreamSource(micStream);
+          micSource.connect(analyser);
+        } catch (err) {
+          activateButton.style.display = 'block';
+        }
+      })();
+
+      activateButton.addEventListener('click', async () => {
+        try {
+          const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          if (audioCtx.state === 'suspended') await audioCtx.resume();
+          const micSource = audioCtx.createMediaStreamSource(micStream);
+          micSource.connect(analyser);
+          activateButton.style.display = 'none';
+        } catch (err) {
+          alert('Microphone access is required to activate the visualizer.');
+        }
+      });
+
+      // Declaration text logic
       const promptSelect = document.getElementById("promptSelect");
       const declarationText = document.getElementById("declaration-text");
 
@@ -933,10 +884,11 @@ activateButton.addEventListener('click', async () => {
 
       function updateDeclaration() {
         const selected = promptSelect.value;
-        declarationText.innerText = declarations[selected] || declarations[""];
+        declarationText.textContent = declarations[selected] || declarations[""];
+        console.log("Updated text to:", declarationText.textContent); // Debug
       }
 
-      updateDeclaration();
+      updateDeclaration(); // Set initial text
       promptSelect.addEventListener("change", updateDeclaration);
     });
 
