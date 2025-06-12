@@ -224,10 +224,10 @@
       transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
-    button:hover:not(:disabled) {
-      transform: scale(1.05);
-      box-shadow: 0 0 6px rgba(0, 0, 0, 0.2);
-    }
+button:hover:not(:disabled) {
+  transform: scale(0.95); /* This shrinks the button slightly */
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.15); /* Optional: soften the glow to match the shrink effect */
+}
 
     button:disabled {
       background-color: #666;
