@@ -374,13 +374,20 @@ const ringWrappers = [
 ];
 
 
+let previousScale = 1;
+
 function updateRingGlow(intensity) {
-  const scale = 1 + intensity * 0.02; // scales from 1 to 1.15 based on sound
+  const targetScale = 1 + intensity * 0.01;
+  const smoothing = 0.1; // smaller = smoother (0.05 to 0.2 range works well)
+
+  // Apply decay interpolation
+  previousScale = previousScale + (targetScale - previousScale) * smoothing;
 
   ringWrappers.forEach(wrapper => {
-    wrapper.style.transform = `translate(-50%, -50%) scale(${scale})`;
+    wrapper.style.transform = `translate(-50%, -50%) scale(${previousScale})`;
   });
 }
+
 
 
 
