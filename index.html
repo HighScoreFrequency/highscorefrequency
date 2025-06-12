@@ -183,27 +183,27 @@
       margin-bottom: 30px;
     }
 
-    .button-group {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      margin-bottom: 10px;
-    }
-
-    .row {
-      display: flex;
-      gap: 0px;
-      flex-wrap: wrap;
+.button-group {
   width: 100%;
   display: flex;
-  justify-content: space-between;
-    }
+  flex-direction: column;
+  gap: 4px; /* spacing between rows */
+  margin-top: 0;
+}
 
-    .row button {
+.row {
+  display: flex;
+  gap: 4px; /* spacing between buttons */
+  width: 100%;
+  justify-content: space-between;
+}
+
+.row button {
   flex: 1;
   max-width: 100%;
+  margin: 0; /* remove default button spacing */
 }
+
 
     .button-group {
   width: 100%;
@@ -264,7 +264,6 @@
     .input-wrapper {
       width: 100%;
       display: flex;
-        margin: 0 !important;
       flex-direction: column;
         gap: 4px;
     }
