@@ -68,9 +68,11 @@
 
 /* Middle ring - square */
 .ring2 {
+  position: absolute;
   width: 55vmin;
   height: 55vmin; /* Square, no border-radius */
   border: 4px solid transparent;
+  border-radius: 50%;
   border-image: linear-gradient(135deg, #ffcc33, #a9712c, #ffd700) 1;
   animation: rotateCounter 69s linear infinite;
   z-index: 1;
