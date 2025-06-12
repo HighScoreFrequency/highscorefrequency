@@ -840,19 +840,21 @@ activateButton.addEventListener('click', async () => {
   }
 });
 
-    const declarations = {
-      "1": `⚡️ Unlock My Final Form\n\nI release the scripts that kept me small...`,
-      "2": `🔥 Clear Limited Codes\n\nI return to blueprint, soul-designed...`,
-      "3": `🚀 Load the Expansion Pack\n\nI summon wealth, in forms untold...`,
-      "4": `👑 Equip Divine Union Mode\n\nI activate love, the sacred kind...`
-    };
+const declarations = {
+  "0": `Choose your tone, speak it clear,\ncode your vibe, draw truth near.\nThis isn’t sound, it’s memory’s key,\na voice-crafted path to mastery.`,
+  "1": `⚡️ Unlock My Final Form\n\nI release the scripts that kept me small...`,
+  "2": `🔥 Clear Limited Codes\n\nI return to blueprint, soul-designed...`,
+  "3": `🚀 Load the Expansion Pack\n\nI summon wealth, in forms untold...`,
+  "4": `👑 Equip Divine Union Mode\n\nI activate love, the sacred kind...`
+};
+
 
     const promptSelect = document.getElementById("promptSelect");
     const declarationText = document.getElementById("declaration-text");
 
     promptSelect.addEventListener("change", function () {
       const selected = this.value;
-      declarationText.innerText = declarations[selected] || '';
+      declarationText.innerText = declarations[selected] || "0";
     });
 
 </script>
