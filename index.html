@@ -622,8 +622,8 @@ function drawWaveform() {
     sum += Math.abs(dataArray[i] - 128);
   }
   let average = sum / dataArray.length;
-let normalized = Math.min(average / 2, 1);
-let targetOpacity = .99 - (normalized * .99);
+let normalized = Math.min(average / 3, 1);
+let targetOpacity = .39 - (normalized * .39);
 let smoothing = 0.5;
 let smoothedOpacity = previousOpacity + (targetOpacity - previousOpacity) * smoothing;
 previousOpacity = smoothedOpacity;
