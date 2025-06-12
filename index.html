@@ -494,19 +494,6 @@
       sum += Math.abs(dataArray[i] - 128);
     }
     let average = sum / dataArray.length;
-
-    let pulseScale = 0.95 + Math.min(average / 64, 0.15);
-
-    let normalized = Math.min(average / 12, 1);
-    let glow = Math.round(normalized * 60);
-    let glowColor = 0 0 ${glow}px rgba(255, 215, 0, ${normalized.toFixed(2)});
-
-    document.querySelector('.ring1').style.boxShadow = glowColor;
-    document.querySelector('.ring2').style.boxShadow = glowColor;
-    document.querySelector('.ring3').style.boxShadow = glowColor;
-
-    const ring3 = document.querySelector('.ring3');
-    ring3.style.transform = translate(-50%, -50%) scale(${pulseScale.toFixed(3)});
   }
 
   drawWaveform();
