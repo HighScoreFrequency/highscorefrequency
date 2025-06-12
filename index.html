@@ -289,6 +289,7 @@ button:hover:not(:disabled) {
     #declaration-text {
       max-width: 100%;
       overflow-y: auto;
+        white-space: pre-line; /* handles \n */
     }
 
     #promptSelect {
@@ -464,10 +465,7 @@ button:hover:not(:disabled) {
     <div class="content">
       <div class="fade-layer"></div>
       <h2>🎙️ High Score Voice Portal</h2>
-      <p>Choose your tone, speak it clear,<br>
-        code your vibe, draw truth near.<br>
-        This isn’t sound, it’s memory’s key,<br>
-        a voice-crafted path to mastery.</p>
+
 
   <div class="input-wrapper">
   <div id="declaration-box">
@@ -852,8 +850,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const promptSelect = document.getElementById("promptSelect");
   const declarationText = document.getElementById("declaration-text");
 
-  // ✅ Set default text
-  declarationText.innerText = declarations[""];
+  // ✅ Set default on load
+  declarationText.innerText = declarations[promptSelect.value] || "";
 
   // ✅ Update on change
   promptSelect.addEventListener("change", function () {
