@@ -350,12 +350,13 @@
         a voice-crafted path to mastery.</p>
 
       <div id="prompt-section">
-  <div class="row" style="margin-top: 10px;">
-    <button onclick="showDeclaration(1)">⚡️ Unlock My Final Form</button>
-    <button onclick="showDeclaration(2)">🔥 Clear Limited Codes</button>
-    <button onclick="showDeclaration(3)">🚀 Load the Expansion Pack</button>
-    <button onclick="showDeclaration(4)">👑 Equip Divine Union Mode</button>
-  </div>
+<select id="promptSelect">
+  <option value="">🎯 Choose Your Portal Prompt</option>
+  <option value="1">⚡️ Unlock My Final Form</option>
+  <option value="2">🔥 Clear Limited Codes</option>
+  <option value="3">🚀 Load the Expansion Pack</option>
+  <option value="4">👑 Equip Divine Union Mode</option>
+</select>
 
   <div id="declaration-box" style="display: none; margin-top: 12px; width: 100%; max-height: 280px; overflow-y: auto; background: rgba(255, 255, 255, 0.95); padding: 14px; border-radius: 10px; font-size: 11px; text-align: left; color: #222; line-height: 1.6; white-space: pre-wrap;">
     <div id="declaration-text"></div>
@@ -725,6 +726,7 @@ activateButton.addEventListener('click', async () => {
 
 
   const declarations = {
+    
   1: `⚡️ Unlock My Final Form
 
 I release the scripts that kept me small,
@@ -814,13 +816,20 @@ The keys are clear, the gates are wide—
 This love, this time, I walk inside.`
 };
 
-function showDeclaration(id) {
+const promptSelect = document.getElementById("promptSelect");
+promptSelect.addEventListener("change", function () {
+  const selected = this.value;
   const box = document.getElementById("declaration-box");
   const text = document.getElementById("declaration-text");
 
-  text.innerText = declarations[id];
-  box.style.display = 'block';
-}
+  if (declarations[selected]) {
+    text.innerText = declarations[selected];
+    box.style.display = 'block';
+  } else {
+    box.style.display = 'none';
+  }
+});
+
 
 
   
