@@ -16,6 +16,7 @@
       justify-content: center;
       align-items: center;
       overflow: hidden;
+      scroll-behavior: smooth;
     }
 
     .portal-wrapper {
@@ -349,8 +350,15 @@
 #declaration-text {
   max-height: 369px;
   padding-right: 8px;
+  max-width: 100% !important;
   overflow-y: auto;
 }
+
+  #promptSelect, #frequencySelect {
+  width: 100%;
+  box-sizing: border-box;
+}
+
     
   </style>
 </head>
