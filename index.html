@@ -18,17 +18,6 @@
       overflow: hidden;
     }
 
-#prompt-section .row button {
-  font-size: 13px;
-  padding: 8px 14px;
-  background: #1a1a1a;
-  border-radius: 6px;
-  color: white;
-  white-space: nowrap;
-}
-
-
-
     .portal-wrapper {
       position: relative;
       width: 93vmin;
@@ -254,12 +243,6 @@
       to { opacity: 1; }
     }
 
-    #promptSelect, #frequencySelect {
-  width: 100%;
-  box-sizing: border-box;
-}
-
-
     /* 🔧 Mobile-Only Overrides */
     @media only screen and (max-width: 768px) {
       html, body {
@@ -338,48 +321,6 @@
         max-width: 100% !important;
       }
     }
-
-#declaration-text {
-  height: 200px;
-  width: 100% !important;
-  overflow-y: auto !important;
-  padding: 4px;
-  font-size: 13px;
-  line-height: 1.6;
-  white-space: pre-wrap;
-  color: #222;
-  text-align: left;
-}
-
-
-    #declaration-box {
-  margin-top: 12px;
-  max-width: 100% !important;
-  max-height: 100px;
-  min-height: 75px;
-  padding: 14px;
-  border-radius: 10px;
-  font-size: 12px;
-  text-align: left;
-  color: #222;
-  line-height: 1.6;
-  white-space: pre-wrap;
-  background: rgba(255, 255, 255, 0.95);
-  overflow-y: auto !important;
-  border: 1px solid #ccc;
-  resize: vertical;
-  transition: box-shadow 0.2s ease;
-}
-    html {
-  scroll-behavior: smooth;
-}
-
-
-#declaration-box:focus-within {
-  box-shadow: 0 0 8px rgba(90, 159, 230, 0.4);
-}
-
-
   </style>
 </head>
 <body>
@@ -397,21 +338,6 @@
         This isn’t sound, it’s memory’s key,<br>
         a voice-crafted path to mastery.</p>
 
-      <div id="prompt-section">
-<select id="promptSelect">
-  <option value="">🎯 Choose Your Portal Prompt</option>
-  <option value="1">⚡️ Unlock My Final Form</option>
-  <option value="2">🔥 Clear Limited Codes</option>
-  <option value="3">🚀 Load the Expansion Pack</option>
-  <option value="4">👑 Equip Divine Union Mode</option>
-</select>
-
-<div id="declaration-box">
-  <div id="declaration-text"></div>
-</div>
-
-
-      
       <select id="frequencySelect">
         <option value="528">528 Hz – 🧬 Cell Recalibration – Level Up to Wholeness</option>
         <option value="639">639 Hz – 💖 Heart Link Gateway – Sync Into Unity Field</option>
@@ -772,109 +698,6 @@ activateButton.addEventListener('click', async () => {
   }
 });
 
-
-  const declarations = {
-    
-  "1": `⚡️ Unlock My Final Form`,
-
-I release the scripts that kept me small,
-The lines I spoke that built my wall.
-I break the loop, I end the chain—
-No more cycles born from pain.
-
-With breath I burn the faulty file,
-I rewrite truth in sovereign style.
-No outer code shall claim my fate,
-I boot from love and calibrate.
-
-I call all versions back to me,
-Unshackled, whole, and glitch-free.
-I merge my timelines, clean and true—
-No shadow code can overwrite my view.
-
-This is my voice, my system core,
-I install the light I came here for.
-This is my yes, this is my door—
-I walk the path I can't ignore.`,
-
-  "2": `🔥 Clear Limited Codes`,
-
-I return to blueprint, soul-designed,
-Before the noise rewrote my mind.
-I reset the grid, I clear the slate,
-I choose the codes that resonate.
-
-I am the player and the key,
-The mission now remembers me.
-No fear shall glitch, no doubt shall stall—
-I answer now my highest call.
-
-With every word I speak aloud,
-My gifts emerge, my head unbowed.
-The voice I hold rewires time,
-I step into the mission line.
-
-This life, this breath, this sacred role,
-Aligns me now with quest and goal.
-All false permissions fall away—
-I'm locked into my golden play.`,
-
-  "3": `🚀 Load the Expansion Pack`,
-
-I summon wealth, in forms untold,
-I draw in strength, I call in gold.
-Resources flow with rhythm true,
-Aligned with all I'm here to do.
-
-Allies gather, near and far,
-They know my signal, who I are.
-Support arrives in stealth and grace,
-Each piece in place, each gift in place.
-
-I call in rest, I call in drive,
-Whatever's needed to thrive alive.
-No lack remains within my code—
-My upgrade now begins to load.
-
-With voice and breath, I now unlock
-The overflow that breaks the clock.
-New levels rise, new options bloom—
-I own my space, I make more room.`,
-
-  "4": `👑 Equip Divine Union Mode`
-
-I activate love, the sacred kind,
-Where soul and purpose are aligned.
-No chase, no cage, no mask, no game—
-Just truth and fire and holy flame.
-
-I call the bond that sees my soul,
-That mirrors me and makes me whole.
-Where love is brave, and safe, and wild,
-And freedom dances reconciled.
-
-I am the one who claims this thread,
-Not from need, but truth I’ve bled.
-Aligned in vision, vow, and pace,
-I walk with love that holds its place.
-
-I choose devotion, not control—
-I open now the union scroll.
-The keys are clear, the gates are wide—
-This love, this time, I walk inside.`
-};
-
-  const promptSelect = document.getElementById("promptSelect");
-  const declarationText = document.getElementById("declaration-text");
-
-  promptSelect.addEventListener("change", function () {
-    const selected = this.value;
-    declarationText.innerText = declarations[selected] || '';
-  });
-
-
-
-  
 </script>
   <button id="activate-visualizer" style="
   position: fixed;
