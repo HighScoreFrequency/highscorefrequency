@@ -88,15 +88,16 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 78vmin;
-  height: 70vmin;
   transform: translate(-50%, -50%);
+  width: 78vmin;
+  aspect-ratio: 1 / 1; /* 👈 Ensures it's a perfect circle */
   border-radius: 50%;
   border: 4px solid transparent;
   border-image: linear-gradient(135deg, #ffcc33, #a9712c, #ffd700) 1;
   animation: rotateClockwise 111s linear infinite;
   z-index: 0;
 }
+
 
 /* Middle ring - square */
 .ring2 {
