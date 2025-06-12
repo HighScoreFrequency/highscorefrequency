@@ -268,6 +268,11 @@ button:hover:not(:disabled) {
         gap: 4px;
     }
 
+    #declaration-box, #declaration-text {
+  opacity: 1 !important;
+  color: #222 !important;
+}
+    
     #declaration-box {
       width: 100%;
       min-height: 60px;
@@ -863,14 +868,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Set initial text and log to verify
   console.log('Initial prompt value:', promptSelect.value);
-  declarationText.innerText = declarations[promptSelect.value] || '';
-  console.log('Set text:', declarationText.innerText);
+  declarationText.textContent = declarations[promptSelect.value] || 'Default text failed to load'; // Fallback text
+  console.log('Set text:', declarationText.textContent);
 
   // Update text on change
   promptSelect.addEventListener('change', () => {
     console.log('Changed to:', promptSelect.value);
-    declarationText.innerText = declarations[promptSelect.value] || '';
-    console.log('Updated text:', declarationText.innerText);
+    declarationText.textContent = declarations[promptSelect.value] || 'No text for this option';
+    console.log('Updated text:', declarationText.textContent);
   });
 });
   
