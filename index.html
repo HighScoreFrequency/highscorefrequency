@@ -322,7 +322,7 @@
       }
     }
 
-    #declaration-box {
+#declaration-box {
   margin-top: 12px;
   max-width: 100% !important;
   max-height: 100px;
@@ -340,10 +340,16 @@
   border: 1px solid #ccc;
   resize: vertical;
   transition: box-shadow 0.2s ease;
+  box-sizing: border-box;
 }
 
+#declaration-box:focus-within {
+  box-shadow: 0 0 8px rgba(90, 159, 230, 0.4);
+
 #declaration-text {
+  max-height: 369px;
   padding-right: 8px;
+  overflow-y: auto;
 }
     
   </style>
@@ -735,7 +741,20 @@ activateButton.addEventListener('click', async () => {
   }
 });
 
+    const declarations = {
+      "1": `⚡️ Unlock My Final Form\n\nI release the scripts that kept me small...`,
+      "2": `🔥 Clear Limited Codes\n\nI return to blueprint, soul-designed...`,
+      "3": `🚀 Load the Expansion Pack\n\nI summon wealth, in forms untold...`,
+      "4": `👑 Equip Divine Union Mode\n\nI activate love, the sacred kind...`
+    };
 
+    const promptSelect = document.getElementById("promptSelect");
+    const declarationText = document.getElementById("declaration-text");
+
+    promptSelect.addEventListener("change", function () {
+      const selected = this.value;
+      declarationText.innerText = declarations[selected] || '';
+    });
 
 </script>
   <button id="activate-visualizer" style="
