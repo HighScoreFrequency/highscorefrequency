@@ -38,7 +38,7 @@
       background: transparent;
     }
 
-.ring1, .ring2, .ring3 .ring4 {
+.ring1, .ring2, .ring3 {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -83,19 +83,6 @@
   border-image: linear-gradient(225deg, #f5c32c, #a96c0e, #f5c32c) 1;
   animation: rotateClockwise 77s linear infinite;
   opacity: 0.7;
-}
-
-        .ring4 {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 78vmin;
-  height: 70vmin;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  animation: rotateCounter 111s linear infinite;
-  z-index: 1;
-     mask-image: rotateClockwise(circle, (135deg, #ffcc33, #a9712c, #ffd700) 1);
 }
   
 
@@ -236,7 +223,6 @@
 
   <!-- Inner ring (optional, pulse or faster spin) -->
   <div class="ring ring3"></div>
-    <div class="ring ring4"></div>
     <div class="content">
       <div class="fade-layer"></div>
       <h2>🎙️ High Score Voice Portal</h2>
