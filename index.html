@@ -499,14 +499,16 @@
 let normalized = Math.min(average / 12, 1);
 let glow = Math.round(normalized * 60);
 
-let glowColor = `0 0 ${glow}px ${normalized < 0.05 ? 'transparent' : `rgba(255, 215, 0, ${normalized.toFixed(2)})`}`;
+let glowColor = normalized < 0.05
+  ? 'none'
+  : `0 0 ${glow}px rgba(255, 215, 0, ${normalized.toFixed(2)}), 
+     0 0 ${glow * 1.5}px rgba(255, 215, 0, ${Math.max(normalized - 0.2, 0).toFixed(2)})`;
 
-// Apply glow and pulse scale
-const rings = document.querySelectorAll('.ring1, .ring2, .ring3');
 rings.forEach(ring => {
   ring.style.boxShadow = glowColor;
   ring.style.transform = `translate(-50%, -50%) scale(${pulseScale.toFixed(3)})`;
 });
+
 
   }
 
