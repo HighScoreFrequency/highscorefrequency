@@ -320,13 +320,12 @@
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     ctx.beginPath();
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 4;
     const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
     gradient.addColorStop(0, '#ffd700');
     gradient.addColorStop(1, '#a9712c');
     ctx.strokeStyle = gradient;
-    ctx.shadowColor = '#5a9fe6';
-    ctx.shadowBlur = 12;
+
 
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
