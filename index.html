@@ -283,11 +283,11 @@ button:hover:not(:disabled) {
       width: 100%;
       min-height: 35px;
       max-height: 80px;
-      padding-top: 6px;
-      padding-bottom: 10px;
-      padding-left: 10px;
-      padding-right: 10px;
-      border-radius: 10px;
+      padding-top: 2px;
+      padding-bottom: 5px;
+      padding-left: 5px;
+      padding-right: 5px;
+      border-radius: 5px;
       font-size: 11px;
       text-align: left;
       color: #222;
@@ -299,6 +299,11 @@ button:hover:not(:disabled) {
       box-sizing: border-box;
         margin-bottom: 3px;
     }
+
+    #declaration-box.first-prompt {
+  overflow-y: hidden;
+  text-align: center;
+}
 
 #declaration-text {
   max-width: 100%;
@@ -870,15 +875,20 @@ button:hover:not(:disabled) {
         "4": `👑 Equip Divine Union Mode\n\nAligned in heart, in body, in soul,\nI enter love that makes me whole.`
       };
 
-      function updateDeclaration() {
-        const selected = promptSelect.value;
-        declarationText.textContent = declarations[selected] || declarations[""];
-        console.log("Updated text to:", declarationText.textContent); // Debug
-      }
+function updateDeclaration() {
+  const selected = promptSelect.value;
+  const isFirst = selected === "";
+  declarationText.textContent = declarations[selected] || declarations[""];
 
-      updateDeclaration(); // Set initial text
-      promptSelect.addEventListener("change", updateDeclaration);
-    });
+  // Add or remove the special class based on selection
+  const declarationBox = document.getElementById("declaration-box");
+  if (isFirst) {
+    declarationBox.classList.add("first-prompt");
+  } else {
+    declarationBox.classList.remove("first-prompt");
+  }
+}
+
 
 
 </script>
