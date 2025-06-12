@@ -703,14 +703,14 @@ fadeLayer.style.opacity = smoothedOpacity.toFixed(2);
 frequencySelect.addEventListener('change', () => {
   const freq = parseFloat(frequencySelect.value);
 
-  // If 0 Hz (No Tone), stop preview and disable
+  // If "No Tone" is selected
   if (freq === 0) {
     if (previewPlaying) {
-      stopPreviewTone();
+      stopPreviewTone(); // ← uses fade out (1.5s)
       setTimeout(() => {
         previewTone.disabled = true;
         previewTone.textContent = '🔇 Preview Disabled';
-      }, 1500); // fade out duration
+      }, 1500); // wait for fade to finish
     } else {
       previewTone.disabled = true;
       previewTone.textContent = '🔇 Preview Disabled';
@@ -718,9 +718,12 @@ frequencySelect.addEventListener('change', () => {
     return;
   }
 
-  // If a different tone is selected during preview, switch instantly
+  // If already previewing, switch immediately without fade
   if (previewPlaying) {
-    if (oscillator && oscillator.stop) oscillator.stop();
+    if (oscillator && oscillator.stop) {
+      oscillator.stop(); // ← instant stop
+    }
+
     const node = createOscillator(freq, 0, 0); // no fade in/out
     node.connect(audioCtx.destination);
     oscillator.start();
@@ -729,6 +732,7 @@ frequencySelect.addEventListener('change', () => {
   previewTone.disabled = false;
   previewTone.textContent = previewPlaying ? '🛑 Stop Preview' : '🔊 Preview tone';
 });
+
 
 
   previewTone.disabled = parseFloat(frequencySelect.value) === 0;
