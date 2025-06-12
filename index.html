@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -671,20 +672,16 @@ fadeLayer.style.opacity = smoothedOpacity.toFixed(2);
 
     return gainNode;
   }
-    let fadeTimeout;
-    function stopPreviewTone() {
-      if (oscillator && oscillator.stopWithFade) {
-        oscillator.stopWithFade();
-        fadeTimeout = setTimeout(() => {
-          previewPlaying = false;
-          previewTone.textContent = '🔊 Preview tone';
-        }, 1500);
-      } else if (oscillator) {
-        oscillator.stop();
-        previewPlaying = false;
-        previewTone.textContent = '🔊 Preview tone';
-      }
+
+  function stopPreviewTone() {
+    if (oscillator && oscillator.stopWithFade) {
+      oscillator.stopWithFade();
+    } else if (oscillator) {
+      oscillator.stop();
     }
+    previewPlaying = false;
+    previewTone.textContent = '🔊 Preview tone';
+  }
 
   previewTone.onclick = async () => {
     if (audioCtx.state === 'suspended') await audioCtx.resume();
@@ -706,40 +703,22 @@ fadeLayer.style.opacity = smoothedOpacity.toFixed(2);
 frequencySelect.addEventListener('change', () => {
   const freq = parseFloat(frequencySelect.value);
 
-  // If "No Tone" is selected
-      if (previewPlaying) {
-        stopPreviewTone();
-        setTimeout(() => {
-          if (freq !== 0) {
-            const node = createOscillator(freq);
-            node.connect(audioCtx.destination);
-            oscillator.start();
-            previewPlaying = true;
-            previewTone.textContent = '🛑 Stop Preview';
-          }
-        }, 1500); // wait for fade out
-      } else {
-        previewTone.disabled = freq === 0;
-        previewTone.textContent = freq === 0 ? '🔇 Preview Disabled' : '🔊 Preview tone';
-      }
-    return;
-  }
-
-  // If already previewing, switch immediately without fade
-  if (previewPlaying) {
-    if (oscillator && oscillator.stop) {
-      oscillator.stop(); // ← instant stop
+  if (freq === 0) {
+    if (previewPlaying) {
+      stopPreviewTone(); // Ensure it stops first
+      setTimeout(() => {
+        previewTone.disabled = true;
+        previewTone.textContent = '🔇 Preview Disabled';
+      }, 600); // wait for fade-out to complete
+    } else {
+      previewTone.disabled = true;
+      previewTone.textContent = '🔇 Preview Disabled';
     }
-
-    const node = createOscillator(freq, 0, 0); // no fade in/out
-    node.connect(audioCtx.destination);
-    oscillator.start();
+  } else {
+    previewTone.disabled = false;
+    previewTone.textContent = previewPlaying ? '🛑 Stop Preview' : '🔊 Preview tone';
   }
-
-  previewTone.disabled = false;
-  previewTone.textContent = previewPlaying ? '🛑 Stop Preview' : '🔊 Preview tone';
 });
-
 
 
   previewTone.disabled = parseFloat(frequencySelect.value) === 0;
