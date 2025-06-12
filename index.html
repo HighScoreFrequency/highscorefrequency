@@ -741,7 +741,7 @@ fadeLayer.style.opacity = smoothedOpacity.toFixed(2);
   } else {
     previewTone.disabled = true;
     previewTone.textContent = '🔇 Preview Disabled';
-  }
+
   recordBtn.onclick = async () => {
     if (audioCtx.state === 'suspended') await audioCtx.resume();
 
