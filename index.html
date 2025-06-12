@@ -919,24 +919,26 @@ activateButton.addEventListener('click', async () => {
 });
 
 
-  const promptSelect = document.getElementById("promptSelect");
-  const declarationText = document.getElementById("declaration-text");
+    document.addEventListener("DOMContentLoaded", function () {
+      const promptSelect = document.getElementById("promptSelect");
+      const declarationText = document.getElementById("declaration-text");
 
-  const declarations = {
-    "": `Choose your tone, speak it clear,\ncode your vibe, draw truth near.\nThis isn’t sound, it’s memory’s key,\na voice-crafted path to mastery.`,
-    "1": `⚡️ Unlock My Final Form\n\nI release the scripts that kept me small...\nI rise, I flow, I answer the call...`,
-    "2": `🔥 Clear Limited Codes\n\nNo more loops, no faulty plan,\nI code my truth, I now withstand.`,
-    "3": `🚀 Load the Expansion Pack\n\nAbundance, strength, devotion, grace,\nI summon all into my space.`,
-    "4": `👑 Equip Divine Union Mode\n\nAligned in heart, in body, in soul,\nI enter love that makes me whole.`
-  };
+      const declarations = {
+        "": `Choose your tone, speak it clear,\ncode your vibe, draw truth near.\nThis isn’t sound, it’s memory’s key,\na voice-crafted path to mastery.`,
+        "1": `⚡️ Unlock My Final Form\n\nI release the scripts that kept me small...\nI rise, I flow, I answer the call...`,
+        "2": `🔥 Clear Limited Codes\n\nNo more loops, no faulty plan,\nI code my truth, I now withstand.`,
+        "3": `🚀 Load the Expansion Pack\n\nAbundance, strength, devotion, grace,\nI summon all into my space.`,
+        "4": `👑 Equip Divine Union Mode\n\nAligned in heart, in body, in soul,\nI enter love that makes me whole.`
+      };
 
-  function updateDeclaration() {
-    const selected = promptSelect.value;
-    declarationText.innerText = declarations[selected] || declarations[""];
-  }
+      function updateDeclaration() {
+        const selected = promptSelect.value;
+        declarationText.innerText = declarations[selected] || declarations[""];
+      }
 
-  document.addEventListener("DOMContentLoaded", updateDeclaration);
-  promptSelect.addEventListener("change", updateDeclaration);
+      updateDeclaration();
+      promptSelect.addEventListener("change", updateDeclaration);
+    });
 
 
 </script>
