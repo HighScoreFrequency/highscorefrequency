@@ -150,7 +150,7 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      overflow: hidden;
+      overflow: visible;
     }
 
     .fade-layer {
@@ -855,18 +855,23 @@ activateButton.addEventListener('click', async () => {
 
 // Force text initialization
 (function() {
+  console.log('Script started');
   const declarationText = document.getElementById('declaration-text');
   if (declarationText) {
-    console.log('Declaration text element found');
-    declarationText.textContent = 'Test: Checking if this works';
-    console.log('Text set to:', declarationText.textContent);
+    console.log('Declaration text element found:', declarationText);
+    try {
+      declarationText.textContent = 'Test: Checking if this works';
+      console.log('Text set to:', declarationText.textContent);
+    } catch (e) {
+      console.error('Error setting text:', e);
+    }
   } else {
     console.error('Declaration text element not found');
   }
 
   const promptSelect = document.getElementById('promptSelect');
   if (promptSelect) {
-    console.log('Prompt select element found');
+    console.log('Prompt select element found:', promptSelect);
     promptSelect.addEventListener('change', () => {
       const declarationText = document.getElementById('declaration-text');
       if (declarationText) {
@@ -879,6 +884,8 @@ activateButton.addEventListener('click', async () => {
         };
         declarationText.textContent = declarations[promptSelect.value] || 'No text available';
         console.log('Changed to:', promptSelect.value, 'Text set to:', declarationText.textContent);
+      } else {
+        console.error('Declaration text not found on change');
       }
     });
   } else {
