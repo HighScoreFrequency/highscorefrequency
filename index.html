@@ -268,9 +268,12 @@ button:hover:not(:disabled) {
         gap: 4px;
     }
 
-    #declaration-box, #declaration-text {
+#declaration-box, #declaration-text {
   opacity: 1 !important;
   color: #222 !important;
+  background: rgba(255, 255, 255, 0.95) !important; /* Ensure background contrast */
+  position: relative !important; /* Prevent z-index issues */
+  z-index: 10 !important; /* Above other elements */
 }
     
     #declaration-box {
@@ -848,36 +851,42 @@ activateButton.addEventListener('click', async () => {
   }
 });
 
-// Initialize declaration text after DOM is fully loaded
-document.addEventListener('DOMContentLoaded', () => {
-  const declarations = {
-    '': 'Choose your tone, speak it clear,\ncode your vibe, draw truth near.\nThis isn’t sound, it’s memory’s key,\nA voice-crafted path to mastery.',
-    '1': '⚡️ Unlock My Final Form\n\nI release the scripts that kept me small...',
-    '2': '🔥 Clear Limited Codes\n\nI return to blueprint, soul-designed...',
-    '3': '🚀 Load the Expansion Pack\n\nI summon wealth, in forms untold...',
-    '4': '👑 Equip Divine Union Mode\n\nI activate love, the sacred kind...'
-  };
+// Initialize declaration text immediately with a delay
+(function initializeDeclaration() {
+  setTimeout(() => {
+    const declarations = {
+      '': 'Choose your tone, speak it clear,\ncode your vibe, draw truth near.\nThis isn’t sound, it’s memory’s key,\nA voice-crafted path to mastery.',
+      '1': '⚡️ Unlock My Final Form\n\nI release the scripts that kept me small...',
+      '2': '🔥 Clear Limited Codes\n\nI return to blueprint, soul-designed...',
+      '3': '🚀 Load the Expansion Pack\n\nI summon wealth, in forms untold...',
+      '4': '👑 Equip Divine Union Mode\n\nI activate love, the sacred kind...'
+    };
 
-  const promptSelect = document.getElementById('promptSelect');
-  const declarationText = document.getElementById('declaration-text');
+    const promptSelect = document.getElementById('promptSelect');
+    const declarationText = document.getElementById('declaration-text');
 
-  if (!promptSelect || !declarationText) {
-    console.error('Prompt select or declaration text element not found');
-    return;
-  }
+    if (!promptSelect || !declarationText) {
+      console.error('Prompt select or declaration text element not found');
+      return;
+    }
 
-  // Set initial text and log to verify
-  console.log('Initial prompt value:', promptSelect.value);
-  declarationText.textContent = declarations[promptSelect.value] || 'Default text failed to load'; // Fallback text
-  console.log('Set text:', declarationText.textContent);
+    // Debug element existence and content
+    console.log('Prompt select found:', !!promptSelect);
+    console.log('Declaration text found:', !!declarationText);
+    console.log('Initial prompt value:', promptSelect.value);
 
-  // Update text on change
-  promptSelect.addEventListener('change', () => {
-    console.log('Changed to:', promptSelect.value);
-    declarationText.textContent = declarations[promptSelect.value] || 'No text for this option';
-    console.log('Updated text:', declarationText.textContent);
-  });
-});
+    // Force text setting
+    declarationText.textContent = declarations[promptSelect.value] || 'Test: Initialization failed';
+    console.log('Set text:', declarationText.textContent);
+
+    // Update text on change
+    promptSelect.addEventListener('change', () => {
+      console.log('Changed to:', promptSelect.value);
+      declarationText.textContent = declarations[promptSelect.value] || 'Test: No match';
+      console.log('Updated text:', declarationText.textContent);
+    });
+  }, 100); // Small delay to ensure DOM is ready
+})();
   
 </script>
   <button id="activate-visualizer" style="
