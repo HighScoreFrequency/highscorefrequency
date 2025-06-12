@@ -158,11 +158,12 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: white;
+      background: linear-gradient(to bottom, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.95));
       opacity: 0;
       z-index: 1; /* Below content */
       transition: opacity 0.3s ease;
       pointer-events: none;
+      backdrop-filter: blur(2px);
     }
 
     .content > *:not(.fade-layer) {
