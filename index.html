@@ -40,6 +40,7 @@
     
 .ring {
   position: absolute;
+  animation: goldPulse 3s infinite ease-in-out;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -62,7 +63,7 @@
   border-radius: 50%;
   animation: rotateCounter 99s linear infinite;
   z-index: 1;
-     mask-image: radial-gradient(circle) /* Antique gold */
+     mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
 
 
 }
@@ -120,10 +121,19 @@
 }
   
 
-    @keyframes pulseGlow {
-  0%, 100% { box-shadow: 0 0 6px rgba(255, 215, 0, 0.1); }
-  50% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.6); }
+    @keyframes goldPulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.4),
+                0 0 40px rgba(255, 215, 0, 0.3),
+                0 0 60px rgba(255, 215, 0, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.8),
+                0 0 60px rgba(255, 215, 0, 0.6),
+                0 0 90px rgba(255, 215, 0, 0.4);
+  }
 }
+
 
 
 
@@ -388,8 +398,8 @@
 
     let pulseScale = 0.95 + Math.min(average / 64, 0.15);
 
-    let normalized = Math.min(average / 32, 1);
-    let glow = Math.round(normalized * 30);
+    let normalized = Math.min(average / 12, 1);
+    let glow = Math.round(normalized * 60);
     let glowColor = `0 0 ${glow}px rgba(255, 215, 0, ${normalized.toFixed(2)})`;
 
     document.querySelector('.ring1').style.boxShadow = glowColor;
