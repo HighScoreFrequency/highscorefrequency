@@ -285,6 +285,21 @@
   max-width: 100% !important;
 }
 
+  .input-wrapper {
+  width: 100%;
+  max-width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#promptSelect,
+#frequencySelect,
+#declaration-box {
+  width: 100%;
+  box-sizing: border-box;
+}
+  
   #promptSelect, #frequencySelect {
   width: 100%;
   box-sizing: border-box;
@@ -387,6 +402,7 @@
         This isn’t sound, it’s memory’s key,<br>
         a voice-crafted path to mastery.</p>
 
+  <div class="input-wrapper">
   <div id="declaration-box">
   <div id="declaration-text"></div>
   </div>
@@ -405,7 +421,7 @@
         <option value="963">963 Hz – 👑 Crown Signal – Access Divine Intelligence</option>
         <option value="0">0 Hz – 🕊️ Silence Mode – Record Without Tone</option>
       </select>
-
+</div>
       <div class="button-group">
         <div class="row">
           <button id="preview-btn">🔊 Preview Tone</button>
