@@ -94,7 +94,6 @@
   border: 4px solid #ffcc33;
   animation: rotateClockwise 77s linear infinite;
   z-index: 1;
-     mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
 }
 
 /* Additional ring - circle */
@@ -358,8 +357,8 @@
 ];
 
 function updateRingGlow(intensity) {
-  const base = 12; // Brighter minimum glow
-  const max = 48; // More intense max glow
+  const base = 6; // Brighter minimum glow
+  const max = 20; // More intense max glow
   const glow = base + intensity * (max - base);
 
   const shadow = `
