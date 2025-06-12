@@ -357,8 +357,8 @@
 ];
 
 function updateRingGlow(intensity) {
-  const base = 3; // Brighter minimum glow
-  const max = 12; // More intense max glow
+  const base = 1;
+  const max = 6;
   const glow = base + intensity * (max - base);
 
   const shadow = `
@@ -366,10 +366,14 @@ function updateRingGlow(intensity) {
     0 0 ${glow * 1.5}px rgba(255, 215, 0, ${0.3 + 0.2 * intensity})
   `;
 
+  const scale = 1 + intensity * 0.2; // Grows up to 1.2x
+
   rings.forEach(ring => {
     ring.style.boxShadow = shadow;
+    ring.style.transform = `translate(-50%, -50%) scale(${scale})`;
   });
 }
+
 
 
   const fadeLayer = document.querySelector('.fade-layer');
