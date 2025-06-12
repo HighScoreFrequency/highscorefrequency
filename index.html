@@ -39,7 +39,7 @@
     
    .ring {
   position: absolute;
-     mask-image: none;
+       animation: goldPulse 3s ease-in-out infinite;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -119,19 +119,7 @@
     @keyframes rotateCounter {
       from { transform: translate(-50%, -50%) rotate(0deg); }
       to { transform: translate(-50%, -50%) rotate(-360deg); }
-    }
 
-    @keyframes goldPulse {
-      0%, 100% {
-        box-shadow: 0 0 20px rgba(255, 215, 0, 0.4),
-                    0 0 40px rgba(255, 215, 0, 0.3),
-                    0 0 60px rgba(255, 215, 0, 0.2);
-      }
-      50% {
-        box-shadow: 0 0 30px rgba(255, 215, 0, 0.8),
-                    0 0 60px rgba(255, 215, 0, 0.6),
-                    0 0 90px rgba(255, 215, 0, 0.4);
-      }
     }
 
     .content {
@@ -380,7 +368,6 @@ function updateRingGlow(intensity) {
   `;
 
   rings.forEach(ring => {
-    ring.style.boxShadow = shadow;
   });
 }
 
