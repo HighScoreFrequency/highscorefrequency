@@ -46,54 +46,67 @@
   box-sizing: content-box;
   border-width: 4px;
   border-style: solid;
-  border-color: #00; /* Prevent default black border */
   pointer-events: none;
+  border-color: transparent;
   box-shadow: 0 0 12px rgba(255, 215, 0, 0.2);
   background: transparent;
 }
 
-/* Outer ring - oval */
+/* Outer ring - circle */
 .ring1 {
+  position: absolute;
+  top: 50%;
+  left: 50%;
   width: 78vmin;
   height: 70vmin;
-  border-radius: 50%; /* Restore oval shape */
-  border-image: linear-gradient(135deg, #ffd700, #ffcc33, #a9712c) 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
   animation: rotateCounter 99s linear infinite;
   z-index: 1;
-  mask-image: radial-gradient(circle, rgba(2,0,5,1) 98%, rgba(0,4,0,3) 100%); /* Adjusted for subtle fade */
+     mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
+
 }
 
-/* Middle ring - oval */
+/* Middle ring - square */
 .ring2 {
+  position: absolute;
+  top: 50%;
+  left: 50%;
   width: 74vmin;
   height: 68vmin;
-  border-radius: 50%; /* Restore oval shape */
-  border-image: linear-gradient(135deg, #ffd700, #ffcc33, #a9712c) 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
   animation: rotateCounter 69s linear infinite;
   z-index: 1;
-  mask-image: radial-gradient(circle, rgba(0,0,0,1) 100%, rgba(0,0,0,0) 100%); /* Adjusted for subtle fade */
+     mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
 }
 
-/* Inner ring - oval */
+/* Inner ring - circle */
 .ring3 {
+  position: absolute;
+  top: 50%;
+  left: 50%;
   width: 74vmin;
   height: 68vmin;
-  border-radius: 50%; /* Restore oval shape */
-  border-image: linear-gradient(225deg, #ffd700, #ffcc33, #a9712c) 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
   animation: rotateClockwise 77s linear infinite;
   z-index: 1;
-  mask-image: radial-gradient(circle, rgba(0,0,0,1) 100%, rgba(0,0,0,0) 100%); /* Adjusted for subtle fade */
+     mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
 }
 
-/* Additional ring - oval */
+/* Additional ring - circle */
 .ring4 {
+  position: absolute;
+  top: 50%;
+  left: 50%;
   width: 78vmin;
   height: 70vmin;
-  border-radius: 50%; /* Restore oval shape */
-  border-image: linear-gradient(135deg, #ffd700, #ffcc33, #a9712c) 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
   animation: rotateClockwise 111s linear infinite;
   z-index: 1;
-  mask-image: radial-gradient(circle, rgba(0,0,0,1) 100%, rgba(0,0,0,0) 100%); /* Adjusted for subtle fade */
+     mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
 }
 
 @keyframes rotateClockwise {
