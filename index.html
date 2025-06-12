@@ -704,21 +704,25 @@ frequencySelect.addEventListener('change', () => {
   const freq = parseFloat(frequencySelect.value);
 
   if (freq === 0) {
-    if (previewPlaying) {
-      stopPreviewTone(); // Ensure it stops first
-      setTimeout(() => {
-        previewTone.disabled = true;
-        previewTone.textContent = '🔇 Preview Disabled';
-      }, 600); // wait for fade-out to complete
-    } else {
-      previewTone.disabled = true;
-      previewTone.textContent = '🔇 Preview Disabled';
-    }
+    stopPreviewTone(); // Instantly stop if preview is playing
+    previewTone.disabled = true;
+    previewTone.textContent = '🔇 Preview Disabled';
+    previewPlaying = false;
   } else {
     previewTone.disabled = false;
     previewTone.textContent = previewPlaying ? '🛑 Stop Preview' : '🔊 Preview tone';
+
+    if (previewPlaying) {
+      stopPreviewTone(); // stop current preview
+      const node = createOscillator(freq, 0, 0); // instantly start new one
+      node.connect(audioCtx.destination);
+      oscillator.start();
+      previewPlaying = true;
+      previewTone.textContent = '🛑 Stop Preview';
+    }
   }
 });
+
 
 
   previewTone.disabled = parseFloat(frequencySelect.value) === 0;
