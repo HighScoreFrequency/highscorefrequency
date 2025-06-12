@@ -38,7 +38,7 @@
       background: transparent;
     }
 
-    .ring {
+.ring {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -69,19 +69,6 @@
   border-image: linear-gradient(135deg, #ffcc33, #a9712c, #ffd700) 1;
 }
 
-    
-.ring1, .ring2, .ring3, .ring4 {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  box-sizing: content-box;
-  border-width: 4px;
-  border-style: solid;
-  pointer-events: none;
-  box-shadow: 0 0 12px rgba(255, 215, 0, 0.2);
-  background: none;
-}
 
     
 /* Outer ring - circle */
@@ -258,10 +245,8 @@
 <body>
   <div class="portal-wrapper">
     <canvas id="waveform"></canvas>
-    <div class="ring ring4"></div>
-  
     <div class="ring ring1"></div>
-
+    <div class="ring ring4"></div>
   <!-- Middle ring (counterclockwise) -->
   <div class="ring ring2"></div>
 
