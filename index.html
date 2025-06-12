@@ -40,14 +40,12 @@
     
 .ring {
   position: absolute;
-  animation: goldPulse 3s infinite ease-in-out;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   box-sizing: content-box;
-    border: 4px solid transparent;
-  border-image: linear-gradient(135deg, #ffcc33, #a9712c, #ffd700) 1;
-
+  border-width: 4px;
+  border-style: solid;
   pointer-events: none;
   box-shadow: 0 0 12px rgba(255, 215, 0, 0.2);
   background: transparent;
@@ -58,11 +56,10 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 88vmin;
-  height: 80vmin;
+  width: 78vmin;
+  height: 70vmin;
   transform: translate(-50%, -50%);
   border-radius: 50%;
-  border: 4px solid #ffd700;
   animation: rotateCounter 99s linear infinite;
   z-index: 1;
      mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
@@ -75,11 +72,10 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 84vmin;
-  height: 78vmin;
+  width: 74vmin;
+  height: 68vmin;
   transform: translate(-50%, -50%);
   border-radius: 50%;
-  border: 4px solid #a9712c;
   animation: rotateCounter 69s linear infinite;
   z-index: 1;
      mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
@@ -90,11 +86,10 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 84vmin;
-  height: 78vmin;
+  width: 74vmin;
+  height: 68vmin;
   transform: translate(-50%, -50%);
   border-radius: 50%;
-  border: 4px solid #ffcc33;
   animation: rotateClockwise 77s linear infinite;
   z-index: 1;
      mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
@@ -105,11 +100,10 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 88vmin;
-  height: 80vmin;
+  width: 78vmin;
+  height: 70vmin;
   transform: translate(-50%, -50%);
   border-radius: 50%;
-  border: 4px solid #a9712c;
   animation: rotateClockwise 111s linear infinite;
   z-index: 1;
      mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
@@ -126,19 +120,10 @@
 }
   
 
-    @keyframes goldPulse {
-  0%, 100% {
-    box-shadow: 0 0 20px rgba(255, 215, 0, 0.4),
-                0 0 40px rgba(255, 215, 0, 0.3),
-                0 0 60px rgba(255, 215, 0, 0.2);
-  }
-  50% {
-    box-shadow: 0 0 30px rgba(255, 215, 0, 0.8),
-                0 0 60px rgba(255, 215, 0, 0.6),
-                0 0 90px rgba(255, 215, 0, 0.4);
-  }
+    @keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 6px rgba(255, 215, 0, 0.1); }
+  50% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.6); }
 }
-
 
 
 
@@ -328,7 +313,6 @@
     ctx.shadowColor = '#5a9fe6';
     ctx.shadowBlur = 12;
 
-
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
     const half = dataArray.length / 2;
@@ -404,8 +388,8 @@
 
     let pulseScale = 0.95 + Math.min(average / 64, 0.15);
 
-    let normalized = Math.min(average / 12, 1);
-    let glow = Math.round(normalized * 60);
+    let normalized = Math.min(average / 32, 1);
+    let glow = Math.round(normalized * 30);
     let glowColor = 0 0 ${glow}px rgba(255, 215, 0, ${normalized.toFixed(2)});
 
     document.querySelector('.ring1').style.boxShadow = glowColor;
