@@ -342,7 +342,32 @@
     #declaration-text {
   display: block;
   min-height: 220px;
+        width: 100%;
 }
+
+    #declaration-box {
+  margin-top: 12px;
+  width: 100%;
+  max-height: 280px;
+  min-height: 120px;
+  padding: 14px;
+  border-radius: 10px;
+  font-size: 12px;
+  text-align: left;
+  color: #222;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  background: rgba(255, 255, 255, 0.95);
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  resize: vertical;
+  transition: box-shadow 0.2s ease;
+}
+
+#declaration-box:focus-within {
+  box-shadow: 0 0 8px rgba(90, 159, 230, 0.4);
+}
+
 
   </style>
 </head>
@@ -370,9 +395,10 @@
   <option value="4">👑 Equip Divine Union Mode</option>
 </select>
 
-<div id="declaration-box" style="margin-top: 12px; width: 100%; max-height: 280px; overflow-y: auto; background: rgba(255, 255, 255, 0.95); padding: 14px; border-radius: 10px; font-size: 11px; text-align: left; color: #222; line-height: 1.6; white-space: pre-wrap;">
+<div id="declaration-box">
   <div id="declaration-text"></div>
 </div>
+
 
       
       <select id="frequencySelect">
