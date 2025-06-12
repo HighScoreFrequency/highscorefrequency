@@ -48,80 +48,54 @@
   border-style: solid;
   pointer-events: none;
   box-shadow: 0 0 12px rgba(255, 215, 0, 0.2);
-  background: none;
+  background: transparent;
 }
 
-
-.ring4 {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+/* Outer ring - circle */
+.ring1 {
   width: 78vmin;
-  height: 70vmin;
+  aspect-ratio: 1 / 1; /* Ensures perfect circle */
   border-radius: 50%;
   border: 4px solid transparent;
   border-image: linear-gradient(135deg, #ffcc33, #a9712c, #ffd700) 1;
-  animation: rotateClockwise 111s linear infinite;
-  z-index: 0;
-}
-
-
-
-    
-/* Outer ring - circle */
-    .ring1 {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 78vmin;
-  height: 70vmin;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
   animation: rotateCounter 99s linear infinite;
   z-index: 1;
-     mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
-
+  mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
 }
-
-.ring4 {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 78vmin;
-  aspect-ratio: 1 / 1; /* 👈 Ensures it's a perfect circle */
-  border-radius: 50%;
-  border: 4px solid transparent;
-  border-image: linear-gradient(135deg, #ffcc33, #a9712c, #ffd700) 1;
-  animation: rotateClockwise 111s linear infinite;
-  z-index: 0;
-}
-
 
 /* Middle ring - square */
 .ring2 {
   width: 55vmin;
-  height: 55vmin;
+  height: 55vmin; /* Square, no border-radius */
+  border: 4px solid transparent;
   border-image: linear-gradient(135deg, #ffcc33, #a9712c, #ffd700) 1;
   animation: rotateCounter 69s linear infinite;
+  z-index: 1;
 }
 
 /* Inner ring - circle */
 .ring3 {
   width: 55vmin;
-  height: 55vmin;
+  aspect-ratio: 1 / 1; /* Ensures perfect circle */
+  border-radius: 50%;
+  border: 4px solid transparent;
   border-image: linear-gradient(225deg, #f5c32c, #a96c0e, #f5c32c) 1;
   animation: rotateClockwise 77s linear infinite;
   opacity: 0.7;
+  z-index: 1;
 }
-  
 
-    @keyframes pulseGlow {
-  0%, 100% { box-shadow: 0 0 6px rgba(255, 215, 0, 0.1); }
-  50% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.6); }
+/* Additional ring - circle */
+.ring4 {
+  width: 78vmin;
+  aspect-ratio: 1 / 1; /* Ensures perfect circle */
+  border-radius: 50%;
+  border: 4px solid transparent;
+  border-image: linear-gradient(135deg, #ffcc33, #a9712c, #ffd700) 1;
+  animation: rotateClockwise 111s linear infinite;
+  z-index: 0;
 }
-    
+
 @keyframes rotateClockwise {
   from { transform: translate(-50%, -50%) rotate(0deg); }
   to { transform: translate(-50%, -50%) rotate(360deg); }
@@ -131,6 +105,13 @@
   from { transform: translate(-50%, -50%) rotate(0deg); }
   to { transform: translate(-50%, -50%) rotate(-360deg); }
 }
+  
+
+    @keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 6px rgba(255, 215, 0, 0.1); }
+  50% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.6); }
+}
+
 
 
     .content {
@@ -247,13 +228,11 @@
 <body>
   <div class="portal-wrapper">
     <canvas id="waveform"></canvas>
-    <div class="ring ring1"></div>
-    <div class="ring ring4"></div>
-  <!-- Middle ring (counterclockwise) -->
+  <div class="ring ring1"></div>
   <div class="ring ring2"></div>
-
-  <!-- Inner ring (optional, pulse or faster spin) -->
   <div class="ring ring3"></div>
+  <div class="ring ring4"></div>
+  <div class="portal-image"></div>
     <div class="content">
       <div class="fade-layer"></div>
       <h2>🎙️ High Score Voice Portal</h2>
