@@ -702,31 +702,36 @@ fadeLayer.style.opacity = smoothedOpacity.toFixed(2);
   };
 
   frequencySelect.addEventListener('change', async () => {
-    const freq = parseFloat(frequencySelect.value);
+  const freq = parseFloat(frequencySelect.value);
 
-    if (previewPlaying) {
-      if (oscillator) {
-        oscillator.stop();
-        oscillator.disconnect();
-      }
-      previewPlaying = false;
+  // If a tone is currently playing, stop it instantly
+  if (previewPlaying) {
+    if (oscillator) {
+      oscillator.stop();
+      oscillator.disconnect();
     }
+    previewPlaying = false;
+  }
 
-    if (freq === 0) {
-      previewTone.disabled = true;
-      previewTone.textContent = '🔇 Preview Disabled';
-      return;
-    }
+  // Handle 0 Hz (no tone)
+  if (freq === 0) {
+    previewTone.disabled = true;
+    previewTone.textContent = '🔇 Preview Disabled';
+    return;
+  }
 
-    previewTone.disabled = false;
-    previewTone.textContent = '🛑 Stop Preview';
+  // Handle real tone switch
+  previewTone.disabled = false;
+  previewTone.textContent = '🛑 Stop Preview';
 
-    if (audioCtx.state === 'suspended') await audioCtx.resume();
-    const node = createOscillator(freq, 0, 0);
-    node.connect(audioCtx.destination);
-    oscillator.start();
-    previewPlaying = true;
-  });
+  // Auto-play new tone immediately
+  if (audioCtx.state === 'suspended') await audioCtx.resume();
+  const node = createOscillator(freq, 0, 0); // no fade
+  node.connect(audioCtx.destination);
+  oscillator.start();
+  previewPlaying = true;
+});
+
 
   // Immediately check current value
   const currentFreq = parseFloat(frequencySelect.value);
