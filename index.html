@@ -628,7 +628,7 @@ function drawWaveform() {
 
     const freq = parseFloat(frequencySelect.value);
     previewTone.disabled = freq === 0;
-    previewTone.textContent = freq === 0 ? 'Preview Disabled' : 'Preview';
+    previewTone.textContent = freq === 0 ? '🔇 Preview Disabled' : '🔊 Preview tone';
     previewPlaying = false;
   };
 
