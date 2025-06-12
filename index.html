@@ -649,81 +649,143 @@ fadeLayer.style.opacity = smoothedOpacity.toFixed(2);
   const frequencySelect = document.getElementById('frequencySelect');
 
   function createOscillator(freq, fadeIn = 0.5, fadeOut = 0.5) {
-    oscillator = audioCtx.createOscillator();
-    gainNode = audioCtx.createGain();
-    panner = audioCtx.createStereoPanner();
+  oscillator = audioCtx.createOscillator();
+  gainNode = audioCtx.createGain();
+  panner = audioCtx.createStereoPanner();
 
-    oscillator.type = 'sine';
-    oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
+  oscillator.type = 'sine';
+  oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
 
-    const now = audioCtx.currentTime;
-    gainNode.gain.setValueAtTime(0, now);
-    gainNode.gain.linearRampToValueAtTime(0.02, now + fadeIn);
+  const now = audioCtx.currentTime;
+  gainNode.gain.setValueAtTime(0, now);
+  gainNode.gain.linearRampToValueAtTime(0.02, now + fadeIn);
 
-    oscillator.connect(panner).connect(gainNode);
+  oscillator.connect(panner).connect(gainNode);
 
-    oscillator.stopWithFade = () => {
-      const stopTime = audioCtx.currentTime + fadeOut;
-      gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
-      gainNode.gain.setValueAtTime(gainNode.gain.value, audioCtx.currentTime);
-      gainNode.gain.linearRampToValueAtTime(0, stopTime);
-      oscillator.stop(stopTime);
-    };
-
-    return gainNode;
-  }
-
-  function stopPreviewTone() {
-    if (oscillator && oscillator.stopWithFade) {
-      oscillator.stopWithFade();
-    } else if (oscillator) {
-      oscillator.stop();
-    }
-    previewPlaying = false;
-    previewTone.textContent = '🔊 Preview tone';
-  }
-
-  previewTone.onclick = async () => {
-    if (audioCtx.state === 'suspended') await audioCtx.resume();
-
-    const freq = parseFloat(frequencySelect.value);
-    if (freq === 0) return;
-
-    if (!previewPlaying) {
-      const node = createOscillator(freq);
-      node.connect(audioCtx.destination);
-      oscillator.start();
-      previewPlaying = true;
-      previewTone.textContent = '🛑 Stop Preview';
-    } else {
-      stopPreviewTone();
-    }
+  oscillator.stopWithFade = () => {
+    const stopTime = audioCtx.currentTime + fadeOut;
+    gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
+    gainNode.gain.setValueAtTime(gainNode.gain.value, audioCtx.currentTime);
+    gainNode.gain.linearRampToValueAtTime(0, stopTime);
+    oscillator.stop(stopTime);
   };
+
+  return gainNode;
+}
+
+function stopPreviewTone(instant = false) {
+  if (oscillator) {
+    if (instant) {
+      oscillator.stop();
+      previewPlaying = false;
+      previewTone.textContent = '🔊 Preview Tone';
+    } else {
+      oscillator.stopWithFade();
+      setTimeout(() => {
+        previewPlaying = false;
+        previewTone.textContent = '🔊 Preview Tone';
+      }, 500); // Match 0.5s fade-out
+    }
+    oscillator = null; // Clear oscillator reference
+  }
+}
+
+previewTone.onclick = async () => {
+  if (audioCtx.state === 'suspended') await audioCtx.resume();
+
+  const freq = parseFloat(frequencySelect.value);
+  if (freq === 0) return;
+
+  if (!previewPlaying) {
+    const node = createOscillator(freq);
+    node.connect(audioCtx.destination);
+    oscillator.start();
+    previewPlaying = true;
+    previewTone.textContent = '🛑 Stop Preview';
+  } else {
+    stopPreviewTone(); // Fade out over 0.5s
+  }
+};
 
 frequencySelect.addEventListener('change', () => {
   const freq = parseFloat(frequencySelect.value);
 
   if (freq === 0) {
-    if (previewPlaying) {
-      stopPreviewTone(); // Ensure it stops first
-      setTimeout(() => {
-        previewTone.disabled = true;
-        previewTone.textContent = '🔇 Preview Disabled';
-      }, 600); // wait for fade-out to complete
-    } else {
-      previewTone.disabled = true;
-      previewTone.textContent = '🔇 Preview Disabled';
-    }
+    stopPreviewTone(true); // Instant stop for "No Tone"
+    previewTone.disabled = true;
+    previewTone.textContent = '🔇 Preview Disabled';
+    return;
+  }
+
+  // If previewing, switch tone instantly
+  if (previewPlaying) {
+    stopPreviewTone(true); // Instant stop
+    const node = createOscillator(freq, 0, 0.5); // No fade-in, 1.5s fade-out
+    node.connect(audioCtx.destination);
+    oscillator.start();
+    previewPlaying = true;
+    previewTone.textContent = '🛑 Stop Preview';
   } else {
     previewTone.disabled = false;
-    previewTone.textContent = previewPlaying ? '🛑 Stop Preview' : '🔊 Preview tone';
+    previewTone.textContent = '🔊 Preview Tone';
   }
 });
 
+previewTone.disabled = parseFloat(frequencySelect.value) === 0;
+previewTone.textContent = parseFloat(frequencySelect.value) === 0 ? '🔇 Preview Disabled' : '🔊 Preview Tone';
 
-  previewTone.disabled = parseFloat(frequencySelect.value) === 0;
-  previewTone.textContent = parseFloat(frequencySelect.value) === 0 ? '🔇 Preview Disabled' : '🔊 Preview tone';
+recordBtn.onclick = async () => {
+  if (audioCtx.state === 'suspended') await audioCtx.resume();
 
+  const startRecording = async () => {
+    const freq = parseFloat(frequencySelect.value);
+    const oscillatorNode = freq > 0 ? createOscillator(freq) : null;
+
+    try {
+      const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const micSource = audioCtx.createMediaStreamSource(micStream);
+      micSource.connect(analyser);
+
+      const dest = audioCtx.createMediaStreamDestination();
+      micSource.connect(dest);
+      if (oscillatorNode) oscillatorNode.connect(dest);
+
+      mixedStream = dest.stream;
+      mediaRecorder = new MediaRecorder(mixedStream);
+
+      chunks = [];
+      mediaRecorder.ondataavailable = e => chunks.push(e.data);
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(chunks, { type: 'audio/mp3' });
+        const url = URL.createObjectURL(blob);
+        audioPlayback.src = url;
+        audioPlayback.style.display = 'block';
+
+        const date = new Date().toISOString().split('T')[0];
+        downloadLink.href = url;
+        downloadLink.download = `highscore-frequency-${date}.mp3`;
+        downloadLink.style.display = 'inline-block';
+      };
+
+      mediaRecorder.start();
+      if (oscillatorNode) oscillatorNode.start();
+
+      recordBtn.disabled = true;
+      stopBtn.disabled = false;
+      previewTone.disabled = true;
+      previewTone.textContent = '🔇 Preview Disabled';
+    } catch (e) {
+      alert('Microphone access denied.');
+    }
+  };
+
+  if (previewPlaying) {
+    stopPreviewTone();
+    setTimeout(startRecording, 1500); // Wait for 1.5s fade-out
+  } else {
+    startRecording();
+  }
+};
   recordBtn.onclick = async () => {
     if (audioCtx.state === 'suspended') await audioCtx.resume();
 
