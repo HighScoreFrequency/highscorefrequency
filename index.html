@@ -672,16 +672,20 @@ fadeLayer.style.opacity = smoothedOpacity.toFixed(2);
 
     return gainNode;
   }
-
-  function stopPreviewTone() {
-    if (oscillator && oscillator.stopWithFade) {
-      oscillator.stopWithFade();
-    } else if (oscillator) {
-      oscillator.stop();
+    let fadeTimeout;
+    function stopPreviewTone() {
+      if (oscillator && oscillator.stopWithFade) {
+        oscillator.stopWithFade();
+        fadeTimeout = setTimeout(() => {
+          previewPlaying = false;
+          previewTone.textContent = '🔊 Preview tone';
+        }, 1500);
+      } else if (oscillator) {
+        oscillator.stop();
+        previewPlaying = false;
+        previewTone.textContent = '🔊 Preview tone';
+      }
     }
-    previewPlaying = false;
-    previewTone.textContent = '🔊 Preview tone';
-  }
 
   previewTone.onclick = async () => {
     if (audioCtx.state === 'suspended') await audioCtx.resume();
@@ -704,17 +708,21 @@ frequencySelect.addEventListener('change', () => {
   const freq = parseFloat(frequencySelect.value);
 
   // If "No Tone" is selected
-  if (freq === 0) {
-    if (previewPlaying) {
-      stopPreviewTone(); // ← uses fade out (1.5s)
-      setTimeout(() => {
-        previewTone.disabled = true;
-        previewTone.textContent = '🔇 Preview Disabled';
-      }, 1500); // wait for fade to finish
-    } else {
-      previewTone.disabled = true;
-      previewTone.textContent = '🔇 Preview Disabled';
-    }
+      if (previewPlaying) {
+        stopPreviewTone();
+        setTimeout(() => {
+          if (freq !== 0) {
+            const node = createOscillator(freq);
+            node.connect(audioCtx.destination);
+            oscillator.start();
+            previewPlaying = true;
+            previewTone.textContent = '🛑 Stop Preview';
+          }
+        }, 1500); // wait for fade out
+      } else {
+        previewTone.disabled = freq === 0;
+        previewTone.textContent = freq === 0 ? '🔇 Preview Disabled' : '🔊 Preview tone';
+      }
     return;
   }
 
