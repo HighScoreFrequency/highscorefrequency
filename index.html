@@ -945,19 +945,18 @@ activateButton.addEventListener('click', async () => {
         "3": `🚀 Load the Expansion Pack\n\nI summon wealth, in forms untold...`,
         "4": `👑 Equip Divine Union Mode\n\nI activate love, the sacred kind...`
       };
+         
+      const promptSelect = document.getElementById("promptSelect");
+      const declarationText = document.getElementById("declaration-text");
 
- const promptSelect = document.getElementById("promptSelect");
-  const declarationText = document.getElementById("declaration-text");
+      // Always show default declaration (even when "" is selected)
+      declarationText.innerText = declarations[promptSelect.value] ?? declarations[""];
 
-  // Show default declaration when page loads
-  declarationText.innerText = declarations[promptSelect.value] ?? declarations[""];
-
-  // Update declaration when a new prompt is selected
-  promptSelect.addEventListener("change", function () {
-    const selected = this.value;
-    declarationText.innerText = declarations[selected] ?? declarations[""];
-  });
-
+      promptSelect.addEventListener("change", function () {
+        const selected = this.value;
+        declarationText.innerText = declarations[selected] ?? declarations[""];
+      });
+    });
 
 </script>
   <button id="activate-visualizer" style="
