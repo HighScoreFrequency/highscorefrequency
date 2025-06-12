@@ -946,16 +946,15 @@ activateButton.addEventListener('click', async () => {
         "4": `👑 Equip Divine Union Mode\n\nI activate love, the sacred kind...`
       };
 
-      const promptSelect = document.getElementById("promptSelect");
-      const declarationText = document.getElementById("declaration-text");
+    // Set default text on load
+    window.addEventListener('DOMContentLoaded', () => {
+      declarationBox.innerText = declarations[""];
+    });
 
-      // Always show default declaration (even when "" is selected)
-      declarationText.innerText = declarations[promptSelect.value] ?? declarations[""];
-
-      promptSelect.addEventListener("change", function () {
-        const selected = this.value;
-        declarationText.innerText = declarations[selected] ?? declarations[""];
-      });
+    // Update text on change
+    promptSelect.addEventListener('change', (e) => {
+      const selectedValue = e.target.value;
+      declarationBox.innerText = declarations[selectedValue] || declarations[""];
     });
 
 
