@@ -728,8 +728,20 @@ fadeLayer.style.opacity = smoothedOpacity.toFixed(2);
     previewPlaying = true;
   });
 
-  previewTone.disabled = parseFloat(frequencySelect.value) === 0;
-  previewTone.textContent = parseFloat(frequencySelect.value) === 0 ? '🔇 Preview Disabled' : '🔊 Preview tone';
+  // Immediately check current value
+  const currentFreq = parseFloat(frequencySelect.value);
+  if (currentFreq !== 0) {
+    previewTone.disabled = false;
+    previewTone.textContent = '🛑 Stop Preview';
+    if (audioCtx.state === 'suspended') await audioCtx.resume();
+    const node = createOscillator(currentFreq, 0, 0);
+    node.connect(audioCtx.destination);
+    oscillator.start();
+    previewPlaying = true;
+  } else {
+    previewTone.disabled = true;
+    previewTone.textContent = '🔇 Preview Disabled';
+  }
 
   recordBtn.onclick = async () => {
     if (audioCtx.state === 'suspended') await audioCtx.resume();
