@@ -340,9 +340,9 @@
     }
 
 #declaration-text {
-  height: 100%;
-  width: 100%;
-  overflow-y: auto;
+  height: 200px;
+  width: 100% !important;
+  overflow-y: auto !important;
   padding: 4px;
   font-size: 13px;
   line-height: 1.6;
@@ -365,11 +365,15 @@
   line-height: 1.6;
   white-space: pre-wrap;
   background: rgba(255, 255, 255, 0.95);
-  overflow-y: auto;
+  overflow-y: auto !important;
   border: 1px solid #ccc;
   resize: vertical;
   transition: box-shadow 0.2s ease;
 }
+    html {
+  scroll-behavior: smooth;
+}
+
 
 #declaration-box:focus-within {
   box-shadow: 0 0 8px rgba(90, 159, 230, 0.4);
