@@ -576,8 +576,25 @@ button:hover:not(:disabled) {
       </div>
     </div>
   </div>
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
+<button id="activate-visualizer" style="
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+    padding: 14px 22px;
+    font-size: 18px;
+    background-color: #1a1a1a;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    cursor: pointer;
+    display: none;
+  ">
+    🔓 Tap to Activate Voice Visualizer
+  </button>
+  <script>
     const canvas = document.getElementById('waveform');
     const ctx = canvas.getContext('2d');
     const rings = [
@@ -696,221 +713,206 @@ button:hover:not(:disabled) {
       fadeLayer.style.opacity = smoothedOpacity.toFixed(2);
     }
 
-    drawWaveform();
+    let oscillator, gainNode, panner;
+    let mediaRecorder;
+    let chunks = [];
+    let mixedStream = null;
+    let previewPlaying = false;
 
-      let oscillator, gainNode, panner;
-      let mediaRecorder;
-      let chunks = [];
-      let mixedStream = null;
-      let previewPlaying = false;
+    const recordBtn = document.getElementById('record-btn');
+    const stopBtn = document.getElementById('stopBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const previewTone = document.getElementById('preview-btn');
+    const audioPlayback = document.getElementById('audioPlayback');
+    const downloadLink = document.getElementById('downloadLink');
+    const frequencySelect = document.getElementById('frequencySelect');
+    const activateButton = document.getElementById('activate-visualizer');
 
-      const recordBtn = document.getElementById('record-btn');
-      const stopBtn = document.getElementById('stopBtn');
-      const resetBtn = document.getElementById('resetBtn');
-      const previewTone = document.getElementById('preview-btn');
-      const audioPlayback = document.getElementById('audioPlayback');
-      const downloadLink = document.getElementById('downloadLink');
-      const frequencySelect = document.getElementById('frequencySelect');
+    function createOscillator(freq, fadeIn = 0.5, fadeOut = 0.5) {
+      oscillator = audioCtx.createOscillator();
+      gainNode = audioCtx.createGain();
+      panner = audioCtx.createStereoPanner();
 
-      function createOscillator(freq, fadeIn = 0.5, fadeOut = 0.5) {
-        oscillator = audioCtx.createOscillator();
-        gainNode = audioCtx.createGain();
-        panner = audioCtx.createStereoPanner();
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
 
-        oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      const now = audioCtx.currentTime;
+      gainNode.gain.setValueAtTime(0, now);
+      gainNode.gain.linearRampToValueAtTime(0.02, now + fadeIn);
 
-        const now = audioCtx.currentTime;
-        gainNode.gain.setValueAtTime(0, now);
-        gainNode.gain.linearRampToValueAtTime(0.02, now + fadeIn);
+      oscillator.connect(panner).connect(gainNode);
 
-        oscillator.connect(panner).connect(gainNode);
+      oscillator.stopWithFade = () => {
+        const stopTime = audioCtx.currentTime + fadeOut;
+        gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
+        gainNode.gain.setValueAtTime(gainNode.gain.value, audioCtx.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0, stopTime);
+        oscillator.stop(stopTime);
+      };
 
-        oscillator.stopWithFade = () => {
-          const stopTime = audioCtx.currentTime + fadeOut;
-          gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
-          gainNode.gain.setValueAtTime(gainNode.gain.value, audioCtx.currentTime);
-          gainNode.gain.linearRampToValueAtTime(0, stopTime);
-          oscillator.stop(stopTime);
-        };
+      return gainNode;
+    }
 
-        return gainNode;
-      }
-
-      function stopPreviewTone(instant = false) {
-        if (oscillator) {
-          if (instant) {
-            oscillator.stop();
+    function stopPreviewTone(instant = false) {
+      if (oscillator) {
+        if (instant) {
+          oscillator.stop();
+          previewPlaying = false;
+          previewTone.textContent = '🔊 Preview Tone';
+        } else {
+          oscillator.stopWithFade();
+          setTimeout(() => {
             previewPlaying = false;
             previewTone.textContent = '🔊 Preview Tone';
-          } else {
-            oscillator.stopWithFade();
-            setTimeout(() => {
-              previewPlaying = false;
-              previewTone.textContent = '🔊 Preview Tone';
-            }, 500);
-          }
-          oscillator = null;
+          }, 500);
         }
+        oscillator = null;
+      }
+    }
+
+    previewTone.onclick = async () => {
+      if (audioCtx.state === 'suspended') await audioCtx.resume();
+
+      const freq = parseFloat(frequencySelect.value);
+      if (freq === 0) return;
+
+      if (!previewPlaying) {
+        const node = createOscillator(freq);
+        node.connect(audioCtx.destination);
+        oscillator.start();
+        previewPlaying = true;
+        previewTone.textContent = '🛑 Stop Preview';
+      } else {
+        stopPreviewTone();
+      }
+    };
+
+    frequencySelect.addEventListener('change', () => {
+      const freq = parseFloat(frequencySelect.value);
+
+      if (freq === 0) {
+        stopPreviewTone(true);
+        previewTone.disabled = true;
+        previewTone.textContent = '🔇 Preview Disabled';
+        return;
       }
 
-      previewTone.onclick = async () => {
-        if (audioCtx.state === 'suspended') await audioCtx.resume();
+      if (previewPlaying) {
+        stopPreviewTone(true);
+        const node = createOscillator(freq, 0, 0.5);
+        node.connect(audioCtx.destination);
+        oscillator.start();
+        previewPlaying = true;
+        previewTone.textContent = '🛑 Stop Preview';
+      } else {
+        previewTone.disabled = false;
+        previewTone.textContent = '🔊 Preview Tone';
+      }
+    });
 
+    previewTone.disabled = parseFloat(frequencySelect.value) === 0;
+    previewTone.textContent = parseFloat(frequencySelect.value) === 0 ? '🔇 Preview Disabled' : '🔊 Preview Tone';
+
+    recordBtn.onclick = async () => {
+      if (audioCtx.state === 'suspended') await audioCtx.resume();
+
+      const startRecording = async () => {
         const freq = parseFloat(frequencySelect.value);
-        if (freq === 0) return;
+        const oscillatorNode = freq > 0 ? createOscillator(freq) : null;
 
-        if (!previewPlaying) {
-          const node = createOscillator(freq);
-          node.connect(audioCtx.destination);
-          oscillator.start();
-          previewPlaying = true;
-          previewTone.textContent = '🛑 Stop Preview';
-        } else {
-          stopPreviewTone();
-        }
-      };
+        try {
+          const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          const micSource = audioCtx.createMediaStreamSource(micStream);
+          micSource.connect(analyser);
+          drawWaveform(); // Start waveform after stream connection
 
-      frequencySelect.addEventListener('change', () => {
-        const freq = parseFloat(frequencySelect.value);
+          const dest = audioCtx.createMediaStreamDestination();
+          micSource.connect(dest);
+          if (oscillatorNode) oscillatorNode.connect(dest);
 
-        if (freq === 0) {
-          stopPreviewTone(true);
+          mixedStream = dest.stream;
+          mediaRecorder = new MediaRecorder(mixedStream);
+
+          chunks = [];
+          mediaRecorder.ondataavailable = e => chunks.push(e.data);
+          mediaRecorder.onstop = () => {
+            const blob = new Blob(chunks, { type: 'audio/mp3' });
+            const url = URL.createObjectURL(blob);
+            audioPlayback.src = url;
+            audioPlayback.style.display = 'block';
+
+            const date = new Date().toISOString().split('T')[0];
+            downloadLink.href = url;
+            downloadLink.download = `highscore-frequency-${date}.mp3`;
+            downloadLink.style.display = 'inline-block';
+          };
+
+          mediaRecorder.start();
+          if (oscillatorNode) oscillator.start();
+
+          recordBtn.disabled = true;
+          stopBtn.disabled = false;
           previewTone.disabled = true;
           previewTone.textContent = '🔇 Preview Disabled';
-          return;
+        } catch (e) {
+          alert('Microphone access denied.');
         }
+      };
 
-        if (previewPlaying) {
-          stopPreviewTone(true);
-          const node = createOscillator(freq, 0, 0.5);
-          node.connect(audioCtx.destination);
-          oscillator.start();
-          previewPlaying = true;
-          previewTone.textContent = '🛑 Stop Preview';
-        } else {
-          previewTone.disabled = false;
-          previewTone.textContent = '🔊 Preview Tone';
-        }
-      });
+      if (previewPlaying) {
+        stopPreviewTone();
+        setTimeout(startRecording, 600);
+      } else {
+        startRecording();
+      }
+    };
 
-      previewTone.disabled = parseFloat(frequencySelect.value) === 0;
-      previewTone.textContent = parseFloat(frequencySelect.value) === 0 ? '🔇 Preview Disabled' : '🔊 Preview Tone';
+    stopBtn.onclick = () => {
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+      }
+      if (oscillator && oscillator.stopWithFade) {
+        oscillator.stopWithFade();
+      } else if (oscillator) {
+        oscillator.stop();
+      }
+
+      recordBtn.disabled = false;
+      stopBtn.disabled = true;
+      resetBtn.disabled = false;
+
+      const freq = parseFloat(frequencySelect.value);
+      previewTone.disabled = freq === 0;
+      previewTone.textContent = freq === 0 ? '🔇 Preview Disabled' : '🔊 Preview Tone';
+      previewPlaying = false;
+    };
+
+    resetBtn.onclick = () => {
+      audioPlayback.pause();
+      audioPlayback.currentTime = 0;
+      audioPlayback.src = '';
+      audioPlayback.style.display = 'none';
+
+      downloadLink.href = '';
+      downloadLink.download = '';
+      downloadLink.style.display = 'none';
+
+      resetBtn.disabled = true;
+    };
+
+    // Manual fallback for user activation
+    activateButton.addEventListener('click', async () => {
+      try {
+        const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        if (audioCtx.state === 'suspended') await audioCtx.resume();
+        const micSource = audioCtx.createMediaStreamSource(micStream);
+        micSource.connect(analyser);
+        activateButton.style.display = 'none';
+      } catch (err) {
+        alert('Microphone access is required to activate the visualizer.');
+      }
+    });
     
-recordBtn.onclick = async () => {
-  if (audioCtx.state === 'suspended') await audioCtx.resume();
-
-  const startRecording = async () => {
-    const freq = parseFloat(frequencySelect.value);
-    const oscillatorNode = freq > 0 ? createOscillator(freq) : null;
-
-    try {
-      const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const micSource = audioCtx.createMediaStreamSource(micStream);
-      micSource.connect(analyser);
-
-      const dest = audioCtx.createMediaStreamDestination();
-      micSource.connect(dest);
-      if (oscillatorNode) oscillatorNode.connect(dest);
-
-      mixedStream = dest.stream;
-      mediaRecorder = new MediaRecorder(mixedStream);
-
-      chunks = [];
-      mediaRecorder.ondataavailable = e => chunks.push(e.data);
-      mediaRecorder.onstop = () => {
-        const blob = new Blob(chunks, { type: 'audio/mp3' });
-        const url = URL.createObjectURL(blob);
-        audioPlayback.src = url;
-        audioPlayback.style.display = 'block';
-
-        const date = new Date().toISOString().split('T')[0];
-        downloadLink.href = url;
-        downloadLink.download = `highscore-frequency-${date}.mp3`;
-        downloadLink.style.display = 'inline-block';
-      };
-
-      mediaRecorder.start();
-      if (oscillatorNode) oscillatorNode.start();
-
-      recordBtn.disabled = true;
-      stopBtn.disabled = false;
-      previewTone.disabled = true;
-      previewTone.textContent = '🔇 Preview Disabled';
-    } catch (e) {
-      alert('Microphone access denied.');
-    }
-  };
-
-        if (previewPlaying) {
-          stopPreviewTone();
-          setTimeout(startRecording, 500);
-        } else {
-          startRecording();
-        }
-      };
-
-      stopBtn.onclick = () => {
-        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-          mediaRecorder.stop();
-        }
-        if (oscillator && oscillator.stopWithFade) {
-          oscillator.stopWithFade();
-        } else if (oscillator) {
-          oscillator.stop();
-        }
-
-        recordBtn.disabled = false;
-        stopBtn.disabled = true;
-        resetBtn.disabled = false;
-
-        const freq = parseFloat(frequencySelect.value);
-        previewTone.disabled = freq === 0;
-        previewTone.textContent = freq === 0 ? '🔇 Preview Disabled' : '🔊 Preview Tone';
-        previewPlaying = false;
-      };
-
-      resetBtn.onclick = () => {
-        audioPlayback.pause();
-        audioPlayback.currentTime = 0;
-        audioPlayback.src = '';
-        audioPlayback.style.display = 'none';
-
-        downloadLink.href = '';
-        downloadLink.download = '';
-        downloadLink.style.display = 'none';
-
-        resetBtn.disabled = true;
-      };
-
-  const activateButton = document.getElementById('activate-visualizer');
-
-// Try to auto-start waveform visualizer on page load
-(async function autoStartWaveform() {
-  try {
-    const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    if (audioCtx.state === 'suspended') await audioCtx.resume();
-    const micSource = audioCtx.createMediaStreamSource(micStream);
-    micSource.connect(analyser);
-  } catch (err) {
-    // Show fallback button if access blocked
-    activateButton.style.display = 'block';
-  }
-})();
-
-// Manual fallback for user activation
-activateButton.addEventListener('click', async () => {
-  try {
-    const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    if (audioCtx.state === 'suspended') await audioCtx.resume();
-    const micSource = audioCtx.createMediaStreamSource(micStream);
-    micSource.connect(analyser);
-    activateButton.style.display = 'none';
-  } catch (err) {
-    alert('Microphone access is required to activate the visualizer.');
-  }
-});
-
     // Declaration text logic
     const promptSelect = document.getElementById("promptSelect");
     const declarationBox = document.getElementById("declaration-box");
