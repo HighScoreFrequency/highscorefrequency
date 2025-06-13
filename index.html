@@ -895,11 +895,36 @@ button:hover:not(:disabled) {
       });
 
       // Declaration text logic
-  document.addEventListener("DOMContentLoaded", () => {
-    const promptSelect = document.getElementById("promptSelect");
-    const declarationText = document.getElementById("declaration-text");
+        const activateButton = document.getElementById('activate-visualizer');
 
-    const declarations = {
+      (async function autoStartWaveform() {
+        try {
+          const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          if (audioCtx.state === 'suspended') await audioCtx.resume();
+          const micSource = audioCtx.createMediaStreamSource(micStream);
+          micSource.connect(analyser);
+        } catch (err) {
+          activateButton.style.display = 'block';
+        }
+      })();
+
+      activateButton.addEventListener('click', async () => {
+        try {
+          const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          if (audioCtx.state === 'suspended') await audioCtx.resume();
+          const micSource = audioCtx.createMediaStreamSource(micStream);
+          micSource.connect(analyser);
+          activateButton.style.display = 'none';
+        } catch (err) {
+          alert('Microphone access is required to activate the visualizer.');
+        }
+      });
+
+      // Declaration text logic
+      const promptSelect = document.getElementById("promptSelect");
+      const declarationText = document.getElementById("declaration-text");
+
+      const declarations = {
         "": `Choose your tone, speak it clear,\ncode your vibe, draw truth near.\nThis isn’t sound, it’s memory’s key,\na voice-crafted path to mastery.`,
         "1": `⚡️ Unlock My Final Form
         
@@ -1082,22 +1107,25 @@ I walk the path that I once dreamed—
 Now real, now felt, now fully seen.`
       };
 
-  function updateDeclaration() {
-    const selected = promptSelect.value;
-    declarationText.textContent = declarations[selected] || declarations[""];
+function updateDeclaration() {
+  const selected = promptSelect.value;
+  const declarationBox = document.getElementById("declaration-box");
+  const declarationText = document.getElementById("declaration-text");
 
-    // ✅ Toggle scroll only when prompt is not first
-    if (selected === "") {
-      declarationBox.classList.add("first-prompt");
-    } else {
-      declarationBox.classList.remove("first-prompt");
-    }
+  declarationText.textContent = declarations[selected] || declarations[""];
+
+  // Toggle scrollability for first prompt only
+  if (selected === "") {
+    declarationBox.classList.add("first-prompt");
+  } else {
+    declarationBox.classList.remove("first-prompt");
   }
+}
 
-  updateDeclaration(); // Initial call
-  promptSelect.addEventListener("change", updateDeclaration);
-});
 
+      updateDeclaration(); // Set initial text
+      promptSelect.addEventListener("change", updateDeclaration);
+    });
 
 
 </script>
