@@ -28,7 +28,6 @@
       align-items: center;
     }
 
-
     canvas#waveform {
       position: fixed;
       top: 0;
@@ -218,7 +217,7 @@
       background-color: #1a1a1a;
       color: white;
       border: none;
-      padding: 6px 16px;
+      padding: 10px 16px;
       font-size: 12px;
       cursor: pointer;
       border-radius: 6px;
@@ -272,7 +271,7 @@ button:hover:not(:disabled) {
     #declaration-box, #declaration-text {
   opacity: 1 !important;
   color: #222 !important;
-  background: rgba(255, 255, 255, 0.95) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
   position: relative !important;
   z-index: 10 !important;
   height: auto !important;
@@ -290,7 +289,7 @@ button:hover:not(:disabled) {
       color: #222;
       line-height: 1.3;
       white-space: pre-wrap;
-      background: rgba(255, 255, 255, 0.95);
+      background: rgba(255, 255, 255, 1);
       overflow-y: auto;
       border: 1px solid #ccc;
       box-sizing: border-box;
@@ -515,6 +514,24 @@ button:hover:not(:disabled) {
         </div>
       </div>
 
+  <button id="activate-visualizer" style="
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+    padding: 14px 22px;
+    font-size: 18px;
+    background-color: #1a1a1a;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    cursor: pointer;
+    display: none;
+  ">
+    🔓 Tap to Activate Voice Visualizer
+  </button>
   
       <audio id="audioPlayback" controls style="display: none;"></audio>
       <a id="downloadLink" style="display: none;">⬇️ Download Your Recording</a>
