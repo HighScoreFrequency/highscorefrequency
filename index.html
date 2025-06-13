@@ -895,10 +895,11 @@ button:hover:not(:disabled) {
       });
 
       // Declaration text logic
-      const promptSelect = document.getElementById("promptSelect");
-      const declarationText = document.getElementById("declaration-text");
+  document.addEventListener("DOMContentLoaded", () => {
+    const promptSelect = document.getElementById("promptSelect");
+    const declarationText = document.getElementById("declaration-text");
 
-      const declarations = {
+    const declarations = {
         "": `Choose your tone, speak it clear,\ncode your vibe, draw truth near.\nThis isn’t sound, it’s memory’s key,\na voice-crafted path to mastery.`,
         "1": `⚡️ Unlock My Final Form
         
@@ -1081,25 +1082,22 @@ I walk the path that I once dreamed—
 Now real, now felt, now fully seen.`
       };
 
-function updateDeclaration() {
-  const selected = promptSelect.value;
-  const declarationBox = document.getElementById("declaration-box");
-  const declarationText = document.getElementById("declaration-text");
+  function updateDeclaration() {
+    const selected = promptSelect.value;
+    declarationText.textContent = declarations[selected] || declarations[""];
 
-  declarationText.textContent = declarations[selected] || declarations[""];
-
-  // Toggle scrollability for first prompt only
-  if (selected === "") {
-    declarationBox.classList.add("first-prompt");
-  } else {
-    declarationBox.classList.remove("first-prompt");
+    // ✅ Toggle scroll only when prompt is not first
+    if (selected === "") {
+      declarationBox.classList.add("first-prompt");
+    } else {
+      declarationBox.classList.remove("first-prompt");
+    }
   }
-}
 
+  updateDeclaration(); // Initial call
+  promptSelect.addEventListener("change", updateDeclaration);
+});
 
-      updateDeclaration(); // Set initial text
-      promptSelect.addEventListener("change", updateDeclaration);
-    });
 
 
 </script>
