@@ -880,11 +880,21 @@ And so I speak. And so it is. I stamp this form with Christos kiss. In breat
         "4": `👑 Equip Divine Union Mode\n\nAligned in heart, in body, in soul,\nI enter love that makes me whole.`
       };
 
-      function updateDeclaration() {
-        const selected = promptSelect.value;
-        declarationText.textContent = declarations[selected] || declarations[""];
-        console.log("Updated text to:", declarationText.textContent); // Debug
-      }
+function updateDeclaration() {
+  const selected = promptSelect.value;
+  const declarationBox = document.getElementById("declaration-box");
+  const declarationText = document.getElementById("declaration-text");
+
+  declarationText.textContent = declarations[selected] || declarations[""];
+
+  // Toggle scrollability for first prompt only
+  if (selected === "") {
+    declarationBox.classList.add("first-prompt");
+  } else {
+    declarationBox.classList.remove("first-prompt");
+  }
+}
+
 
       updateDeclaration(); // Set initial text
       promptSelect.addEventListener("change", updateDeclaration);
