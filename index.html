@@ -797,6 +797,14 @@ button:hover:not(:disabled) {
       previewTone.disabled = parseFloat(frequencySelect.value) === 0;
       previewTone.textContent = parseFloat(frequencySelect.value) === 0 ? '🔇 Preview Disabled' : '🔊 Preview Tone';
 
+      if (previewPlaying) {
+    stopPreviewTone();
+    setTimeout(startRecording, 1500); // Wait for 1.5s fade-out
+  } else {
+    startRecording();
+  }
+};
+    
       recordBtn.onclick = async () => {
         if (audioCtx.state === 'suspended') await audioCtx.resume();
 
@@ -844,7 +852,7 @@ button:hover:not(:disabled) {
 
         if (previewPlaying) {
           stopPreviewTone();
-          setTimeout(startRecording, 500);
+          setTimeout(startRecording, 600);
         } else {
           startRecording();
         }
