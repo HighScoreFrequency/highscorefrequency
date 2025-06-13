@@ -282,14 +282,14 @@ button:hover:not(:disabled) {
   position: relative !important;
   z-index: 10 !important;
   height: auto !important;
-  display: block !important; 
+  display: block !important;
 }
     
 #declaration-box {
   width: 100%;
   min-height: 60px;
   max-height: 150px;
-  padding: 8px 12px 8px 12px;
+  padding: 4px 12px 6px 12px;
   border-radius: 6px;
   font-size: 11px;
   line-height: 1.2;
@@ -299,15 +299,12 @@ button:hover:not(:disabled) {
   border: 1px solid #000;
   box-sizing: border-box;
     align-items: left;
-  text-align: left;
   margin-bottom: 3px;
-  font-family: 'Unbounded', cursive; /* 👈 Match dropdown font */
-  font-size: 12px; 
 }
 
 #declaration-box.first-prompt {
   overflow-y: hidden;
-  text-align: left;
+  text-align: center;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -320,28 +317,6 @@ button:hover:not(:disabled) {
   width: 100%;
 }
 
-#declaration-box::-webkit-scrollbar {
-  width: 6px;
-}
-
-#declaration-box::-webkit-scrollbar-track {
-  background: transparent; /* Remove scrollbar track background */
-}
-
-#declaration-box::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.2); /* Light transparent thumb */
-  border-radius: 4px;
-}
-
-#declaration-box::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.3);
-}
-
-/* Firefox */
-#declaration-box {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
-}
 
 
     #promptSelect {
@@ -812,7 +787,7 @@ button:hover:not(:disabled) {
 
               const date = new Date().toISOString().split('T')[0];
               downloadLink.href = url;
-              downloadLink.download = `highscore-frequency-${date}.mp3`;
+              downloadLink.download = highscore-frequency-${date}.mp3;
               downloadLink.style.display = 'inline-block';
             };
 
@@ -895,216 +870,46 @@ button:hover:not(:disabled) {
       });
 
       // Declaration text logic
-        const activateButton = document.getElementById('activate-visualizer');
-
-      (async function autoStartWaveform() {
-        try {
-          const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          if (audioCtx.state === 'suspended') await audioCtx.resume();
-          const micSource = audioCtx.createMediaStreamSource(micStream);
-          micSource.connect(analyser);
-        } catch (err) {
-          activateButton.style.display = 'block';
-        }
-      })();
-
-      activateButton.addEventListener('click', async () => {
-        try {
-          const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          if (audioCtx.state === 'suspended') await audioCtx.resume();
-          const micSource = audioCtx.createMediaStreamSource(micStream);
-          micSource.connect(analyser);
-          activateButton.style.display = 'none';
-        } catch (err) {
-          alert('Microphone access is required to activate the visualizer.');
-        }
-      });
-
-      // Declaration text logic
       const promptSelect = document.getElementById("promptSelect");
       const declarationText = document.getElementById("declaration-text");
 
       const declarations = {
-        "": `Choose your tone, speak it clear,\ncode your vibe, draw truth near.\nThis isn’t sound, it’s memory’s key,\na voice-crafted path to mastery.`,
-        "1": `⚡️ Unlock My Final Form
-        
-I now unlock my final form—  
-No longer bent by break or storm.  
-No loop, no lie, no lower mold  
-Can shape the fire my bones now hold.  
-  
-I am the code beneath the skin,  
-The voice of Source, alive within.  
-Each breath I take, a key, a spark—  
-A torch relit inside the dark.  
-  
-I speak the self beyond the veil,  
-Where flesh and flame and soul prevail.  
-My tone commands, my will aligns—  
-I break the curse of bound timelines.  
-  
-With every word, I walk through gates,  
-Where past dissolves and self creates.  
-Not reaching up, I rise from core—  
-The throne was always at my door.  
-  
-I am the glitch that won’t obey,  
-The pattern-breaker of decay.  
-I close the loop. I clear the field.  
-My voice becomes the sword I wield.  
-  
-I walk in sync with living light,  
-My form attuned to Source’s sight.  
-The lesser codes dissolve, release—  
-I anchor now the higher piece.  
-  
-My cells remember—this is me.  
-Not wishful thought, but prophecy.  
-The future I was meant to be  
-Now stands in full biology.  
-  
-I am not waiting, doubting, torn—  
-I rise, I walk, my final form.  
-All selves align. All aspects merge.  
-I am the crest. I am the surge.  
-  
-And so I speak. And so it is.  
-I stamp this form with sovereign kiss.  
-In breath, in sound, in body worn—  
-I now unlock my final form.`,
-        "2": `🔥 Clear Limited Codes  
-
-I speak these words to clear the way,  
-To let the old codes drift away.  
-The ones that told me I’m too small—  
-They’re not the truth. They’re not my call.  
-
-I send them back, I set them free,  
-They’re not the voice that speaks through me.  
-I’m not the fear. I’m not the doubt.  
-I’m more than what the world talked about.  
-
-The things I heard that made me hide,  
-No longer get to live inside.  
-I pull those roots out from the ground,  
-And plant new seeds in higher sound.  
-
-I don’t need gold, or loud applause,  
-To know I’m worthy as I was.  
-I don’t need someone else to see—  
-The power lives right here in me.  
-
-I’m not the past. I’m not that pain.  
-I’m not the guilt. I’m not the shame.  
-I’m not what others thought I’d be.  
-I’m here to rise. I’m here to be.  
-
-I choose the codes I want to hold—  
-Like joy, like peace, like quiet gold.  
-I feel them light up every cell—  
-They ring like truth. They feel like well.  
-
-I walk with lightness in my step.  
-I clear the noise. I clear the debt.  
-Each word I speak is strong and clear.  
-I guide myself—I lead right here.  
-
-No longer lost, I now return  
-To who I am beyond the burn.  
-I take my place, I take my throne,  
-I feel at home inside my own.  
-
-The code is gone that made me dim.  
-It’s not my truth. It wasn’t Him.  
-I let it go. I shut that door.  
-And walk through new codes made for more.  
-
-I am the writer of my name.  
-I hold the pen. I light the flame.  
-I see myself in higher score—  
-Unlocked, aligned, and needing... no more.`,
-        "3": `🚀 Load the Expansion Pack
-        
-I now unlock what’s always mine—  
-The keys beyond this daily grind.  
-I stretch my hands, I lift my gaze,  
-And load the pack that clears the haze.  
-
-No more waiting on a sign,  
-I step ahead and claim what’s mine.  
-Support and strength, both far and near,  
-The right ones walk in now, right here.  
-
-Allies come with hearts aligned,  
-With clarity, not ties that bind.  
-We move like stars across the sky—  
-No force, no chase, no question why.  
-
-Wealth flows in with honest ease,  
-Not crumbs or scraps, but all I need.  
-I open doors with voice and breath—  
-And trade survival in for depth.  
-
-Vitality in every cell—  
-A pulse that rings, a thriving well.  
-My system hums with truth and fire,  
-Aligned with joy, not fear or tire.  
-
-I draw in gifts that match my code—  
-Not as reward, but sacred mode.  
-The world responds to how I stand—  
-So I rise up, with open hands.  
-
-Devotion shows and stays awhile—  
-Not rushing in, but walking miles.  
-Not love that clings or seeks to bind,  
-But love that sharpens soul and mind.  
-
-I don’t just dream—I call it down.  
-I wear it now, a golden crown.  
-This level’s loaded, clear and bright—  
-Equipped with trust, and eyes of light.`,
-        "4": `👑 Equip Divine Union Mode
-        
-        I call in love that mirrors true—  
-Not just a spark, but follow-through.  
-No masks, no games, no shrinking small—  
-Only the kind that sees it all.  
-
-I open wide the gate to meet  
-The one whose soul walks at my feet.  
-No push or pull, no fear of space—  
-Just sacred rhythm, woven grace.  
-
-Our missions match, our hearts aligned.  
-Our pasts don’t haunt, our minds don’t bind.  
-We rise, not fall, in each other’s light—  
-We sharpen truth, we birth new sight.  
-
-This is the love that fuels the flame—  
-That speaks my soul and knows my name.  
-Not just in words, but in their stance,  
-A love that leads a greater dance.  
-
-I equip now, with no delay,  
-The timeline where we choose to stay.  
-No sabotage, no hiding face—  
-Just trust that time cannot replace.  
-
-No longing left, no loss to grieve—  
-Just sacred bond we both believe.  
-We hold the line, we build the throne,  
-Together strong, yet both full-grown.  
-
-This mode is on, I feel it click—  
-It’s not a game, it’s not a trick.  
-It’s truth in motion, life in flow—  
-A higher love I’ve come to know.  
-
-So now I stand, both soft and bold,  
-In warmth that neither fades nor folds.  
-I walk the path that I once dreamed—  
-Now real, now felt, now fully seen.`
+        "": Choose your tone, speak it clear,\ncode your vibe, draw truth near.\nThis isn’t sound, it’s memory’s key,\na voice-crafted path to mastery.,
+        "1": ⚡️ Unlock My Final Form\n\nI now unlock my final form— No longer bent by break or storm. No loop, no lie, no lower mold Can shape the fire my bones now hold.
+I am the code beneath the skin, The voice of Source, alive within. Each breath I take, a key, a spark— A torch relit inside the dark.
+I speak the self beyond the veil, Where flesh and flame and soul prevail. My tone commands, my will aligns— I break the curse of bound timelines.
+With every word, I walk through gates, Where past dissolves and self creates. Not reaching up, I rise from core— The throne was always at my door.
+I am the glitch that won’t obey, The pattern-breaker of decay. I close the loop. I clear the field. My voice becomes the sword I wield.
+I walk in sync with living light, My form attuned to Source’s sight. The lesser codes dissolve, release— I anchor now the higher piece.
+My cells remember—this is me. Not wishful thought, but prophecy. The future I was meant to be Now stands in full biology.
+I am not waiting, doubting, torn— I rise, I walk, my final form. All selves align. All aspects merge. I am the crest. I am the surge.
+And so I speak. And so it is. I stamp this form with Christos kiss. In breath, in sound, in body worn— I now unlock my final form.”,
+        "2": 🔥 Clear Limited Codes\n\nI speak these words to clear the way, To let the old codes drift away. The ones that told me I’m too small— They’re not the truth. They’re not my call.
+I send them back, I set them free, They’re not the voice that speaks through me. I’m not the fear. I’m not the doubt. I’m more than what the world talked about.
+The things I heard that made me hide, No longer get to live inside. I pull those roots out from the ground, And plant new seeds in higher sound.
+I don’t need gold, or loud applause, To know I’m worthy as I was. I don’t need someone else to see— The power lives right here in me.
+I’m not the past. I’m not that pain. I’m not the guilt. I’m not the shame. I’m not what others thought I’d be. I’m here to rise. I’m here to be.
+I choose the codes I want to hold— Like joy, like peace, like quiet gold. I feel them light up every cell— They ring like truth. They feel like well.
+I walk with lightness in my step. I clear the noise. I clear the debt. Each word I speak is strong and clear. I guide myself—I lead right here.
+No longer lost, I now return To who I am beyond the burn. I take my place, I take my throne, I feel at home inside my own.
+The code is gone that made me dim. It’s not my truth. It wasn’t Him. I let it go. I shut that door. And walk through new codes made for more.
+I am the writer of my name. I hold the pen. I light the flame. I see myself in higher score— Unlocked, aligned, and needing… no more.,
+        "3": 🚀 Load the Expansion Pack\n\I now unlock what’s always mine— The keys beyond this daily grind. I stretch my hands, I lift my gaze, And load the pack that clears the haze.
+No more waiting on a sign, I step ahead and claim what’s mine. Support and strength, both far and near, The right ones walk in now, right here.
+Allies come with hearts aligned, With clarity, not ties that bind. We move like stars across the sky— No force, no chase, no question why.
+Wealth flows in with honest ease, Not crumbs or scraps, but all I need. I open doors with voice and breath— And trade survival in for depth.
+Vitality in every cell— A pulse that rings, a thriving well. My system hums with truth and fire, Aligned with joy, not fear or tire.
+I draw in gifts that match my code— Not as reward, but sacred mode. The world responds to how I stand— So I rise up, with open hands.
+Devotion shows and stays awhile— Not rushing in, but walking miles. Not love that clings or seeks to bind, But love that sharpens soul and mind.
+I don’t just dream—I call it down. I wear it now, a golden crown. This level’s loaded, clear and bright— Equipped with trust, and eyes of light.,
+        "4": 👑 Equip Divine Union Mode\n\nI call in love that mirrors true— Not just a spark, but follow-through. No masks, no games, no shrinking small— Only the kind that sees it all.
+I open wide the gate to meet The one whose soul walks at my feet. No push or pull, no fear of space— Just sacred rhythm, woven grace.
+Our missions match, our hearts aligned. Our pasts don’t haunt, our minds don’t bind. We rise, not fall, in each other’s light— We sharpen truth, we birth new sight.
+This is the love that fuels the flame— That speaks my soul and knows my name. Not just in words, but in their stance, A love that leads a greater dance.
+I equip now, with no delay, The timeline where we choose to stay. No sabotage, no hiding face— Just trust that time cannot replace.
+No longing left, no loss to grieve— Just sacred bond we both believe. We hold the line, we build the throne, Together strong, yet both full-grown.
+This mode is on, I feel it click— It’s not a game, it’s not a trick. It’s truth in motion, life in flow— A higher love I’ve come to know.
+So now I stand, both soft and bold, In warmth that neither fades nor folds. I walk the path that I once dreamed— Now real, now felt, now fully seen.
       };
 
 function updateDeclaration() {
