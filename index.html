@@ -919,6 +919,7 @@ button:hover:not(:disabled) {
 
       // Declaration text logic
       const promptSelect = document.getElementById("promptSelect");
+      const declarationBox = document.getElementById("declaration-box");
       const declarationText = document.getElementById("declaration-text");
 
       const declarations = {
@@ -1107,6 +1108,7 @@ Now real, now felt, now fully seen.`
       function updateDeclaration() {
         const selected = promptSelect.value;
         declarationText.textContent = declarations[selected] || declarations[""];
+        declarationBox.classList.toggle("prompt-selected", selected !== "");
         console.log("Updated text to:", declarationText.textContent); // Debug
       }
 
