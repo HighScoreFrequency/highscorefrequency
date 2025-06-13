@@ -1025,44 +1025,14 @@ Now real, now felt, now fully seen.`
       };
 
 function updateDeclaration() {
-  const selected = promptSelect.value;
-  const declarationBox = document.getElementById("declaration-box");
-  const declarationText = document.getElementById("declaration-text");
-
-  declarationText.textContent = declarations[selected] || declarations[""];
-
-  // Toggle scrollability for first prompt only
-  if (selected === "") {
-    declarationBox.classList.add("first-prompt");
-  } else {
-    declarationBox.classList.remove("first-prompt");
-  }
-}
-
+        const selected = promptSelect.value;
+        declarationText.textContent = declarations[selected] || declarations[""];
+        console.log("Updated text to:", declarationText.textContent); // Debug
+      }
 
       updateDeclaration(); // Set initial text
       promptSelect.addEventListener("change", updateDeclaration);
     });
-
-
-</script>
-  <button id="activate-visualizer" style="
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 9999;
-  padding: 14px 22px;
-  font-size: 18px;
-  background-color: #1a1a1a;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.3);
-  cursor: pointer;
-  display: none;
-">
-  🔓 Tap to Activate Voice Visualizer
-</button>
+  </script>
 </body>
 </html>
