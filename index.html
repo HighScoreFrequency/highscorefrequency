@@ -776,6 +776,7 @@ button:hover:not(:disabled) {
     async function requestMicrophoneAccess() {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        console.log("Microphone access granted, stream active:", stream.active);
         return stream;
       } catch (err) {
         console.error("Microphone access error:", err.name, err.message);
@@ -792,6 +793,7 @@ button:hover:not(:disabled) {
 
     previewTone.onclick = async () => {
       if (audioCtx.state === "suspended") await audioCtx.resume();
+      console.log("AudioContext state before preview:", audioCtx.state);
 
       const freq = parseFloat(frequencySelect.value);
       if (freq === 0) return;
@@ -834,7 +836,11 @@ button:hover:not(:disabled) {
     previewTone.textContent = parseFloat(frequencySelect.value) === 0 ? '🔇 Preview Disabled' : '🔊 Preview Tone';
 
     recordBtn.onclick = async () => {
-      if (audioCtx.state === "suspended") await audioCtx.resume();
+      console.log("Record button clicked, audioCtx state:", audioCtx.state);
+      if (audioCtx.state === "suspended") {
+        await audioCtx.resume();
+        console.log("AudioContext resumed, new state:", audioCtx.state);
+      }
 
       const startRecording = async () => {
         try {
@@ -842,11 +848,13 @@ button:hover:not(:disabled) {
           if (micStream) {
             micStream.getTracks().forEach(track => track.stop());
             micStream = null;
+            console.log("Released existing microphone stream");
           }
 
           micStream = await requestMicrophoneAccess();
           const micSource = audioCtx.createMediaStreamSource(micStream);
           micSource.connect(analyser);
+          console.log("Microphone source connected to analyser");
 
           const freq = parseFloat(frequencySelect.value);
           const oscillatorNode = freq > 0 ? createOscillator(freq) : null;
@@ -854,9 +862,11 @@ button:hover:not(:disabled) {
           const dest = audioCtx.createMediaStreamDestination();
           micSource.connect(dest);
           if (oscillatorNode) oscillatorNode.connect(dest);
+          console.log("Destination stream created");
 
           mixedStream = dest.stream;
           mediaRecorder = new MediaRecorder(mixedStream);
+          console.log("MediaRecorder initialized, stream active:", mixedStream.active);
 
           chunks = [];
           mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
@@ -870,9 +880,12 @@ button:hover:not(:disabled) {
             downloadLink.href = url;
             downloadLink.download = `highscore-frequency-${date}.mp3`;
             downloadLink.style.display = 'inline-block';
+            console.log("Recording stopped, playback ready");
           };
 
           mediaRecorder.start();
+          console.log("MediaRecorder started");
+
           if (oscillatorNode) oscillatorNode.start();
 
           recordBtn.disabled = true;
@@ -887,14 +900,17 @@ button:hover:not(:disabled) {
       if (previewPlaying) {
         stopPreviewTone();
         setTimeout(startRecording, 500);
+        console.log("Preview playing, delayed recording start");
       } else {
         startRecording();
+        console.log("Starting recording immediately");
       }
     };
 
     stopBtn.onclick = () => {
       if (mediaRecorder && mediaRecorder.state !== "inactive") {
         mediaRecorder.stop();
+        console.log("MediaRecorder stopped");
       }
       if (oscillator && oscillator.stopWithFade) {
         oscillator.stopWithFade();
@@ -904,6 +920,7 @@ button:hover:not(:disabled) {
       if (micStream) {
         micStream.getTracks().forEach(track => track.stop());
         micStream = null;
+        console.log("Microphone stream released");
       }
 
       recordBtn.disabled = false;
@@ -927,6 +944,7 @@ button:hover:not(:disabled) {
       downloadLink.style.display = 'none';
 
       resetBtn.disabled = true;
+      console.log("Reset completed");
     };
 
     const activateButton = document.getElementById('activate-visualizer');
@@ -936,12 +954,14 @@ button:hover:not(:disabled) {
         if (micStream) {
           micStream.getTracks().forEach(track => track.stop());
           micStream = null;
+          console.log("Released existing microphone stream for visualizer");
         }
         micStream = await requestMicrophoneAccess();
         if (audioCtx.state === "suspended") await audioCtx.resume();
         const micSource = audioCtx.createMediaStreamSource(micStream);
         micSource.connect(analyser);
         activateButton.style.display = 'none';
+        console.log("Visualizer activated, microphone connected");
       } catch (err) {
         alert('Microphone access is required to activate the visualizer.');
       }
