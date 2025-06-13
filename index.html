@@ -317,6 +317,28 @@ button:hover:not(:disabled) {
   width: 100%;
 }
 
+#declaration-box::-webkit-scrollbar {
+  width: 6px;
+}
+
+#declaration-box::-webkit-scrollbar-track {
+  background: transparent; /* Remove scrollbar track background */
+}
+
+#declaration-box::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2); /* Light transparent thumb */
+  border-radius: 4px;
+}
+
+#declaration-box::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Firefox */
+#declaration-box {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
 
 
     #promptSelect {
