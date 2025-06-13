@@ -272,28 +272,27 @@ button:hover:not(:disabled) {
   gap: 4px;
 }
 
-.declaration-wrapper {
+    .declaration-wrapper {
   padding: 2px;
   border-radius: 6px;
   background: linear-gradient(135deg, #ffcc33, #a9712c, #ffd700);
 }
-
-#declaration-box,
-#declaration-text {
+    
+    #declaration-box, #declaration-text {
   opacity: 1 !important;
   color: #222 !important;
   background: rgba(255, 255, 255, 0.95) !important;
   position: relative !important;
   z-index: 10 !important;
   height: auto !important;
-  display: block !important;
+  display: block !important; 
 }
-
+    
 #declaration-box {
-  width: 100%;
+  width: auto;
   min-height: 60px;
   max-height: 150px;
-  padding: 8px; /* Reduced to uniform padding, no need for 50px */
+  padding: 12px
   border-radius: 6px;
   font-size: 12px;
   line-height: 1.2;
@@ -302,26 +301,27 @@ button:hover:not(:disabled) {
   overflow-y: auto;
   border: 0px solid #000;
   box-sizing: border-box;
-  display: flex; /* Flex container */
-  align-items: center; /* Vertically center the child */
-  justify-content: center; /* Horizontally center the child */
-  text-align: left; /* Ensure text within is left-aligned */
+    align-items: center;
+  font-size: 12px;
+  display: flex;
+  text-align: left;
+  justify-content: center !important;
   margin-bottom: 3px;
-  font-family: 'Unbounded', cursive;
+  font-family: 'Unbounded', cursive; /* 👈 Match dropdown font */
 }
 
-#declaration-box.prompt-selected #declaration-text {
-  font-family: 'Unbounded', cursive; /* Corrected from 'arial' to match design */
+   #declaration-box.prompt-selected #declaration-text {
+  font-family: 'arial', cursive !important;
   font-size: 12px;
-  font-weight: 500;
-  line-height: 1.2;
-}
+  font-weight: 500; /* Matches the dropdown font weight */
+  line-height: 1.2; /* Keep existing line height for readability */
+} 
 
 #declaration-box.first-prompt {
   text-align: left;
   display: flex;
   align-items: center;
-  justify-content: center; /* Consistent centering */
+  justify-content: center !important;
   background: rgba(255, 255, 255, 0.95);
   border: 0px solid #000;
 }
