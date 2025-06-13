@@ -268,16 +268,6 @@ button:hover:not(:disabled) {
         gap: 4px;
     }
 
-#declaration-box, #declaration-text {
-  opacity: 1 !important;
-  color: #222 !important;
-  background: rgba(255, 255, 255, 0.95) !important;
-  position: relative !important;
-  z-index: 10 !important;
-  height: auto !important;
-  display: block !important;
-}
-    
     #declaration-box {
       width: 100%;
       min-height: 60px;
@@ -917,43 +907,28 @@ activateButton.addEventListener('click', async () => {
   }
 });
 
-// Force text initialization
-(function() {
-  console.log('Script started');
-  const declarationText = document.getElementById('declaration-text');
-  if (declarationText) {
-    console.log('Declaration text element found:', declarationText);
-    try {
-      declarationText.textContent = 'Test: Checking if this works';
-      console.log('Text set to:', declarationText.textContent);
-    } catch (e) {
-      console.error('Error setting text:', e);
-    }
-  } else {
-    console.error('Declaration text element not found');
-  }
+document.addEventListener("DOMContentLoaded", () => {
+  const declarations = {
+    "": `Choose your tone, speak it clear,\ncode your vibe, draw truth near.\nThis isn’t sound, it’s memory’s key,\na voice-crafted path to mastery.`,
+    "1": `⚡️ Unlock My Final Form\n\nI release the scripts that kept me small...`,
+    "2": `🔥 Clear Limited Codes\n\nI return to blueprint, soul-designed...`,
+    "3": `🚀 Load the Expansion Pack\n\nI summon wealth, in forms untold...`,
+    "4": `👑 Equip Divine Union Mode\n\nI activate love, the sacred kind...`
+  };
 
   const promptSelect = document.getElementById("promptSelect");
   const declarationText = document.getElementById("declaration-text");
 
-  const declarations = {
-    "": `Choose your tone, speak it clear,\ncode your vibe, draw truth near.\nThis isn’t sound, it’s memory’s key,\na voice-crafted path to mastery.`,
-    "1": `⚡️ Unlock My Final Form\n\nI release the scripts that kept me small...\nI rise, I flow, I answer the call...`,
-    "2": `🔥 Clear Limited Codes\n\nNo more loops, no faulty plan,\nI code my truth, I now withstand.`,
-    "3": `🚀 Load the Expansion Pack\n\nAbundance, strength, devotion, grace,\nI summon all into my space.`,
-    "4": `👑 Equip Divine Union Mode\n\nAligned in heart, in body, in soul,\nI enter love that makes me whole.`
-  };
+  // ✅ Set default on load
+  declarationText.innerText = declarations[promptSelect.value] || "";
 
-  // Set default text on initial page load
-  document.addEventListener("DOMContentLoaded", () => {
-    declarationText.innerText = declarations[promptSelect.value] || declarations[""];
+  // ✅ Update on change
+  promptSelect.addEventListener("change", function () {
+    const selected = this.value;
+    declarationText.innerText = declarations[selected] || "";
   });
+});
 
-  // Update declaration on dropdown change
-  promptSelect.addEventListener("change", () => {
-    const selected = promptSelect.value;
-    declarationText.innerText = declarations[selected] || declarations[""];
-  });
 
 </script>
   <button id="activate-visualizer" style="
