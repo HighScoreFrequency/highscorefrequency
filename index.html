@@ -844,46 +844,47 @@ button:hover:not(:disabled) {
 
       const startRecording = async () => {
         try {
-          // Release any existing stream
-          if (micStream) {
-            micStream.getTracks().forEach(track => track.stop());
-            micStream = null;
-            console.log("Released existing microphone stream");
+          // Reuse existing micStream if available, otherwise request new
+          if (!micStream) {
+            micStream = await requestMicrophoneAccess();
+            const micSource = audioCtx.createMediaStreamSource(micStream);
+            micSource.connect(analyser);
+            console.log("New microphone stream acquired and connected to analyser");
+          } else {
+            console.log("Reusing existing microphone stream");
           }
-
-          micStream = await requestMicrophoneAccess();
-          const micSource = audioCtx.createMediaStreamSource(micStream);
-          micSource.connect(analyser);
-          console.log("Microphone source connected to analyser");
 
           const freq = parseFloat(frequencySelect.value);
           const oscillatorNode = freq > 0 ? createOscillator(freq) : null;
 
-          const dest = audioCtx.createMediaStreamDestination();
-          micSource.connect(dest);
-          if (oscillatorNode) oscillatorNode.connect(dest);
-          console.log("Destination stream created");
+          // Create a new destination for recording
+          const recordDest = audioCtx.createMediaStreamDestination();
+          const micSource = audioCtx.createMediaStreamSource(micStream);
+          micSource.connect(recordDest); // Connect microphone to recording destination
+          if (oscillatorNode) oscillatorNode.connect(recordDest); // Add oscillator if applicable
 
-          mixedStream = dest.stream;
-          mediaRecorder = new MediaRecorder(mixedStream);
-          console.log("MediaRecorder initialized, stream active:", mixedStream.active);
+          mixedStream = recordDest.stream;
+          console.log("Recording stream created, active:", mixedStream.active);
+
+          mediaRecorder = new MediaRecorder(mixedStream, { mimeType: 'audio/webm' }); // Use webm for broader compatibility
+          console.log("MediaRecorder initialized");
 
           chunks = [];
           mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
           mediaRecorder.onstop = () => {
-            const blob = new Blob(chunks, { type: 'audio/mp3' });
+            const blob = new Blob(chunks, { type: 'audio/webm' }); // Match mimeType
             const url = URL.createObjectURL(blob);
             audioPlayback.src = url;
             audioPlayback.style.display = 'block';
 
             const date = new Date().toISOString().split('T')[0];
             downloadLink.href = url;
-            downloadLink.download = `highscore-frequency-${date}.mp3`;
+            downloadLink.download = `highscore-frequency-${date}.webm`;
             downloadLink.style.display = 'inline-block';
             console.log("Recording stopped, playback ready");
           };
 
-          mediaRecorder.start();
+          mediaRecorder.start(100); // Start with timeslice for data availability
           console.log("MediaRecorder started");
 
           if (oscillatorNode) oscillatorNode.start();
@@ -918,9 +919,8 @@ button:hover:not(:disabled) {
         oscillator.stop();
       }
       if (micStream) {
-        micStream.getTracks().forEach(track => track.stop());
-        micStream = null;
-        console.log("Microphone stream released");
+        // Do not stop micStream here to keep waveform active
+        console.log("Microphone stream retained for waveform");
       }
 
       recordBtn.disabled = false;
