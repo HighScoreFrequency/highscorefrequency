@@ -883,30 +883,33 @@ button:hover:not(:disabled) {
         resetBtn.disabled = true;
       };
 
-      const activateButton = document.getElementById('activate-visualizer');
+  const activateButton = document.getElementById('activate-visualizer');
 
-      (async function autoStartWaveform() {
-        try {
-          const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          if (audioCtx.state === 'suspended') await audioCtx.resume();
-          const micSource = audioCtx.createMediaStreamSource(micStream);
-          micSource.connect(analyser);
-        } catch (err) {
-          activateButton.style.display = 'block';
-        }
-      })();
+// Try to auto-start waveform visualizer on page load
+(async function autoStartWaveform() {
+  try {
+    const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    if (audioCtx.state === 'suspended') await audioCtx.resume();
+    const micSource = audioCtx.createMediaStreamSource(micStream);
+    micSource.connect(analyser);
+  } catch (err) {
+    // Show fallback button if access blocked
+    activateButton.style.display = 'block';
+  }
+})();
 
-      activateButton.addEventListener('click', async () => {
-        try {
-          const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          if (audioCtx.state === 'suspended') await audioCtx.resume();
-          const micSource = audioCtx.createMediaStreamSource(micStream);
-          micSource.connect(analyser);
-          activateButton.style.display = 'none';
-        } catch (err) {
-          alert('Microphone access is required to activate the visualizer.');
-        }
-      });
+// Manual fallback for user activation
+activateButton.addEventListener('click', async () => {
+  try {
+    const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    if (audioCtx.state === 'suspended') await audioCtx.resume();
+    const micSource = audioCtx.createMediaStreamSource(micStream);
+    micSource.connect(analyser);
+    activateButton.style.display = 'none';
+  } catch (err) {
+    alert('Microphone access is required to activate the visualizer.');
+  }
+});
 
     // Declaration text logic
     const promptSelect = document.getElementById("promptSelect");
