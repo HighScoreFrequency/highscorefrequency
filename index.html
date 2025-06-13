@@ -28,6 +28,7 @@
       align-items: center;
     }
 
+
     canvas#waveform {
       position: fixed;
       top: 0;
@@ -35,79 +36,85 @@
       width: 100vw;
       height: 100vh;
       z-index: 0;
-      overflow: visible;
+        overflow: visible;
       background: transparent;
     }
     
-    .ring {
-      position: absolute;
-      animation: goldPulse 3s infinite ease-in-out;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      box-sizing: content-box;
-      border: 4px solid transparent;
-      border-image: linear-gradient(135deg, #ffcc33, #a9712c, #ffd700) 1;
-      pointer-events: none;
-      background: transparent;
-    }
+   .ring {
+  position: absolute;
+  animation: goldPulse 3s infinite ease-in-out;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  box-sizing: content-box;
+    border: 4px solid transparent;
+  border-image: linear-gradient(135deg, #ffcc33, #a9712c, #ffd700) 1;
 
-    .ring1 {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 96vmin;
-      height: 90vmin;
-      transform: translate(-50%, -50%);
-      border-radius: 50%;
-      border: 4px solid #a9712c;
-      animation: rotateCounter 69s linear infinite;
-      z-index: 1;
-      mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
-    }
+  pointer-events: none;
+  background: transparent;
+}
 
-    .ring2 {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 96vmin;
-      height: 90vmin;
-      transform: translate(-50%, -50%);
-      border-radius: 50%;
-      border: 2px solid #ffcc33;
-      animation: rotateCounter 111s linear infinite;
-      z-index: 1;
-      mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
-    }
+/* Outer ring - circle */
+.ring1 {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 96vmin;
+  height: 90vmin;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 4px solid #a9712c;
+  animation: rotateCounter 69s linear infinite;
+  z-index: 1;
+     mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
 
-    .ring3 {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 96vmin;
-      height: 90vmin;
-      transform: translate(-50%, -50%);
-      border-radius: 50%;
-      border: 2px solid #a9712c;
-      animation: rotateClockwise 69s linear infinite;
-      z-index: 1;
-      mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
-    }
 
-    .ring4 {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 96vmin;
-      height: 90vmin;
-      transform: translate(-50%, -50%);
-      border-radius: 50%;
-      border: 4px solid #ffd700;
-      animation: rotateClockwise 111s linear infinite;
-      z-index: 1;
-      mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
-    }
+}
 
+/* Middle ring - square */
+.ring2 {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 96vmin;
+  height: 90vmin;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 2px solid #ffcc33;
+  animation: rotateCounter 111s linear infinite;
+  z-index: 1;
+     mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
+}
+
+/* Inner ring - circle */
+.ring3 {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 96vmin;
+  height: 90vmin;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 2px solid #a9712c;
+  animation: rotateClockwise 69s linear infinite;
+  z-index: 1;
+     mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
+}
+
+/* Additional ring - circle */
+.ring4 {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 96vmin;
+  height: 90vmin;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 4px solid #ffd700;
+  animation: rotateClockwise 111s linear infinite;
+  z-index: 1;
+     mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
+}
     @keyframes rotateClockwise {
       from { transform: translate(-50%, -50%) rotate(0deg); }
       to { transform: translate(-50%, -50%) rotate(360deg); }
@@ -155,7 +162,7 @@
       height: 100%;
       background: linear-gradient(to bottom, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.95));
       opacity: 0;
-      z-index: 1;
+      z-index: 1; /* Below content */
       transition: opacity 0.3s ease;
       pointer-events: none;
       backdrop-filter: blur(2px);
@@ -163,7 +170,7 @@
 
     .content > *:not(.fade-layer) {
       position: relative;
-      z-index: 2;
+      z-index: 2; /* Above fade-layer */
     }
 
     h2 {
@@ -177,42 +184,51 @@
       margin-bottom: 30px;
     }
 
+.button-group {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* spacing between rows */
+  margin-top: 4px !important;
+}
+
+.row {
+  display: flex;
+  gap: 8px; /* spacing between buttons */
+  width: 100%;
+  justify-content: space-between;
+}
+
+.row button {
+  flex: 1;
+  max-width: 100%;
+  margin: 0; /* remove default button spacing */
+}
+
+
     .button-group {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-top: 4px !important;
-    }
-
-    .row {
-      display: flex;
-      gap: 8px;
-      width: 100%;
-      justify-content: space-between;
-    }
-
-    .row button {
-      flex: 1;
-      max-width: 100%;
-      margin: 0;
-    }
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 2; /* remove any default spacing */
+}
 
     button {
       background-color: #1a1a1a;
       color: white;
       border: none;
-      padding: 10px 16px;
+      padding: 6px 16px;
       font-size: 12px;
       cursor: pointer;
       border-radius: 6px;
       transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
-    button:hover:not(:disabled) {
-      transform: scale(0.95);
-      box-shadow: 0 0 4px rgba(0, 0, 0, 0.15);
-    }
+button:hover:not(:disabled) {
+  transform: scale(0.95); /* This shrinks the button slightly */
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.15); /* Optional: soften the glow to match the shrink effect */
+}
 
     button:disabled {
       background-color: #666;
@@ -224,7 +240,7 @@
       padding: 8px;
       font-size: 12px;
       border-radius: 6px;
-      margin-bottom: 4px;
+        margin-bottom: 4px;
       max-width: 100% !important;
     }
 
@@ -250,50 +266,94 @@
       width: 100%;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+        gap: 4px;
     }
 
-    #declaration-box, #declaration-text {
-      opacity: 1 !important;
-      color: #222 !important;
-      background: rgba(255, 255, 255, 0.95) !important; /* Unified background */
-      position: relative !important;
-      z-index: 10 !important;
-      height: auto !important;
-      display: block !important;
-    }
+    .declaration-wrapper {
+  padding: 2px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #ffcc33, #a9712c, #ffd700);
+}
     
-    #declaration-box {
-      width: 100%;
-      min-height: 20px;
-      max-height: 80px;
-      padding: 14px;
-      border-radius: 10px;
-      font-size: 12px;
-      text-align: left;
-      line-height: 1.3;
-      white-space: pre-wrap;
-      overflow-y: auto;
-      border: 1px solid #ccc;
-      box-sizing: border-box;
-      margin-bottom: 3px;
-    }
+    #declaration-box, #declaration-text {
+  opacity: 1 !important;
+  color: #222 !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  position: relative !important;
+  z-index: 10 !important;
+  height: auto !important;
+  display: block !important; 
+}
+    
+#declaration-box {
+  width: 100%;
+  min-height: 60px;
+  max-height: 150px;
+  padding: 8px 12px 8px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  line-height: 1.2;
+  color: #222;
+  background: rgba(255, 255, 255, 0.95);
+  overflow-y: auto;
+  border: 1px solid #000;
+  box-sizing: border-box;
+    align-items: left;
+  text-align: left;
+  margin-bottom: 3px;
+  font-family: 'Unbounded', cursive; /* 👈 Match dropdown font */
+  font-size: 12px; 
+}
 
-    #declaration-text {
-      max-width: 100%;
-      overflow-y: auto;
-      white-space: pre-line;
-    }
+#declaration-box.first-prompt {
+  overflow-y: hidden;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #000;
+}
+
+#declaration-text {
+  white-space: pre-line;
+  width: 100%;
+}
+
+#declaration-box::-webkit-scrollbar {
+  width: 6px;
+}
+
+#declaration-box::-webkit-scrollbar-track {
+  background: transparent; /* Remove scrollbar track background */
+}
+
+#declaration-box::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2); /* Light transparent thumb */
+  border-radius: 4px;
+}
+
+#declaration-box::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Firefox */
+#declaration-box {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
 
     #promptSelect {
-      margin-bottom: 3px;
-    }
+  margin-bottom: 3px;
+}
 
     #frequencySelect {
-      margin-top: 3px;
-    }
+  margin-top: 3;
+}
 
-    #promptSelect, #frequencySelect {
+    #promptSelect,
+    #frequencySelect {
       width: 100%;
       padding: 8px;
       font-size: 12px;
@@ -303,19 +363,51 @@
 
     .button-group {
       align-items: center;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-top: 4px;
-    }
+ width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* spacing between rows of buttons */
+  margin-top: 4px; /* reduce this value to move buttons closer to dropdown */
+}
 
     .row {
       display: flex;
-      gap: 8px;
-      width: 100%;
-      justify-content: space-between;
+        gap: 8px; /* ← change this value to your desired spacing (e.g., 6px or 8px) */
+  width: 100%;
+  justify-content: space-between;
     }
+
+    button {
+      background-color: #1a1a1a;
+        margin-bottom: 3px;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      font-size: 12px;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    button:disabled {
+      background-color: #666;
+      cursor: not-allowed;
+    }
+
+    audio {
+      width: 100%;
+      max-width: 300px;
+      margin-top: 10px;
+    }
+
+    a {
+      display: inline-block;
+      margin-top: 15px;
+      text-decoration: none;
+      color: #007bff;
+      font-size: 14px;
+    }
+
 
     /* 🔧 Mobile-Only Overrides */
     @media only screen and (max-width: 768px) {
@@ -360,11 +452,11 @@
       }
 
       .fade-layer {
-        background: linear-gradient(to bottom, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.95));
-        opacity: 0;
-        transition: opacity 0.3s ease;
-        backdrop-filter: blur(2px);
-      }
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.95));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  backdrop-filter: blur(2px);
+}
 
       h2 {
         font-size: 18px !important;
@@ -383,6 +475,7 @@
         max-width: 100% !important;
       }
 
+
       button {
         font-size: 12px !important;
         padding: 10px 16px !important;
@@ -397,26 +490,28 @@
         gap: 8px !important;
       }
 
-      #promptSelect {
-        margin-bottom: 3px;
-      }
+          #promptSelect {
+  margin-bottom: 3px;
+}
 
-      #frequencySelect {
-        margin-top: 3px;
-      }
+    #frequencySelect {
+  margin-top: 3;
+}
 
-      #promptSelect, #frequencySelect {
-        width: 100%;
-        padding: 8px;
-        font-size: 12px;
-        border-radius: 6px;
-        box-sizing: border-box;
-      }
+    #promptSelect,
+    #frequencySelect {
+      width: 100%;
+      padding: 8px;
+      font-size: 12px;
+      border-radius: 6px;
+      box-sizing: border-box;
+    }
 
       audio {
         max-width: 100% !important;
       }
     }
+    
   </style>
 </head>
 <body>
