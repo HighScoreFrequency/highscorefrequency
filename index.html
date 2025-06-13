@@ -279,38 +279,35 @@ button:hover:not(:disabled) {
   display: block !important;
 }
     
-    #declaration-box {
-      width: 100%;
-      min-height: 35px;
-      max-height: 69px;
-      padding-top: 1px !important;
-      padding-bottom: 1px !important;
-      padding-left: 15px !important;
-      padding-right: 15px !important;
-      border-radius: 6px;
-      font-size: 11px;
-      text-align: left;
-      color: #222;
-      line-height: 1.1;
-      white-space: pre-wrap;
-      background: rgba(255, 255, 255, 0.95);
-      overflow-y: auto;
-      border: 1px solid #000;
-      box-sizing: border-box;
-        margin-bottom: 3px;
-    }
+#declaration-box {
+  width: 100%;
+  min-height: 35px;
+  max-height: 69px;
+  padding: 4px 12px 6px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  line-height: 1.2;
+  color: #222;
+  background: rgba(255, 255, 255, 0.95);
+  overflow-y: auto;
+  border: 1px solid #000;
+  box-sizing: border-box;
+  margin-bottom: 3px;
+}
 
-    #declaration-box.first-prompt {
+#declaration-box.first-prompt {
   overflow-y: hidden;
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 #declaration-text {
-  max-width: 100%;
   white-space: pre-line;
-  text-align: left;
-  overflow-y: hidden;
+  width: 100%;
 }
+
 
 
     #promptSelect {
@@ -875,15 +872,22 @@ button:hover:not(:disabled) {
         "4": `👑 Equip Divine Union Mode\n\nAligned in heart, in body, in soul,\nI enter love that makes me whole.`
       };
 
-      function updateDeclaration() {
-        const selected = promptSelect.value;
-        declarationText.textContent = declarations[selected] || declarations[""];
-        console.log("Updated text to:", declarationText.textContent); // Debug
-      }
+function updateDeclaration() {
+  const selected = promptSelect.value;
+  const declarationBox = document.getElementById("declaration-box");
+  const declarationText = document.getElementById("declaration-text");
 
-      updateDeclaration(); // Set initial text
-      promptSelect.addEventListener("change", updateDeclaration);
-    });
+  // Set the text content
+  declarationText.textContent = declarations[selected] || declarations[""];
+
+  // Toggle the .first-prompt class
+  if (selected === "") {
+    declarationBox.classList.add("first-prompt");
+  } else {
+    declarationBox.classList.remove("first-prompt");
+  }
+}
+
 
 </script>
   <button id="activate-visualizer" style="
