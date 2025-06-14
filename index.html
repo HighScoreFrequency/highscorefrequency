@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>High Score Voice Activation</title>
   <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500&display=swap" rel="stylesheet" />
   <style>
@@ -15,8 +14,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      overflow: visible;
-      scroll-behavior: smooth;
+      overflow: hidden;
     }
 
     .portal-wrapper {
@@ -28,555 +26,159 @@
       align-items: center;
     }
 
-
     canvas#waveform {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      z-index: 0;
-        overflow: visible;
-      background: transparent;
-    }
-    
-   .ring {
-  position: absolute;
-  animation: goldPulse 3s infinite ease-in-out;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  box-sizing: content-box;
-    border: 4px solid transparent;
-  border-image: linear-gradient(135deg, #ffcc33, #a9712c, #ffd700) 1;
-
-  pointer-events: none;
-  background: transparent;
-}
-
-/* Outer ring - circle */
-.ring1 {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 96vmin;
-  height: 90vmin;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  border: 4px solid #a9712c;
-  animation: rotateCounter 69s linear infinite;
-  z-index: 1;
-     mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
-
-
-}
-
-/* Middle ring - square */
-.ring2 {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 90vmin;
-  height: 84vmin;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  border: 2px solid #ffcc33;
-  animation: rotateCounter 111s linear infinite;
-  z-index: 1;
-     mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
-}
-
-/* Inner ring - circle */
-.ring3 {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 90vmin;
-  height: 84vmin;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  border: 2px solid #a9712c;
-  animation: rotateClockwise 69s linear infinite;
-  z-index: 1;
-     mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
-}
-
-/* Additional ring - circle */
-.ring4 {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 96vmin;
-  height: 90vmin;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  border: 4px solid #ffd700;
-  animation: rotateClockwise 111s linear infinite;
-  z-index: 1;
-     mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
-}
-    @keyframes rotateClockwise {
-      from { transform: translate(-50%, -50%) rotate(0deg); }
-      to { transform: translate(-50%, -50%) rotate(360deg); }
-    }
-
-    @keyframes rotateCounter {
-      from { transform: translate(-50%, -50%) rotate(0deg); }
-      to { transform: translate(-50%, -50%) rotate(-360deg); }
-    }
-
-    @keyframes goldPulse {
-      0%, 100% {
-        box-shadow: 0 0 20px rgba(255, 215, 0, 0.4),
-                    0 0 40px rgba(255, 215, 0, 0.3),
-                    0 0 60px rgba(255, 215, 0, 0.2);
-      }
-      50% {
-        box-shadow: 0 0 30px rgba(255, 215, 0, 0.8),
-                    0 0 60px rgba(255, 215, 0, 0.6),
-                    0 0 90px rgba(255, 215, 0, 0.4);
-      }
-    }
-
-    .content {
-      position: relative;
-      z-index: 2;
-      width: 85% !important;
-      max-width: 360px !important;
-      padding: 15px !important;
-      border-radius: 12px !important;
-      background: rgba(255, 255, 255, 0.35) !important;
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      overflow: visible;
-    }
-
-    .fade-layer {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-            border-radius: 12px !important;
-      background: linear-gradient(to bottom, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.96));
-      opacity: 0;
-      z-index: 1; /* Below content */
-      transition: opacity 0.3s ease;
-      pointer-events: none;
-      backdrop-filter: blur(2px);
+      z-index: 0;
     }
 
-    .content > *:not(.fade-layer) {
+    .portal-image {
+      opacity: 0;
+      animation: fadeIn 6s ease forwards, rotate 44s linear infinite;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 96%;
+      height: 96%;
+      background-image: url('https://github.com/HighScoreFrequency/highscorefrequency/blob/main/portal.png?raw=true');
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      z-index: 1;
+    }
+
+    .content {
       position: relative;
-      z-index: 2; /* Above fade-layer */
+      z-index: 2;
+      width: 90%;
+      max-width: 500px;
+      background: rgba(255, 255, 255, 0.85);
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
     }
 
     h2 {
-      font-size: 20px;
+      font-size: 32px;
       margin-bottom: 10px;
     }
 
     p {
-      font-size: 14px;
+      font-size: 18px;
       color: #444;
       margin-bottom: 30px;
     }
 
-.button-group {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 8px; /* spacing between rows */
-  margin-top: 4px !important;
-}
-
-.row {
-  display: flex;
-  gap: 8px; /* spacing between buttons */
-  width: 100%;
-  justify-content: space-between;
-}
-
-.row button {
-  flex: 1;
-  max-width: 100%;
-  margin: 0; /* remove default button spacing */
-}
-
-
     .button-group {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 2; /* remove any default spacing */
-}
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
 
     button {
       background-color: #1a1a1a;
       color: white;
       border: none;
-      padding: 6px 16px;
-      font-size: 12px;
+      padding: 12px 22px;
+      font-size: 16px;
       cursor: pointer;
       border-radius: 6px;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
-button:hover:not(:disabled) {
-  transform: scale(0.95); /* This shrinks the button slightly */
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.15); /* Optional: soften the glow to match the shrink effect */
-}
+    button:hover:not(:disabled) {
+      transform: scale(1.05);
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.2);
+    }
 
     button:disabled {
-      background-color: #666;
+      background-color: #aaa;
       cursor: not-allowed;
     }
 
     select {
-      margin: 4px 0;
+      margin: 15px 0;
       padding: 8px;
-      font-size: 12px;
+      font-size: 16px;
       border-radius: 6px;
-        margin-bottom: 4px;
-      max-width: 100% !important;
-              border: 0px solid #000 !important;
     }
 
     audio {
+      margin-top: 20px;
       width: 100%;
-      max-width: 300px;
-      margin-top: 10px;
+      max-width: 400px;
     }
 
     a {
       display: inline-block;
-      margin-top: 15px;
+      margin-top: 20px;
       text-decoration: none;
-      color: #007bff;
-      font-size: 14px;
+      color: #0070f3;
+    }
+
+    @keyframes rotate {
+      from { transform: translate(-50%, -50%) rotate(0deg); }
+      to { transform: translate(-50%, -50%) rotate(-360deg); }
     }
 
     @keyframes fadeIn {
-      to { opacity: 1; }
+      to { opacity: 3; }
     }
-
-.input-wrapper {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-
-    .declaration-wrapper {
-  padding: 2px;
-  border-radius: 6px;
-  background: linear-gradient(135deg, #ffcc33, #a9712c, #ffd700);
-}
-    
-    #declaration-box, #declaration-text {
-  opacity: 1 !important;
-  color: #222 !important;
-  background: rgba(255, 255, 255, 0.95) !important;
-  position: relative !important;
-  z-index: 10 !important;
-  height: auto !important;
-  display: block !important; 
-}
-    
-#declaration-box {
-  width: 100%;
-  min-height: 60px;
-  max-height: 150px;
-  padding: 10px 20px 10px 20px;
-  border-radius: 6px;
-  font-size: 12px;
-  line-height: 1.2;
-  color: #222;
-  background: rgba(255, 255, 255, 0.95);
-  overflow-y: auto;
-  border: 0px solid #000;
-  box-sizing: border-box;
-    align-items: center;
-  font-size: 12px;
-  display: flex;
-  text-align: left;
-  justify-content: center !important;
-  margin-bottom: 3px;
-  font-family: 'Unbounded', cursive; /* 👈 Match dropdown font */
-}
-
-   #declaration-box.prompt-selected #declaration-text {
-  font-family: 'arial', cursive !important;
-  font-size: 12px;
-  font-weight: 500; /* Matches the dropdown font weight */
-  line-height: 1.2; /* Keep existing line height for readability */
-} 
-
-#declaration-box.first-prompt {
-  text-align: left;
-  display: flex;
-  align-items: center;
-  justify-content: center !important;
-  background: rgba(255, 255, 255, 0.95);
-  border: 0px solid #000;
-}
-
-#declaration-text {
-  white-space: pre-line;
-  width: auto; /* Allow natural width, centered by parent flex */
-  padding-left: 4px; /* Slight left padding for visual alignment */
-  /* Remove justify-content from #declaration-text, as it’s not a flex container */
-}
-
-#declaration-box::-webkit-scrollbar {
-  width: 6px;
-}
-
-#declaration-box::-webkit-scrollbar-track {
-  background: transparent; /* Remove scrollbar track background */
-}
-
-#declaration-box::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.2); /* Light transparent thumb */
-  border-radius: 4px;
-}
-
-#declaration-box::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.3);
-}
-
-/* Firefox */
-#declaration-box {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
-}
-
-
-    #promptSelect {
-  margin-bottom: 3px;
-        border: 0px solid #000 !important;
-}
-
-    #frequencySelect {
-  margin-top: 3;
-}
-
-    #promptSelect,
-    #frequencySelect {
-      width: 100%;
-      padding: 8px;
-      font-size: 12px;
-      border-radius: 6px;
-      box-sizing: border-box;
-    }
-
-    .button-group {
-      align-items: center;
- width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 8px; /* spacing between rows of buttons */
-  margin-top: 4px; /* reduce this value to move buttons closer to dropdown */
-}
-
-    .row {
-      display: flex;
-        gap: 8px; /* ← change this value to your desired spacing (e.g., 6px or 8px) */
-  width: 100%;
-  justify-content: space-between;
-    }
-
-    button {
-      background-color: #1a1a1a;
-        margin-bottom: 3px;
-      color: white;
-      border: none;
-      padding: 6px 16px;
-      font-size: 12px;
-      cursor: pointer;
-      border-radius: 6px;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    button:disabled {
-      background-color: #666;
-      cursor: not-allowed;
-    }
-
-    audio {
-      width: 100%;
-      max-width: 300px;
-      margin-top: 10px;
-    }
-
-    a {
-      display: inline-block;
-      margin-top: 15px;
-      text-decoration: none;
-      color: #007bff;
-      font-size: 14px;
-    }
-
-
-    /* 🔧 Mobile-Only Overrides */
-    @media only screen and (max-width: 768px) {
-      html, body {
-        width: 100%;
-        height: 100%;
-        margin: 0;
-        padding: 0;
-        overflow: auto;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-      }
-
-      .ring1, .ring4 {
-        width: 440px !important;
-        height: 420px !important;
-      }
-
-            .ring2, .ring3 {
-        width: 420px !important;
-        height: 400px !important;
-      }
-
-      canvas#waveform {
-        top: 18vh !important;
-      }
-
-      .portal-wrapper {
-        width: 100vw !important;
-        height: 100vh !important;
-        display: flex !important;
-        justify-content: center !important;
-        align-items: center !important;
-        padding: 0 !important;
-        box-sizing: border-box !important;
-      }
-
-      .content {
-        width: 85% !important;
-        max-width: 360px !important;
-        padding: 15px !important;
-        font-size: 16px !important;
-        background: rgba(255, 255, 255, 0.28) !important;
-        border-radius: 12px !important;
-        box-shadow: 0 0 15px rgba(0, 0, 0, 0.2) !important;
-      }
-
-      .fade-layer {
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.96));
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  backdrop-filter: blur(2px);
-        border-radius: 12px !important;
-}
-
-      h2 {
-        font-size: 18px !important;
-        margin-bottom: 8px !important;
-      }
-
-      p {
-        font-size: 14px !important;
-        margin-bottom: 15px !important;
-      }
-
-      select {
-        font-size: 12px !important;
-        padding: 8px !important;
-        margin-bottom: 4px;
-        max-width: 100% !important;
-      }
-
-
-      button {
-        font-size: 12px !important;
-        padding: 6px 16px !important;
-      }
-
-      .button-group {
-        width: 100% !important;
-        gap: 8px !important;
-      }
-
-      .row {
-        gap: 8px !important;
-      }
-
-          #promptSelect {
-  margin-bottom: 3px;
-}
-
-    #frequencySelect {
-  margin-top: 3;
-}
-
-    #promptSelect,
-    #frequencySelect {
-      width: 100%;
-      padding: 8px;
-      font-size: 12px;
-      border-radius: 6px;
-      box-sizing: border-box;
-    }
-
-      audio {
-        max-width: 100% !important;
-      }
-    }
-    
   </style>
 </head>
 <body>
   <div class="portal-wrapper">
     <canvas id="waveform"></canvas>
-    <div class="ring ring1" id="ring1"></div>
-    <div class="ring ring2" id="ring2"></div>
-    <div class="ring ring3" id="ring3"></div>
-    <div class="ring ring4" id="ring4"></div>
+    <div class="portal-image"></div>
     <div class="content">
-      <div class="fade-layer"></div>
       <h2>🎙️ High Score Voice Portal</h2>
-      <div class="input-wrapper">
-        <div id="declaration-box">
-          <div id="declaration-text"></div>
+      <p>Choose your tone, speak it clear,<br>
+      code your field, draw truth near.<br>
+      This isn’t speech, it’s memory’s key,<br>
+      a voice-etched path to mastery.</p>
+
+      <select id="frequencySelect">
+        <option value="528">528 Hz – 🧬 Cell Recalibration – Level Up to Wholeness</option>
+        <option value="639">639 Hz – 💖 Heart Link Gateway – Sync Into Unity Field</option>
+        <option value="963">963 Hz – 👑 Crown Signal – Access Divine Intelligence</option>
+        <option value="0">0 Hz – 🕊️ Silence Mode – Record Without Tone</option>
+      </select>
+
+      <div class="button-group">
+        <div class="button-row">
+          <button id="previewTone">🔊 Preview Tone</button>
+          <button id="recordBtn">🟢 Start Recording</button>
         </div>
-        <select id="promptSelect">
-          <option value="">🎯 Choose Your Portal Prompt</option>
-          <option value="1">⚡️ Unlock My Final Form</option>
-          <option value="2">🔥 Clear Limited Codes</option>
-          <option value="3">🚀 Load the Expansion Pack</option>
-          <option value="4">👑 Equip Divine Union Mode</option>
-        </select>
-        <select id="frequencySelect">
-          <option value="528">528 Hz – 🧬 Cell Recalibration – Level Up to Wholeness</option>
-          <option value="639">639 Hz – 💖 Heart Link Gateway – Sync Into Unity Field</option>
-          <option value="963">963 Hz – 👑 Crown Signal – Access Divine Intelligence</option>
-          <option value="0">0 Hz – 🕊️ Silence Mode – Record Without Tone</option>
-        </select>
-        <div class="button-group">
-          <div class="row">
-            <button id="preview-btn">🔊 Preview Tone</button>
-            <button id="record-btn">🟢 Start Recording</button>
-          </div>
-          <div class="row">
-            <button id="stopBtn" disabled>🛑 Stop</button>
-            <button id="resetBtn" disabled>🔁 Reset</button>
-          </div>
+        <div class="button-row">
+          <button id="stopBtn" disabled>🛑 Stop</button>
+          <button id="resetBtn" disabled>🔁 Reset</button>
         </div>
-        <audio id="audioPlayback" controls style="display: none;"></audio>
-        <a id="downloadLink" style="display: none;">⬇️ Download Your Recording</a>
       </div>
+
+      <audio id="audioPlayback" controls style="display: none;"></audio>
+      <a id="downloadLink" style="display: none;">⬇️ Download Your Recording</a>
     </div>
   </div>
- <script>
+
+  <script>
     const canvas = document.getElementById('waveform');
     const ctx = canvas.getContext('2d');
 
