@@ -380,13 +380,13 @@ button:hover:not(:disabled) {
  width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 8px; /* spacing between rows of buttons */
+  gap: 6px; /* spacing between rows of buttons */
   margin-top: 4px; /* reduce this value to move buttons closer to dropdown */
 }
 
     .row {
       display: flex;
-        gap: 8px; /* ← change this value to your desired spacing (e.g., 6px or 8px) */
+        gap: 6px; /* ← change this value to your desired spacing (e.g., 6px or 8px) */
   width: 100%;
   justify-content: space-between;
     }
@@ -507,7 +507,7 @@ button:hover:not(:disabled) {
       }
 
       .row {
-        gap: 8px !important;
+        gap: 6px !important;
       }
 
           #promptSelect {
@@ -550,7 +550,7 @@ button:hover:not(:disabled) {
         </div>
     
 <select id="promptSelect">
-          <option value="">🎯 Choose Your Portal Prompt</option>
+          <option value="">✨ Choose Your Cellular Activation</option>
           <option value="1">⚡️ Unlock My Final Form</option>
           <option value="2">🔥 Clear Limited Codes</option>
           <option value="3">🚀 Load the Expansion Pack</option>
@@ -564,8 +564,8 @@ button:hover:not(:disabled) {
         </select>
         <div class="button-group">
           <div class="row">
-            <button id="preview-btn">🔊 Preview Tone</button>
-            <button id="record-btn">🟢 Start Recording</button>
+            <button id="previewTone">🔊 Preview Tone</button>
+          <button id="recordBtn">🟢 Start Recording</button>
           </div>
           <div class="row">
             <button id="stopBtn" disabled>🛑 Stop</button>
@@ -573,19 +573,6 @@ button:hover:not(:disabled) {
           </div>
         </div>
 
-        =================
-        
-   
-      <div class="button-group">
-        <div class="button-row">
-          <button id="previewTone">🔊 Preview Tone</button>
-          <button id="recordBtn">🟢 Start Recording</button>
-        </div>
-        <div class="button-row">
-          <button id="stopBtn" disabled>🛑 Stop</button>
-          <button id="resetBtn" disabled>🔁 Reset</button>
-        </div>
-      </div>
 
       <audio id="audioPlayback" controls style="display: none;"></audio>
       <a id="downloadLink" style="display: none;">⬇️ Download Your Recording</a>
