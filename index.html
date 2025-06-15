@@ -588,15 +588,22 @@ button:hover:not(:disabled) {
     const canvas = document.getElementById('waveform');
     const ctx = canvas.getContext('2d');
 
-    canvas.width = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
-
+    const fadeLayer = document.querySelector('.fade-layer');
     const AudioContext = window.AudioContext || window.webkitAudioContext;
-    const audioCtx = new AudioContext();
+    const audioCtx = new AudioContext({ latencyHint: 'interactive' });
 
+    function resizeCanvas() {
+      canvas.width = canvas.innerWidth;
+      canvas.height = canvas.innerHeight;
+    }
+
+         resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+     
     let analyser = audioCtx.createAnalyser();
     analyser.fftSize = 2048;
     let dataArray = new Uint8Array(analyser.fftSize);
+    let previousOpacity = 0.99;
 
     function drawWaveform() {
       requestAnimationFrame(drawWaveform);
