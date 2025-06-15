@@ -591,8 +591,8 @@ button:hover:not(:disabled) {
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     const audioCtx = new AudioContext({ latencyHint: 'interactive' });
 
-      canvas.width = canvas.innerWidth;
-      canvas.height = canvas.innerHeight;
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
  
     let analyser = audioCtx.createAnalyser();
     analyser.fftSize = 2048;
