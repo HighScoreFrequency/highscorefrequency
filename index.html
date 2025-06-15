@@ -909,18 +909,56 @@ button:hover:not(:disabled) {
         previewPlaying = false;
       };
 
-      resetBtn.onclick = () => {
-        audioPlayback.pause();
-        audioPlayback.currentTime = 0;
-        audioPlayback.src = '';
-        audioPlayback.style.display = 'none';
+recordBtn.onclick = async () => {
+  const startRecording = async () => {
+    const freq = parseFloat(frequencySelect.value);
+    const oscillatorNode = freq > 0 ? createOscillator(freq) : null;
 
-        downloadLink.href = '';
-        downloadLink.download = '';
-        downloadLink.style.display = 'none';
+    try {
+      const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const micSource = audioCtx.createMediaStreamSource(micStream);
+      micSource.connect(analyser);
 
-        resetBtn.disabled = true;
+      const dest = audioCtx.createMediaStreamDestination();
+      micSource.connect(dest);
+      if (oscillatorNode) oscillatorNode.connect(dest);
+
+      mixedStream = dest.stream;
+      mediaRecorder = new MediaRecorder(mixedStream);
+
+      chunks = [];
+      mediaRecorder.ondataavailable = e => chunks.push(e.data);
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(chunks, { type: 'audio/mp3' });
+        const url = URL.createObjectURL(blob);
+        audioPlayback.src = url;
+        audioPlayback.style.display = 'block';
+
+        const date = new Date().toISOString().split('T')[0];
+        downloadLink.href = url;
+        downloadLink.download = `highscore-frequency-${date}.mp3`;
+        downloadLink.style.display = 'inline-block';
       };
+
+      mediaRecorder.start();
+      if (oscillatorNode) oscillator.start();
+
+      recordBtn.disabled = true;
+      stopBtn.disabled = false;
+      previewTone.disabled = true;
+      previewTone.textContent = '🔇 Preview Disabled';
+    } catch (e) {
+      alert('Mic access denied.');
+    }
+  };
+
+  if (previewPlaying) {
+    stopPreviewTone();
+    setTimeout(startRecording, 1600); // Match the original delay
+  } else {
+    startRecording();
+  }
+};
 
 
     // Declaration text logic
