@@ -574,7 +574,6 @@ button:hover:not(:disabled) {
           </div>
         </div>
 
-
       <audio id="audioPlayback" controls style="display: none;"></audio>
       <a id="downloadLink" style="display: none;">⬇️ Download Your Recording</a>
     </div>
@@ -586,18 +585,31 @@ button:hover:not(:disabled) {
   </div>
 
   <script>
+  document.addEventListener("DOMContentLoaded", function () {
     const canvas = document.getElementById('waveform');
     const ctx = canvas.getContext('2d');
-
-    canvas.width = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
-
+    const rings = [
+      document.getElementById('ring1'),
+      document.getElementById('ring2'),
+      document.getElementById('ring3'),
+      document.getElementById('ring4')
+    ];
+    const fadeLayer = document.querySelector('.fade-layer');
     const AudioContext = window.AudioContext || window.webkitAudioContext;
-    const audioCtx = new AudioContext();
+    const audioCtx = new AudioContext({ latencyHint: 'interactive' });
 
     let analyser = audioCtx.createAnalyser();
     analyser.fftSize = 2048;
     let dataArray = new Uint8Array(analyser.fftSize);
+    let previousOpacity = 0.99;
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
 
     function drawWaveform() {
       requestAnimationFrame(drawWaveform);
@@ -605,25 +617,94 @@ button:hover:not(:disabled) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       ctx.beginPath();
-      ctx.lineWidth = 2;
-      ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+      ctx.lineWidth = 3;
+      const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
+      gradient.addColorStop(0, '#5a9fe6');
+      gradient.addColorStop(1, '#5aecc6');
+      ctx.strokeStyle = gradient;
+      ctx.shadowColor = '#5a9fe6';
+      ctx.shadowBlur = 12;
 
-      let sliceWidth = canvas.width / dataArray.length;
-      let x = 0;
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      const half = dataArray.length / 2;
+      const sliceWidth = canvas.width / dataArray.length;
+      const decayRate = 0.95;
+      const emaAlpha = 0.2;
+      const rippleSpread = canvas.width / 4;
+
+      if (!window.smoothedAmplitudes)
+        window.smoothedAmplitudes = new Float32Array(dataArray.length).fill(0.0);
+      if (!window.emaValues)
+        window.emaValues = new Float32Array(dataArray.length).fill(1.0);
+
+      const smoothedY = new Float32Array(dataArray.length);
+
       for (let i = 0; i < dataArray.length; i++) {
-        let v = dataArray[i] / 128.0;
-        let y = v * canvas.height / 2;
-        if (i === 0) {
-          ctx.moveTo(x, y);
+        let v = Math.min(dataArray[i] / 128.0 * 1.2, 2);
+        window.emaValues[i] = emaAlpha * v + (1 - emaAlpha) * window.emaValues[i];
+        let smoothedV = window.emaValues[i];
+        let deviation = Math.abs(smoothedV - 1.0);
+        window.smoothedAmplitudes[i] = Math.max(deviation, window.smoothedAmplitudes[i] * decayRate);
+        let finalV = smoothedV > 1.0 ? 1.0 + window.smoothedAmplitudes[i] : 1.0 - window.smoothedAmplitudes[i];
+
+        let baseY = (finalV - 1.0) * canvas.height * 0.6 + centerY;
+        let distanceFromCenter = Math.abs(i - half);
+        let rippleFactor = Math.exp(-Math.pow(distanceFromCenter * sliceWidth, 2) / (2 * rippleSpread * rippleSpread));
+
+        if (i > 0) {
+          smoothedY[i] = emaAlpha * (centerY + (baseY - centerY) * rippleFactor) +
+                         (1 - emaAlpha) * smoothedY[i - 1];
         } else {
-          ctx.lineTo(x, y);
+          smoothedY[i] = centerY + (baseY - centerY) * rippleFactor;
         }
+      }
+
+      let x = centerX;
+      let prevX = centerX;
+      let prevY = smoothedY[0];
+      for (let i = 0; i < half; i++) {
+        let y = smoothedY[i];
+        let xc = (prevX + x) / 2;
+        let yc = (prevY + y) / 2;
+        ctx.quadraticCurveTo(prevX, prevY, xc, yc);
+        prevX = x;
+        prevY = y;
         x += sliceWidth;
       }
-      ctx.stroke();
-    }
-    drawWaveform();
 
+      ctx.moveTo(centerX, smoothedY[0]);
+
+      x = centerX;
+      prevX = centerX;
+      prevY = smoothedY[0];
+      for (let i = 0; i < half; i++) {
+        let y = smoothedY[i];
+        let xc = (prevX + x) / 2;
+        let yc = (prevY + y) / 2;
+        ctx.quadraticCurveTo(prevX, prevY, xc, yc);
+        prevX = x;
+        prevY = y;
+        x -= sliceWidth;
+      }
+
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+
+      let sum = 0;
+      for (let i = 0; i < dataArray.length; i++) {
+        sum += Math.abs(dataArray[i] - 128);
+      }
+      let average = sum / dataArray.length;
+      let normalized = Math.min(average / 2, 1);
+      let targetOpacity = 0.99 - (normalized * 0.99);
+      let smoothing = 0.1;
+      let smoothedOpacity = previousOpacity + (targetOpacity - previousOpacity) * smoothing;
+      previousOpacity = smoothedOpacity;
+      fadeLayer.style.opacity = smoothedOpacity.toFixed(2);
+    }
+
+    drawWaveform();
     let oscillator, gainNode, panner;
     let mediaRecorder;
     let chunks = [];
