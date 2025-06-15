@@ -922,30 +922,6 @@ button:hover:not(:disabled) {
         resetBtn.disabled = true;
       };
 
-      const activateButton = document.getElementById('activate-visualizer');
-
-      (async function autoStartWaveform() {
-        try {
-          const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          if (audioCtx.state === 'suspended') await audioCtx.resume();
-          const micSource = audioCtx.createMediaStreamSource(micStream);
-          micSource.connect(analyser);
-        } catch (err) {
-          activateButton.style.display = 'block';
-        }
-      })();
-
-      activateButton.addEventListener('click', async () => {
-        try {
-          const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          if (audioCtx.state === 'suspended') await audioCtx.resume();
-          const micSource = audioCtx.createMediaStreamSource(micStream);
-          micSource.connect(analyser);
-          activateButton.style.display = 'none';
-        } catch (err) {
-          alert('Microphone access is required to activate the visualizer.');
-        }
-      });
 
     // Declaration text logic
     const promptSelect = document.getElementById("promptSelect");
@@ -1146,23 +1122,5 @@ Now real, now felt, now fully seen.`
     promptSelect.addEventListener("change", updateDeclaration);
   });
 </script>
-    <button id="activate-visualizer" style="
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 9999;
-    padding: 14px 22px;
-    font-size: 18px;
-    background-color: #1a1a1a;
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.3);
-    cursor: pointer;
-    display: none;
-  ">
-    🔓 Tap to Activate Voice Visualizer
-  </button>
 </body>
 </html>
