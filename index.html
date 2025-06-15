@@ -899,6 +899,19 @@ button:hover:not(:disabled) {
           oscillator.stop();
         }
 
+        resetBtn.onclick = () => {
+  audioPlayback.pause();
+  audioPlayback.currentTime = 0;
+  audioPlayback.src = '';
+  audioPlayback.style.display = 'none';
+
+  downloadLink.href = '';
+  downloadLink.download = '';
+  downloadLink.style.display = 'none';
+
+  resetBtn.disabled = true;
+};
+        
         recordBtn.disabled = false;
         stopBtn.disabled = true;
         resetBtn.disabled = false;
