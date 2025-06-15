@@ -796,51 +796,51 @@ button:hover:not(:disabled) {
 
       previewTone.disabled = parseFloat(frequencySelect.value) === 0;
       previewTone.textContent = parseFloat(frequencySelect.value) === 0 ? '🔇 Preview Disabled' : '🔊 Preview Tone';
-    
-recordBtn.onclick = async () => {
-  if (audioCtx.state === 'suspended') await audioCtx.resume();
 
-  const startRecording = async () => {
-    const freq = parseFloat(frequencySelect.value);
-    const oscillatorNode = freq > 0 ? createOscillator(freq) : null;
+      recordBtn.onclick = async () => {
+        if (audioCtx.state === 'suspended') await audioCtx.resume();
 
-    try {
-      const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const micSource = audioCtx.createMediaStreamSource(micStream);
-      micSource.connect(analyser);
+        const startRecording = async () => {
+          const freq = parseFloat(frequencySelect.value);
+          const oscillatorNode = freq > 0 ? createOscillator(freq) : null;
 
-      const dest = audioCtx.createMediaStreamDestination();
-      micSource.connect(dest);
-      if (oscillatorNode) oscillatorNode.connect(dest);
+          try {
+            const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const micSource = audioCtx.createMediaStreamSource(micStream);
+            micSource.connect(analyser);
 
-      mixedStream = dest.stream;
-      mediaRecorder = new MediaRecorder(mixedStream);
+            const dest = audioCtx.createMediaStreamDestination();
+            micSource.connect(dest);
+            if (oscillatorNode) oscillatorNode.connect(dest);
 
-      chunks = [];
-      mediaRecorder.ondataavailable = e => chunks.push(e.data);
-      mediaRecorder.onstop = () => {
-        const blob = new Blob(chunks, { type: 'audio/mp3' });
-        const url = URL.createObjectURL(blob);
-        audioPlayback.src = url;
-        audioPlayback.style.display = 'block';
+            mixedStream = dest.stream;
+            mediaRecorder = new MediaRecorder(mixedStream);
 
-        const date = new Date().toISOString().split('T')[0];
-        downloadLink.href = url;
-        downloadLink.download = `highscore-frequency-${date}.mp3`;
-        downloadLink.style.display = 'inline-block';
-      };
+            chunks = [];
+            mediaRecorder.ondataavailable = e => chunks.push(e.data);
+            mediaRecorder.onstop = () => {
+              const blob = new Blob(chunks, { type: 'audio/mp3' });
+              const url = URL.createObjectURL(blob);
+              audioPlayback.src = url;
+              audioPlayback.style.display = 'block';
 
-      mediaRecorder.start();
-      if (oscillatorNode) oscillatorNode.start();
+              const date = new Date().toISOString().split('T')[0];
+              downloadLink.href = url;
+              downloadLink.download = `highscore-frequency-${date}.mp3`;
+              downloadLink.style.display = 'inline-block';
+            };
 
-      recordBtn.disabled = true;
-      stopBtn.disabled = false;
-      previewTone.disabled = true;
-      previewTone.textContent = '🔇 Preview Disabled';
-    } catch (e) {
-      alert('Microphone access denied.');
-    }
-  };
+            mediaRecorder.start();
+            if (oscillatorNode) oscillatorNode.start();
+
+            recordBtn.disabled = true;
+            stopBtn.disabled = false;
+            previewTone.disabled = true;
+            previewTone.textContent = '🔇 Preview Disabled';
+          } catch (e) {
+            alert('Microphone access denied.');
+          }
+        };
 
         if (previewPlaying) {
           stopPreviewTone();
@@ -883,33 +883,30 @@ recordBtn.onclick = async () => {
         resetBtn.disabled = true;
       };
 
-  const activateButton = document.getElementById('activate-visualizer');
+      const activateButton = document.getElementById('activate-visualizer');
 
-// Try to auto-start waveform visualizer on page load
-(async function autoStartWaveform() {
-  try {
-    const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    if (audioCtx.state === 'suspended') await audioCtx.resume();
-    const micSource = audioCtx.createMediaStreamSource(micStream);
-    micSource.connect(analyser);
-  } catch (err) {
-    // Show fallback button if access blocked
-    activateButton.style.display = 'block';
-  }
-})();
+      (async function autoStartWaveform() {
+        try {
+          const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          if (audioCtx.state === 'suspended') await audioCtx.resume();
+          const micSource = audioCtx.createMediaStreamSource(micStream);
+          micSource.connect(analyser);
+        } catch (err) {
+          activateButton.style.display = 'block';
+        }
+      })();
 
-// Manual fallback for user activation
-activateButton.addEventListener('click', async () => {
-  try {
-    const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    if (audioCtx.state === 'suspended') await audioCtx.resume();
-    const micSource = audioCtx.createMediaStreamSource(micStream);
-    micSource.connect(analyser);
-    activateButton.style.display = 'none';
-  } catch (err) {
-    alert('Microphone access is required to activate the visualizer.');
-  }
-});
+      activateButton.addEventListener('click', async () => {
+        try {
+          const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          if (audioCtx.state === 'suspended') await audioCtx.resume();
+          const micSource = audioCtx.createMediaStreamSource(micStream);
+          micSource.connect(analyser);
+          activateButton.style.display = 'none';
+        } catch (err) {
+          alert('Microphone access is required to activate the visualizer.');
+        }
+      });
 
     // Declaration text logic
     const promptSelect = document.getElementById("promptSelect");
