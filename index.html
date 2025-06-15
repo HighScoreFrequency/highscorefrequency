@@ -836,50 +836,31 @@ button:hover:not(:disabled) {
       previewTone.disabled = parseFloat(frequencySelect.value) === 0;
       previewTone.textContent = parseFloat(frequencySelect.value) === 0 ? '🔇 Preview Disabled' : '🔊 Preview Tone';
 
-      recordBtn.onclick = async () => {
-        if (audioCtx.state === 'suspended') await audioCtx.resume();
+      resetBtn.onclick = () => {
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+    mediaRecorder.stop();
+  }
+  if (oscillator && oscillator.stopWithFade) {
+    oscillator.stopWithFade();
+  } else if (oscillator) {
+    oscillator.stop();
+  }
 
-        const startRecording = async () => {
-          const freq = parseFloat(frequencySelect.value);
-          const oscillatorNode = freq > 0 ? createOscillator(freq) : null;
+  audioPlayback.pause();
+  audioPlayback.currentTime = 0;
+  audioPlayback.src = '';
+  audioPlayback.style.display = 'none';
 
-          try {
-            const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            const micSource = audioCtx.createMediaStreamSource(micStream);
-            micSource.connect(analyser);
+  downloadLink.href = '';
+  downloadLink.download = '';
+  downloadLink.style.display = 'none';
 
-            const dest = audioCtx.createMediaStreamDestination();
-            micSource.connect(dest);
-            if (oscillatorNode) oscillatorNode.connect(dest);
-
-            mixedStream = dest.stream;
-            mediaRecorder = new MediaRecorder(mixedStream);
-
-            chunks = [];
-            mediaRecorder.ondataavailable = e => chunks.push(e.data);
-            mediaRecorder.onstop = () => {
-              const blob = new Blob(chunks, { type: 'audio/mp3' });
-              const url = URL.createObjectURL(blob);
-              audioPlayback.src = url;
-              audioPlayback.style.display = 'block';
-
-              const date = new Date().toISOString().split('T')[0];
-              downloadLink.href = url;
-              downloadLink.download = `highscore-frequency-${date}.mp3`;
-              downloadLink.style.display = 'inline-block';
-            };
-
-            mediaRecorder.start();
-            if (oscillatorNode) oscillatorNode.start();
-
-            recordBtn.disabled = true;
-            stopBtn.disabled = false;
-            previewTone.disabled = true;
-            previewTone.textContent = '🔇 Preview Disabled';
-          } catch (e) {
-            alert('Microphone access denied.');
-          }
-        };
+  resetBtn.disabled = true;
+  recordBtn.disabled = false;
+  stopBtn.disabled = true;
+  previewTone.disabled = parseFloat(frequencySelect.value) === 0;
+  previewTone.textContent = parseFloat(frequencySelect.value) === 0 ? '🔇 Preview Disabled' : '🔊 Preview Tone';
+};
 
         if (previewPlaying) {
           stopPreviewTone();
