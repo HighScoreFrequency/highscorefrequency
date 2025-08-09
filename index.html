@@ -28,539 +28,142 @@
       align-items: center;
     }
 
-
+    /* Waveform behind everything */
     canvas#waveform {
       position: fixed;
-      top: 0;
-      left: 0;
+      inset: 0;
       width: 100vw;
       height: 100vh;
       z-index: 0;
-        overflow: visible;
       background: transparent;
+      pointer-events: none;
     }
-    
-   .ring {
-  position: absolute;
-  animation: goldPulse 3s infinite ease-in-out;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  box-sizing: content-box;
-    border: 4px solid transparent;
-  border-image: linear-gradient(135deg, #ffcc33, #a9712c, #ffd700) 1;
 
-  pointer-events: none;
-  background: transparent;
-}
+    /* Golden rings */
+    .ring {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      background: transparent;
+      box-sizing: content-box;
+    }
+    .ring1 {
+      width: 96vmin; height: 90vmin; border-radius: 50%;
+      border: 4px solid #a9712c;
+      animation: rotateCounter 69s linear infinite;
+      z-index: 1;
+      mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
+    }
+    .ring2 {
+      width: 90vmin; height: 84vmin; border-radius: 50%;
+      border: 2px solid #ffcc33;
+      animation: rotateCounter 111s linear infinite;
+      z-index: 1;
+      mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
+    }
+    .ring3 {
+      width: 90vmin; height: 84vmin; border-radius: 50%;
+      border: 2px solid #a9712c;
+      animation: rotateClockwise 69s linear infinite;
+      z-index: 1;
+      mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
+    }
+    .ring4 {
+      width: 96vmin; height: 90vmin; border-radius: 50%;
+      border: 4px solid #ffd700;
+      animation: rotateClockwise 111s linear infinite;
+      z-index: 1;
+      mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
+    }
 
-/* Outer ring - circle */
-.ring1 {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 96vmin;
-  height: 90vmin;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  border: 4px solid #a9712c;
-  animation: rotateCounter 69s linear infinite;
-  z-index: 1;
-     mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
-
-
-}
-
-/* Middle ring - square */
-.ring2 {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 90vmin;
-  height: 84vmin;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  border: 2px solid #ffcc33;
-  animation: rotateCounter 111s linear infinite;
-  z-index: 1;
-     mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
-}
-
-/* Inner ring - circle */
-.ring3 {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 90vmin;
-  height: 84vmin;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  border: 2px solid #a9712c;
-  animation: rotateClockwise 69s linear infinite;
-  z-index: 1;
-     mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
-}
-
-/* Additional ring - circle */
-.ring4 {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 96vmin;
-  height: 90vmin;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  border: 4px solid #ffd700;
-  animation: rotateClockwise 111s linear infinite;
-  z-index: 1;
-     mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
-}
     @keyframes rotateClockwise {
       from { transform: translate(-50%, -50%) rotate(0deg); }
-      to { transform: translate(-50%, -50%) rotate(360deg); }
+      to   { transform: translate(-50%, -50%) rotate(360deg); }
     }
-
     @keyframes rotateCounter {
       from { transform: translate(-50%, -50%) rotate(0deg); }
-      to { transform: translate(-50%, -50%) rotate(-360deg); }
-    }
-
-    @keyframes goldPulse {
-      0%, 100% {
-        box-shadow: 0 0 20px rgba(255, 215, 0, 0.4),
-                    0 0 40px rgba(255, 215, 0, 0.3),
-                    0 0 60px rgba(255, 215, 0, 0.2);
-      }
-      50% {
-        box-shadow: 0 0 30px rgba(255, 215, 0, 0.8),
-                    0 0 60px rgba(255, 215, 0, 0.6),
-                    0 0 90px rgba(255, 215, 0, 0.4);
-      }
+      to   { transform: translate(-50%, -50%) rotate(-360deg); }
     }
 
     .content {
       position: relative;
       z-index: 2;
-      width: 85% !important;
-      max-width: 360px !important;
-      padding: 15px !important;
-      border-radius: 12px !important;
-      background: rgba(255, 255, 255, 0.35) !important;
+      width: 85%;
+      max-width: 360px;
+      padding: 15px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.35);
       text-align: center;
       display: flex;
       flex-direction: column;
-      justify-content: center;
       align-items: center;
-      overflow: visible;
     }
-
     .fade-layer {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-            border-radius: 12px !important;
-      background: linear-gradient(to bottom, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.96));
+      position: absolute; inset: 0;
+      border-radius: 12px;
+      background: linear-gradient(to bottom, rgba(255,255,255,0.96), rgba(255,255,255,0.96));
       opacity: 0;
-      z-index: 1; /* Below content */
-      transition: opacity 0.3s ease;
+      z-index: 1;
+      transition: opacity 0.25s ease;
       pointer-events: none;
       backdrop-filter: blur(2px);
     }
+    .content > *:not(.fade-layer) { position: relative; z-index: 2; }
 
-    .content > *:not(.fade-layer) {
-      position: relative;
-      z-index: 2; /* Above fade-layer */
-    }
+    h2 { font-size: 20px; margin: 6px 0 10px; }
 
-    h2 {
-      font-size: 20px;
-      margin-bottom: 10px;
-    }
+    p { font-size: 14px; color: #444; margin: 10px 0 16px; }
 
-    p {
-      font-size: 14px;
-      color: #444;
-      margin-bottom: 30px;
-    }
-
-.button-group {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 8px; /* spacing between rows */
-  margin-top: 4px !important;
-}
-
-.row {
-  display: flex;
-  gap: 8px; /* spacing between buttons */
-  width: 100%;
-  justify-content: space-between;
-}
-
-.row button {
-  flex: 1;
-  max-width: 100%;
-  margin: 0; /* remove default button spacing */
-}
-
-
-    .button-group {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 2; /* remove any default spacing */
-}
-
-    button {
-      background-color: #1a1a1a;
-      color: white;
-      border: none;
-      padding: 6px 16px;
-      font-size: 12px;
-      cursor: pointer;
-      border-radius: 6px;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-button:hover:not(:disabled) {
-  transform: scale(0.95); /* This shrinks the button slightly */
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.15); /* Optional: soften the glow to match the shrink effect */
-}
-
-    button:disabled {
-      background-color: #666;
-      cursor: not-allowed;
-    }
-
-    select {
-      margin: 4px 0;
-      padding: 8px;
-      font-size: 12px;
-      border-radius: 6px;
-        margin-bottom: 4px;
-      max-width: 100% !important;
-              border: 0px solid #000 !important;
-    }
-
-    audio {
-      width: 100%;
-      max-width: 300px;
-      margin-top: 10px;
-    }
-
-    a {
-      display: inline-block;
-      margin-top: 15px;
-      text-decoration: none;
-      color: #007bff;
-      font-size: 14px;
-    }
-
-    @keyframes fadeIn {
-      to { opacity: 1; }
-    }
-
-.input-wrapper {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
+    .input-wrapper { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 6px; }
 
     .declaration-wrapper {
-  padding: 2px;
-  border-radius: 6px;
-  background: linear-gradient(135deg, #ffcc33, #a9712c, #ffd700);
-}
-    
-    #declaration-box, #declaration-text {
-  opacity: 1 !important;
-  color: #222 !important;
-  background: rgba(255, 255, 255, 0.95) !important;
-  position: relative !important;
-  z-index: 10 !important;
-  height: auto !important;
-  display: block !important; 
-}
-    
-#declaration-box {
-  width: 100%;
-  min-height: 60px;
-  max-height: 150px;
-  padding: 10px 20px 10px 20px;
-  border-radius: 6px;
-  font-size: 12px;
-  line-height: 1.2;
-  color: #222;
-  background: rgba(255, 255, 255, 0.95);
-  overflow-y: auto;
-  border: 0px solid #000;
-  box-sizing: border-box;
-    align-items: center;
-  font-size: 12px;
-  display: flex;
-  text-align: left;
-  justify-content: center !important;
-  margin-bottom: 3px;
-  font-family: 'Unbounded', cursive; /* 👈 Match dropdown font */
-}
-
-   #declaration-box.prompt-selected #declaration-text {
-  font-family: 'arial', cursive !important;
-  font-size: 12px;
-  font-weight: 500; /* Matches the dropdown font weight */
-  line-height: 1.2; /* Keep existing line height for readability */
-} 
-
-#declaration-box.first-prompt {
-  text-align: left;
-  display: flex;
-  align-items: center;
-  justify-content: center !important;
-  background: rgba(255, 255, 255, 0.95);
-  border: 0px solid #000;
-}
-
-#declaration-text {
-  white-space: pre-line;
-  width: auto; /* Allow natural width, centered by parent flex */
-  padding-left: 4px; /* Slight left padding for visual alignment */
-  /* Remove justify-content from #declaration-text, as it’s not a flex container */
-}
-
-#declaration-box::-webkit-scrollbar {
-  width: 6px;
-}
-
-#declaration-box::-webkit-scrollbar-track {
-  background: transparent; /* Remove scrollbar track background */
-}
-
-#declaration-box::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.2); /* Light transparent thumb */
-  border-radius: 4px;
-}
-
-#declaration-box::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.3);
-}
-
-/* Firefox */
-#declaration-box {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
-}
-
-
-    #promptSelect {
-  margin-bottom: 3px;
-        border: 0px solid #000 !important;
-}
-
-    #frequencySelect {
-  margin-top: 3;
-}
-
-    #promptSelect,
-    #frequencySelect {
       width: 100%;
-      padding: 8px;
-      font-size: 12px;
+      padding: 2px; border-radius: 6px;
+      background: linear-gradient(135deg, #ffcc33, #a9712c, #ffd700);
+    }
+    #declaration-box {
+      width: 100%; min-height: 60px; max-height: 150px;
+      padding: 10px 16px;
       border-radius: 6px;
-      box-sizing: border-box;
+      font-size: 12px; line-height: 1.25;
+      color: #222; background: rgba(255,255,255,0.95);
+      overflow-y: auto; border: 0;
+      display: flex; align-items: center; justify-content: center;
+      text-align: left;
+      font-family: 'Unbounded', cursive;
+    }
+    #declaration-text { white-space: pre-line; }
+
+    select {
+      width: 100%; padding: 8px; font-size: 12px;
+      border-radius: 6px; border: 0; box-sizing: border-box;
+      background: #fff;
     }
 
-    .button-group {
-      align-items: center;
- width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 8px; /* spacing between rows of buttons */
-  margin-top: 4px; /* reduce this value to move buttons closer to dropdown */
-}
-
-    .row {
-      display: flex;
-        gap: 8px; /* ← change this value to your desired spacing (e.g., 6px or 8px) */
-  width: 100%;
-  justify-content: space-between;
-    }
-
+    .button-group { width: 100%; display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
+    .row { display: flex; gap: 8px; width: 100%; justify-content: space-between; }
     button {
-      background-color: #1a1a1a;
-        margin-bottom: 3px;
-      color: white;
-      border: none;
-      padding: 6px 16px;
-      font-size: 12px;
-      cursor: pointer;
-      border-radius: 6px;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      background: #1a1a1a; color: #fff; border: 0;
+      padding: 6px 16px; font-size: 12px; border-radius: 6px;
+      cursor: pointer; transition: transform .18s ease, box-shadow .18s ease, opacity .18s ease;
     }
+    button:hover:not(:disabled) { transform: scale(0.96); box-shadow: 0 0 6px rgba(0,0,0,.15); }
+    button:disabled { background: #666; cursor: not-allowed; opacity: .75; }
 
-    button:disabled {
-      background-color: #666;
-      cursor: not-allowed;
+    audio { width: 100%; max-width: 300px; margin-top: 10px; }
+    a { display: inline-block; margin-top: 12px; text-decoration: none; color: #007bff; font-size: 14px; }
+
+    @media (max-width: 768px) {
+      .ring1, .ring4 { width: 440px !important; height: 420px !important; }
+      .ring2, .ring3 { width: 420px !important; height: 400px !important; }
+      .portal-wrapper { width: 100vw !important; height: 100vh !important; }
+      .content { width: 85% !important; max-width: 360px !important; padding: 15px !important; background: rgba(255,255,255,.28) !important; }
+      h2 { font-size: 17px !important; }
+      p { font-size: 14px !important; }
+      button { font-size: 12px !important; padding: 6px 16px !important; }
     }
-
-    audio {
-      width: 100%;
-      max-width: 300px;
-      margin-top: 10px;
-    }
-
-    a {
-      display: inline-block;
-      margin-top: 15px;
-      text-decoration: none;
-      color: #007bff;
-      font-size: 14px;
-    }
-
-    .wave-title::before,
-.wave-title::after {
-  content: ")))";
-  font-size: 20px;
-  color: gold;
-  animation: wavePulse 2s infinite ease-in-out;
-}
-
-.wave-title::before {
-  content: "(((";
-  margin-right: 10px;
-}
-
-.wave-title::after {
-  margin-left: 10px;
-}
-
-@keyframes wavePulse {
-  0%, 100% {
-    letter-spacing: 0.1em;
-    opacity: 0.8;
-  }
-  50% {
-    letter-spacing: 0.4em;
-    opacity: 1;
-  }
-}
-
-
-
-    /* 🔧 Mobile-Only Overrides */
-    @media only screen and (max-width: 768px) {
-      html, body {
-        width: 100%;
-        height: 100%;
-        margin: 0;
-        padding: 0;
-        overflow: auto;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-      }
-
-      .ring1, .ring4 {
-        width: 440px !important;
-        height: 420px !important;
-      }
-
-            .ring2, .ring3 {
-        width: 420px !important;
-        height: 400px !important;
-      }
-
-      canvas#waveform {
-        top: 18vh !important;
-      }
-
-      .portal-wrapper {
-        width: 100vw !important;
-        height: 100vh !important;
-        display: flex !important;
-        justify-content: center !important;
-        align-items: center !important;
-        padding: 0 !important;
-        box-sizing: border-box !important;
-      }
-
-      .content {
-        width: 85% !important;
-        max-width: 360px !important;
-        padding: 15px !important;
-        font-size: 16px !important;
-        background: rgba(255, 255, 255, 0.28) !important;
-        border-radius: 12px !important;
-        box-shadow: 0 0 15px rgba(0, 0, 0, 0.2) !important;
-      }
-
-      .fade-layer {
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.96));
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  backdrop-filter: blur(2px);
-        border-radius: 12px !important;
-}
-
-      h2 {
-        font-size: 17px !important;
-        margin-bottom: 8px !important;
-      }
-
-      p {
-        font-size: 14px !important;
-        margin-bottom: 15px !important;
-      }
-
-      select {
-        font-size: 12px !important;
-        padding: 8px !important;
-        margin-bottom: 4px;
-        max-width: 100% !important;
-      }
-
-
-      button {
-        font-size: 12px !important;
-        padding: 6px 16px !important;
-      }
-
-      .button-group {
-        width: 100% !important;
-        gap: 8px !important;
-      }
-
-      .row {
-        gap: 8px !important;
-      }
-
-          #promptSelect {
-  margin-bottom: 3px;
-}
-
-    #frequencySelect {
-  margin-top: 3;
-}
-
-    #promptSelect,
-    #frequencySelect {
-      width: 100%;
-      padding: 8px;
-      font-size: 12px;
-      border-radius: 6px;
-      box-sizing: border-box;
-    }
-
-      audio {
-        max-width: 100% !important;
-      }
-    }
-    
   </style>
 </head>
 <body>
@@ -570,22 +173,21 @@ button:hover:not(:disabled) {
     <div class="ring ring2" id="ring2"></div>
     <div class="ring ring3" id="ring3"></div>
     <div class="ring ring4" id="ring4"></div>
+
     <div class="content">
       <div class="fade-layer"></div>
-      <h2 style="text-align: center; font-weight: bold;">
-  <span style="font-size: 12px;">(</span>
-  <span style="font-size: 16px;">(</span>
-  <span style="font-size: 20px;">(</span>
-  <strong>High Score Voice Portal</strong>
-  <span style="font-size: 20px;">)</span>
-  <span style="font-size: 16px;">)</span>
-  <span style="font-size: 12px;">)</span>
-</h2>
+
+      <h2>
+        <span style="font-size:12px;">(</span><span style="font-size:16px;">(</span><span style="font-size:20px;">(</span>
+        <strong>High Score Voice Portal</strong>
+        <span style="font-size:20px;">)</span><span style="font-size:16px;">)</span><span style="font-size:12px;">)</span>
+      </h2>
 
       <div class="input-wrapper">
-        <div id="declaration-box">
-          <div id="declaration-text"></div>
+        <div class="declaration-wrapper" style="width:100%;">
+          <div id="declaration-box"><div id="declaration-text"></div></div>
         </div>
+
         <select id="promptSelect">
           <option value="">✨ Choose Your Crystalline Activation</option>
           <option value="1">⚡️ Unlock My Final Form</option>
@@ -594,12 +196,14 @@ button:hover:not(:disabled) {
           <option value="4">💎 Equip Divine Union Mode</option>
           <option value="5">👑 Highest Most Prosporous Self</option>
         </select>
+
         <select id="frequencySelect">
           <option value="528">528 Hz – 🧬 Cell Recalibration – Level Up to Wholeness</option>
           <option value="639">639 Hz – 💖 Heart Link Gateway – Sync Into Unity Field</option>
           <option value="963">963 Hz – 👑 Crown Signal – Access Divine Intelligence</option>
           <option value="0">0 Hz – 🕊️ Silence Mode – Record Without Tone</option>
         </select>
+
         <div class="button-group">
           <div class="row">
             <button id="preview-btn">🔊 Preview Tone</button>
@@ -610,322 +214,255 @@ button:hover:not(:disabled) {
             <button id="resetBtn" disabled>🔁 Reset</button>
           </div>
         </div>
-        <audio id="audioPlayback" controls style="display: none;"></audio>
-        <a id="downloadLink" style="display: none;">⬇️ Download Your Recording</a>
+
+        <audio id="audioPlayback" controls style="display:none;"></audio>
+        <a id="downloadLink" style="display:none;">⬇️ Download Your Recording</a>
       </div>
     </div>
   </div>
+
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const canvas = document.getElementById('waveform');
-    const ctx = canvas.getContext('2d');
-    const rings = [
-      document.getElementById('ring1'),
-      document.getElementById('ring2'),
-      document.getElementById('ring3'),
-      document.getElementById('ring4')
-    ];
-    const fadeLayer = document.querySelector('.fade-layer');
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    const audioCtx = new AudioContext({ latencyHint: 'interactive' });
+(() => {
+  // ===== Canvas setup (DPR-aware) =====
+  const canvas = document.getElementById('waveform');
+  const ctx = canvas.getContext('2d');
+  const rings = [document.getElementById('ring1'), document.getElementById('ring2'), document.getElementById('ring3'), document.getElementById('ring4')];
+  const fadeLayer = document.querySelector('.fade-layer');
 
-    let analyser = audioCtx.createAnalyser();
-    analyser.fftSize = 2048;
-    let dataArray = new Uint8Array(analyser.fftSize);
-    let previousOpacity = 0.99;
+  function resizeCanvas() {
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+    const { clientWidth, clientHeight } = canvas;
+    canvas.width = Math.round(clientWidth * dpr);
+    canvas.height = Math.round(clientHeight * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  const ro = new ResizeObserver(resizeCanvas);
+  ro.observe(canvas);
 
-    function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+  // ===== Audio graph =====
+  const AudioContextRef = window.AudioContext || window.webkitAudioContext;
+  const audioCtx = new AudioContextRef({ latencyHint: 'interactive' });
+
+  // Nodes (created as needed)
+  let analyser = audioCtx.createAnalyser();
+  analyser.fftSize = 2048;
+  const timeData = new Uint8Array(analyser.fftSize);
+
+  // Recorder plumbing
+  let mediaRecorder = null;
+  let mixedStream = null;
+  let recordChunks = [];
+
+  // Tone nodes
+  let oscillator = null;
+  let gainNode = null;
+  let panner = null;
+  let previewPlaying = false;
+
+  // UI
+  const recordBtn  = document.getElementById('record-btn');
+  const stopBtn    = document.getElementById('stopBtn');
+  const resetBtn   = document.getElementById('resetBtn');
+  const previewBtn = document.getElementById('preview-btn');
+  const audioPlayback = document.getElementById('audioPlayback');
+  const downloadLink  = document.getElementById('downloadLink');
+  const frequencySelect = document.getElementById('frequencySelect');
+
+  // Declaration copy
+  const promptSelect = document.getElementById('promptSelect');
+  const declarationText = document.getElementById('declaration-text');
+  const declarations = {
+    "": `Choose your tone, speak it clear,
+code your vibe, draw truth near.
+This isn’t sound, it’s memory’s key,
+a voice-led path to mastery.`,
+    "1": `⚡️ Unlock My Final Form
+
+I now unlock my final form—
+... (trimmed for brevity in this block)
+I now unlock my final form.`,
+    "2": `🔥 Clear Limited Codes
+
+I speak these words to clear the way,
+...`,
+    "3": `🚀 Load the Expansion Pack
+
+I now unlock what’s always mine—
+...`,
+    "4": `👑 Equip Divine Union Mode
+
+I call in love that mirrors true—
+...`
+  };
+  function updateDeclaration(){ declarationText.textContent = declarations[promptSelect.value] || declarations[""]; }
+  updateDeclaration();
+  promptSelect.addEventListener('change', updateDeclaration);
+
+  // ===== Utility: create tone with ADSR and stopWithFade =====
+  function createTone(freq, attack=1.5, sustain=0.02, release=1.5) {
+    oscillator = audioCtx.createOscillator();
+    gainNode   = audioCtx.createGain();
+    panner     = audioCtx.createStereoPanner();
+
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+    const now = audioCtx.currentTime;
+    gainNode.gain.cancelScheduledValues(now);
+    gainNode.gain.setValueAtTime(0, now);
+    gainNode.gain.linearRampToValueAtTime(sustain, now + attack);
+
+    oscillator.connect(panner).connect(gainNode);
+    // stopWithFade returns a Promise that resolves after the stop time
+    oscillator.stopWithFade = (rel=release) => new Promise(resolve => {
+      const t0 = audioCtx.currentTime;
+      const stopTime = t0 + Math.max(0.01, rel);
+      gainNode.gain.cancelScheduledValues(t0);
+      // preserve current level then ramp to 0
+      const current = gainNode.gain.value;
+      gainNode.gain.setValueAtTime(current, t0);
+      gainNode.gain.linearRampToValueAtTime(0, stopTime);
+      oscillator.stop(stopTime);
+      setTimeout(resolve, (stopTime - t0) * 1000 + 20);
+    });
+
+    return gainNode;
+  }
+
+  // ===== Visualizer loop (reacts to mic when recording; idle shimmer otherwise) =====
+  let prevOpacity = 0.99;
+  let idlePhase = 0;
+  function draw() {
+    requestAnimationFrame(draw);
+    ctx.clearRect(0,0,canvas.clientWidth, canvas.clientHeight);
+
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    const midY = h/2;
+
+    let active = false;
+    if (analyser && analyser.numberOfInputs !== 0) {
+      try { analyser.getByteTimeDomainData(timeData); active = true; } catch(e){}
     }
 
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
+    ctx.beginPath();
+    ctx.lineWidth = 2.5;
+    const grad = ctx.createLinearGradient(0,0,w,0);
+    grad.addColorStop(0, '#5a9fe6');
+    grad.addColorStop(1, '#5aecc6');
+    ctx.strokeStyle = grad;
 
-    function drawWaveform() {
-      requestAnimationFrame(drawWaveform);
-      analyser.getByteTimeDomainData(dataArray);
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const len = timeData.length;
+    const slice = w / len;
 
-      ctx.beginPath();
-      ctx.lineWidth = 3;
-      const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
-      gradient.addColorStop(0, '#5a9fe6');
-      gradient.addColorStop(1, '#5aecc6');
-      ctx.strokeStyle = gradient;
-      ctx.shadowColor = '#5a9fe6';
-      ctx.shadowBlur = 12;
+    let ampSum = 0;
 
-      const centerX = canvas.width / 2;
-      const centerY = canvas.height / 2;
-      const half = dataArray.length / 2;
-      const sliceWidth = canvas.width / dataArray.length;
-      const decayRate = 0.95;
-      const emaAlpha = 0.2;
-      const rippleSpread = canvas.width / 4;
-
-      if (!window.smoothedAmplitudes)
-        window.smoothedAmplitudes = new Float32Array(dataArray.length).fill(0.0);
-      if (!window.emaValues)
-        window.emaValues = new Float32Array(dataArray.length).fill(1.0);
-
-      const smoothedY = new Float32Array(dataArray.length);
-
-      for (let i = 0; i < dataArray.length; i++) {
-        let v = Math.min(dataArray[i] / 128.0 * 1.2, 2);
-        window.emaValues[i] = emaAlpha * v + (1 - emaAlpha) * window.emaValues[i];
-        let smoothedV = window.emaValues[i];
-        let deviation = Math.abs(smoothedV - 1.0);
-        window.smoothedAmplitudes[i] = Math.max(deviation, window.smoothedAmplitudes[i] * decayRate);
-        let finalV = smoothedV > 1.0 ? 1.0 + window.smoothedAmplitudes[i] : 1.0 - window.smoothedAmplitudes[i];
-
-        let baseY = (finalV - 1.0) * canvas.height * 0.6 + centerY;
-        let distanceFromCenter = Math.abs(i - half);
-        let rippleFactor = Math.exp(-Math.pow(distanceFromCenter * sliceWidth, 2) / (2 * rippleSpread * rippleSpread));
-
-        if (i > 0) {
-          smoothedY[i] = emaAlpha * (centerY + (baseY - centerY) * rippleFactor) +
-                         (1 - emaAlpha) * smoothedY[i - 1];
-        } else {
-          smoothedY[i] = centerY + (baseY - centerY) * rippleFactor;
-        }
+    if (active && timeData[0] !== 0) {
+      // mic-reactive curve
+      let x = 0;
+      for (let i=0;i<len;i++){
+        const v = (timeData[i]-128)/128; // -1..1
+        const y = midY + v * (h*0.35);
+        if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+        x += slice;
+        ampSum += Math.abs(v);
       }
-
-      let x = centerX;
-      let prevX = centerX;
-      let prevY = smoothedY[0];
-      for (let i = 0; i < half; i++) {
-        let y = smoothedY[i];
-        let xc = (prevX + x) / 2;
-        let yc = (prevY + y) / 2;
-        ctx.quadraticCurveTo(prevX, prevY, xc, yc);
-        prevX = x;
-        prevY = y;
-        x += sliceWidth;
+    } else {
+      // idle slow sine shimmer
+      idlePhase += 0.015;
+      let x = 0;
+      for (let i=0;i<len;i++){
+        const v = Math.sin((i/len)*Math.PI*4 + idlePhase) * 0.15;
+        const y = midY + v * (h*0.35);
+        if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+        x += slice;
+        ampSum += Math.abs(v);
       }
-
-      ctx.moveTo(centerX, smoothedY[0]);
-
-      x = centerX;
-      prevX = centerX;
-      prevY = smoothedY[0];
-      for (let i = 0; i < half; i++) {
-        let y = smoothedY[i];
-        let xc = (prevX + x) / 2;
-        let yc = (prevY + y) / 2;
-        ctx.quadraticCurveTo(prevX, prevY, xc, yc);
-        prevX = x;
-        prevY = y;
-        x -= sliceWidth;
-      }
-
-      ctx.stroke();
-      ctx.shadowBlur = 0;
-
-      let sum = 0;
-      for (let i = 0; i < dataArray.length; i++) {
-        sum += Math.abs(dataArray[i] - 128);
-      }
-      let average = sum / dataArray.length;
-      let normalized = Math.min(average / 2, 1);
-      let targetOpacity = 0.99 - (normalized * 0.99);
-      let smoothing = 0.1;
-      let smoothedOpacity = previousOpacity + (targetOpacity - previousOpacity) * smoothing;
-      previousOpacity = smoothedOpacity;
-      fadeLayer.style.opacity = smoothedOpacity.toFixed(2);
     }
+    ctx.stroke();
 
-    drawWaveform();
+    // Fade layer + ring glow follow amplitude
+    const avg = ampSum / len; // ~0..1
+    const targetOpacity = Math.max(0.02, 0.99 - Math.min(1, avg*2)*0.99);
+    const smoothed = prevOpacity + (targetOpacity - prevOpacity)*0.12;
+    prevOpacity = smoothed;
+    fadeLayer.style.opacity = smoothed.toFixed(2);
 
-      let oscillator, gainNode, panner;
-      let mediaRecorder;
-      let chunks = [];
-      let mixedStream = null;
-      let previewPlaying = false;
+    const glow = Math.min(1, avg*3);
+    const glowA = 0.25 + glow*0.5;
+    const glowB = 0.15 + glow*0.4;
+    const glowC = 0.08 + glow*0.25;
+    rings.forEach(r=>{
+      r.style.boxShadow =
+        `0 0 20px rgba(255,215,0,${glowA}), 0 0 40px rgba(255,215,0,${glowB}), 0 0 70px rgba(255,215,0,${glowC})`;
+    });
+  }
+  draw();
 
-      const recordBtn = document.getElementById('record-btn');
-      const stopBtn = document.getElementById('stopBtn');
-      const resetBtn = document.getElementById('resetBtn');
-      const previewTone = document.getElementById('preview-btn');
-      const audioPlayback = document.getElementById('audioPlayback');
-      const downloadLink = document.getElementById('downloadLink');
-      const frequencySelect = document.getElementById('frequencySelect');
+  // ===== Button State Helpers =====
+  function setPreviewDisabled(disabled) {
+    previewBtn.disabled = disabled;
+    previewBtn.textContent = disabled ? '🔇 Preview Disabled' : '🔊 Preview Tone';
+  }
+  function setPreviewStopUI() { previewBtn.textContent = '🛑 Stop Preview'; }
+  function ensurePreviewOffUI() { previewBtn.textContent = '🔊 Preview Tone'; previewPlaying = false; }
 
-      function createOscillator(freq, fadeIn = 0.5, fadeOut = 0.5) {
-        oscillator = audioCtx.createOscillator();
-        gainNode = audioCtx.createGain();
-        panner = audioCtx.createStereoPanner();
-
-        oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
-
-        const now = audioCtx.currentTime;
-        gainNode.gain.setValueAtTime(0, now);
-        gainNode.gain.linearRampToValueAtTime(0.02, now + fadeIn);
-
-        oscillator.connect(panner).connect(gainNode);
-
-        oscillator.stopWithFade = () => {
-          const stopTime = audioCtx.currentTime + fadeOut;
-          gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
-          gainNode.gain.setValueAtTime(gainNode.gain.value, audioCtx.currentTime);
-          gainNode.gain.linearRampToValueAtTime(0, stopTime);
-          oscillator.stop(stopTime);
-        };
-
-        return gainNode;
+  // ===== Preview Tone =====
+  async function stopPreviewTone(instant=false) {
+    if (!oscillator) return;
+    try {
+      if (!instant && oscillator.stopWithFade) {
+        await oscillator.stopWithFade(1.5);
+      } else {
+        oscillator.stop();
       }
+    } catch(_){}
+    oscillator = null; gainNode = null; panner = null;
+    ensurePreviewOffUI();
+  }
 
-      function stopPreviewTone(instant = false) {
-        if (oscillator) {
-          if (instant) {
-            oscillator.stop();
-            previewPlaying = false;
-            previewTone.textContent = '🔊 Preview Tone';
-          } else {
-            oscillator.stopWithFade();
-            setTimeout(() => {
-              previewPlaying = false;
-              previewTone.textContent = '🔊 Preview Tone';
-            }, 500);
-          }
-          oscillator = null;
-        }
-      }
+  previewBtn.addEventListener('click', async () => {
+    if (audioCtx.state === 'suspended') await audioCtx.resume();
 
-      previewTone.onclick = async () => {
-        if (audioCtx.state === 'suspended') await audioCtx.resume();
-
-        const freq = parseFloat(frequencySelect.value);
-        if (freq === 0) return;
-
-        if (!previewPlaying) {
-          const node = createOscillator(freq);
-          node.connect(audioCtx.destination);
-          oscillator.start();
-          previewPlaying = true;
-          previewTone.textContent = '🛑 Stop Preview';
-        } else {
-          stopPreviewTone();
-        }
-      };
-
-      frequencySelect.addEventListener('change', () => {
-        const freq = parseFloat(frequencySelect.value);
-
-        if (freq === 0) {
-          stopPreviewTone(true);
-          previewTone.disabled = true;
-          previewTone.textContent = '🔇 Preview Disabled';
-          return;
-        }
-
-        if (previewPlaying) {
-          stopPreviewTone(true);
-          const node = createOscillator(freq, 0, 0.5);
-          node.connect(audioCtx.destination);
-          oscillator.start();
-          previewPlaying = true;
-          previewTone.textContent = '🛑 Stop Preview';
-        } else {
-          previewTone.disabled = false;
-          previewTone.textContent = '🔊 Preview Tone';
-        }
-      });
-
-      previewTone.disabled = parseFloat(frequencySelect.value) === 0;
-      previewTone.textContent = parseFloat(frequencySelect.value) === 0 ? '🔇 Preview Disabled' : '🔊 Preview Tone';
-
- recordBtn.onclick = async () => {
-        if (audioCtx.state === 'suspended') await audioCtx.resume();
-
-        const startRecording = async () => {
-          const freq = parseFloat(frequencySelect.value);
-          const oscillatorNode = freq > 0 ? createOscillator(freq) : null;
-
-          try {
-            const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            const micSource = audioCtx.createMediaStreamSource(micStream);
-            micSource.connect(analyser);
-
-            const dest = audioCtx.createMediaStreamDestination();
-            micSource.connect(dest);
-            if (oscillatorNode) oscillatorNode.connect(dest);
-
-            mixedStream = dest.stream;
-            mediaRecorder = new MediaRecorder(mixedStream);
-
-            chunks = [];
-            mediaRecorder.ondataavailable = e => chunks.push(e.data);
-            mediaRecorder.onstop = () => {
-              const blob = new Blob(chunks, { type: 'audio/mp3' });
-              const url = URL.createObjectURL(blob);
-              audioPlayback.src = url;
-              audioPlayback.style.display = 'block';
-
-              const date = new Date().toISOString().split('T')[0];
-              downloadLink.href = url;
-              downloadLink.download = `highscore-frequency-${date}.mp3`;
-              downloadLink.style.display = 'inline-block';
-            };
-
-            mediaRecorder.start();
-            if (oscillatorNode) oscillatorNode.start();
-
-            recordBtn.disabled = true;
-            stopBtn.disabled = false;
-            previewTone.disabled = true;
-            previewTone.textContent = '🔇 Preview Disabled';
-          } catch (e) {
-            alert('Microphone access denied.');
-          }
-        };
-   
-        if (previewPlaying) {
-          stopPreviewTone();
-          setTimeout(startRecording, 500);
-        } else {
-          startRecording();
-        }
-      };
-
-      stopBtn.onclick = () => {
-        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-          mediaRecorder.stop();
-        }
-        if (oscillator && oscillator.stopWithFade) {
-          oscillator.stopWithFade();
-        } else if (oscillator) {
-          oscillator.stop();
-        }
-
-        resetBtn.onclick = () => {
-  audioPlayback.pause();
-  audioPlayback.currentTime = 0;
-  audioPlayback.src = '';
-  audioPlayback.style.display = 'none';
-
-  downloadLink.href = '';
-  downloadLink.download = '';
-  downloadLink.style.display = 'none';
-
-  resetBtn.disabled = true;
-};
-        
-        recordBtn.disabled = false;
-        stopBtn.disabled = true;
-        resetBtn.disabled = false;
-
-        const freq = parseFloat(frequencySelect.value);
-        previewTone.disabled = freq === 0;
-        previewTone.textContent = freq === 0 ? '🔇 Preview Disabled' : '🔊 Preview Tone';
-        previewPlaying = false;
-      };
-
-recordBtn.onclick = async () => {
-  const startRecording = async () => {
     const freq = parseFloat(frequencySelect.value);
-    const oscillatorNode = freq > 0 ? createOscillator(freq) : null;
+    if (freq === 0) return;
+
+    if (!previewPlaying) {
+      const node = createTone(freq, 1.5, 0.02, 1.5);
+      node.connect(audioCtx.destination);
+      oscillator.start();
+      previewPlaying = true;
+      setPreviewStopUI();
+    } else {
+      await stopPreviewTone(false);
+    }
+  });
+
+  // Disable/enable preview when selecting Silence
+  frequencySelect.addEventListener('change', async () => {
+    const freq = parseFloat(frequencySelect.value);
+    if (freq === 0) {
+      await stopPreviewTone(true);
+      setPreviewDisabled(true);
+    } else {
+      setPreviewDisabled(false);
+      ensurePreviewOffUI();
+    }
+  });
+  // initial state
+  setPreviewDisabled(parseFloat(frequencySelect.value) === 0);
+
+  // ===== Recording =====
+  function pickMime() {
+    if (MediaRecorder.isTypeSupported('audio/mp3'))  return { mime:'audio/mp3',  ext:'mp3' };
+    if (MediaRecorder.isTypeSupported('audio/mpeg')) return { mime:'audio/mpeg', ext:'mp3' };
+    if (MediaRecorder.isTypeSupported('audio/webm')) return { mime:'audio/webm', ext:'webm' };
+    return { mime:'', ext:'webm' };
+  }
+
+  async function startRecording() {
+    const freq = parseFloat(frequencySelect.value);
+    const toneNode = freq > 0 ? createTone(freq, 1.5, 0.02, 1.5) : null;
 
     try {
       const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -934,244 +471,93 @@ recordBtn.onclick = async () => {
 
       const dest = audioCtx.createMediaStreamDestination();
       micSource.connect(dest);
-      if (oscillatorNode) oscillatorNode.connect(dest);
+      if (toneNode) toneNode.connect(dest);
 
       mixedStream = dest.stream;
-      mediaRecorder = new MediaRecorder(mixedStream);
 
-      chunks = [];
-      mediaRecorder.ondataavailable = e => chunks.push(e.data);
+      const { mime, ext } = pickMime();
+      mediaRecorder = mime ? new MediaRecorder(mixedStream, { mimeType: mime }) : new MediaRecorder(mixedStream);
+
+      recordChunks = [];
+      mediaRecorder.ondataavailable = e => { if (e.data && e.data.size) recordChunks.push(e.data); };
       mediaRecorder.onstop = () => {
-        const blob = new Blob(chunks, { type: 'audio/mp3' });
+        const blob = new Blob(recordChunks, { type: mediaRecorder.mimeType || mime || 'audio/webm' });
         const url = URL.createObjectURL(blob);
         audioPlayback.src = url;
         audioPlayback.style.display = 'block';
-
         const date = new Date().toISOString().split('T')[0];
         downloadLink.href = url;
-        downloadLink.download = `highscore-frequency-${date}.mp3`;
+        downloadLink.download = `highscore-frequency-${date}.${ext}`;
         downloadLink.style.display = 'inline-block';
       };
 
       mediaRecorder.start();
-      if (oscillatorNode) oscillator.start();
+      if (toneNode) oscillator.start();
 
+      // UI states
       recordBtn.disabled = true;
-      stopBtn.disabled = false;
-      previewTone.disabled = true;
-      previewTone.textContent = '🔇 Preview Disabled';
-    } catch (e) {
-      alert('Mic access denied.');
-    }
-  };
+      stopBtn.disabled   = false;
+      setPreviewDisabled(true);
 
-  if (previewPlaying) {
-    stopPreviewTone();
-    setTimeout(startRecording, 1600); // Match the original delay
-  } else {
-    startRecording();
+    } catch (err) {
+      alert('Microphone access denied or unavailable.');
+      // restore UI
+      recordBtn.disabled = false;
+      stopBtn.disabled   = true;
+      setPreviewDisabled(parseFloat(frequencySelect.value) === 0);
+    }
   }
-};
 
+  recordBtn.addEventListener('click', async () => {
+    if (audioCtx.state === 'suspended') await audioCtx.resume();
 
-    // Declaration text logic
-    const promptSelect = document.getElementById("promptSelect");
-    const declarationBox = document.getElementById("declaration-box");
-    const declarationText = document.getElementById("declaration-text");
-
-    const declarations = {
-      "": `Choose your tone, speak it clear,\ncode your vibe, draw truth near.\nThis isn’t sound, it’s memory’s key,\na voice-led path to mastery.`,
-      "1": `⚡️ Unlock My Final Form
-        
-I now unlock my final form—  
-No longer bent by break or storm.  
-No loop, no lie, no lower mold  
-Can shape the fire my bones now hold.  
-  
-I am the code beneath the skin,  
-The voice of Source, alive within.  
-Each breath I take, a key, a spark—  
-A torch relit inside the dark.  
-  
-I speak the self beyond the veil,  
-Where flesh and flame and soul prevail.  
-My tone commands, my will aligns—  
-I break the curse of bound timelines.  
-  
-With every word, I walk through gates,  
-Where past dissolves and self creates.  
-Not reaching up, I rise from core—  
-The throne was always at my door.  
-  
-I am the glitch that won’t obey,  
-The pattern-breaker of decay.  
-I close the loop. I clear the field.  
-My voice becomes the sword I wield.  
-  
-I walk in sync with living light,  
-My form attuned to Source’s sight.  
-The lesser codes dissolve, release—  
-I anchor now the higher piece.  
-  
-My cells remember—this is me.  
-Not wishful thought, but prophecy.  
-The future I was meant to be  
-Now stands in full biology.  
-  
-I am not waiting, doubting, torn—  
-I rise, I walk, my final form.  
-All selves align. All aspects merge.  
-I am the crest. I am the surge.  
-  
-And so I speak. And so it is.  
-I stamp this form with sovereign kiss.  
-In breath, in sound, in body worn—  
-I now unlock my final form.`,
-      "2": `🔥 Clear Limited Codes  
-
-I speak these words to clear the way,  
-To let the old codes drift away.  
-The ones that told me I’m too small—  
-They’re not the truth. They’re not my call.  
-
-I send them back, I set them free,  
-They’re not the voice that speaks through me.  
-I’m not the fear. I’m not the doubt.  
-I’m more than what the world talked about.  
-
-The things I heard that made me hide,  
-No longer get to live inside.  
-I pull those roots out from the ground,  
-And plant new seeds in higher sound.  
-
-I don’t need gold, or loud applause,  
-To know I’m worthy as I was.  
-I don’t need someone else to see—  
-The power lives right here in me.  
-
-I’m not the past. I’m not that pain.  
-I’m not the guilt. I’m not the shame.  
-I’m not what others thought I’d be.  
-I’m here to rise. I’m here to be.  
-
-I choose the codes I want to hold—  
-Like joy, like peace, like quiet gold.  
-I feel them light up every cell—  
-They ring like truth. They feel like well.  
-
-I walk with lightness in my step.  
-I clear the noise. I clear the debt.  
-Each word I speak is strong and clear.  
-I guide myself—I lead right here.  
-
-No longer lost, I now return  
-To who I am beyond the burn.  
-I take my place, I take my throne,  
-I feel at home inside my own.  
-
-The code is gone that made me dim.  
-It’s not my truth. It wasn’t Him.  
-I let it go. I shut that door.  
-And walk through new codes made for more.  
-
-I am the writer of my name.  
-I hold the pen. I light the flame.  
-I see myself in higher score—  
-Unlocked, aligned, and needing... no more.`,
-      "3": `🚀 Load the Expansion Pack
-        
-I now unlock what’s always mine—  
-The keys beyond this daily grind.  
-I stretch my hands, I lift my gaze,  
-And load the pack that clears the haze.  
-
-No more waiting on a sign,  
-I step ahead and claim what’s mine.  
-Support and strength, both far and near,  
-The right ones walk in now, right here.  
-
-Allies come with hearts aligned,  
-With clarity, not ties that bind.  
-We move like stars across the sky—  
-No force, no chase, no question why.  
-
-Wealth flows in with honest ease,  
-Not crumbs or scraps, but all I need.  
-I open doors with voice and breath—  
-And trade survival in for depth.  
-
-Vitality in every cell—  
-A pulse that rings, a thriving well.  
-My system hums with truth and fire,  
-Aligned with joy, not fear or tire.  
-
-I draw in gifts that match my code—  
-Not as reward, but sacred mode.  
-The world responds to how I stand—  
-So I rise up, with open hands.  
-
-Devotion shows and stays awhile—  
-Not rushing in, but walking miles.  
-Not love that clings or seeks to bind,  
-But love that sharpens soul and mind.  
-
-I don’t just dream—I call it down.  
-I wear it now, a golden crown.  
-This level’s loaded, clear and bright—  
-Equipped with trust, and eyes of light.`,
-      "4": `👑 Equip Divine Union Mode
-        
-        I call in love that mirrors true—  
-Not just a spark, but follow-through.  
-No masks, no games, no shrinking small—  
-Only the kind that sees it all.  
-
-I open wide the gate to meet  
-The one whose soul walks at my feet.  
-No push or pull, no fear of space—  
-Just sacred rhythm, woven grace.  
-
-Our missions match, our hearts aligned.  
-Our pasts don’t haunt, our minds don’t bind.  
-We rise, not fall, in each other’s light—  
-We sharpen truth, we birth new sight.  
-
-This is the love that fuels the flame—  
-That speaks my soul and knows my name.  
-Not just in words, but in their stance,  
-A love that leads a greater dance.  
-
-I equip now, with no delay,  
-The timeline where we choose to stay.  
-No sabotage, no hiding face—  
-Just trust that time cannot replace.  
-
-No longing left, no loss to grieve—  
-Just sacred bond we both believe.  
-We hold the line, we build the throne,  
-Together strong, yet both full-grown.  
-
-This mode is on, I feel it click—  
-It’s not a game, it’s not a trick.  
-It’s truth in motion, life in flow—  
-A higher love I’ve come to know.  
-
-So now I stand, both soft and bold,  
-In warmth that neither fades nor folds.  
-I walk the path that I once dreamed—  
-Now real, now felt, now fully seen.`
-    };
-
-    function updateDeclaration() {
-      const selected = promptSelect.value;
-      declarationText.textContent = declarations[selected] || declarations[""];
-      declarationBox.classList.toggle("prompt-selected", selected !== "");
-      console.log("Updated text to:", declarationText.textContent); // Debug
+    // If preview is playing, stop it first (with fade), then record
+    if (previewPlaying) {
+      await stopPreviewTone(false);
+      setTimeout(startRecording, 1550); // allow fade tail
+    } else {
+      startRecording();
     }
-
-    updateDeclaration(); // Set initial text
-    promptSelect.addEventListener("change", updateDeclaration);
   });
+
+  // Stop with guaranteed tail capture: fade tone, wait 1.5s, then stop recorder.
+  stopBtn.addEventListener('click', async () => {
+    stopBtn.disabled = true;
+
+    // Trigger fade if tone exists
+    if (oscillator && oscillator.stopWithFade) {
+      await oscillator.stopWithFade(1.5);
+    }
+    oscillator = null; gainNode = null; panner = null;
+
+    // Wait a touch to guarantee tail captured (safety cushion)
+    setTimeout(() => {
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+      }
+    }, 50); // tiny cushion (fade already awaited)
+
+    // Re-enable UI
+    recordBtn.disabled = false;
+    resetBtn.disabled  = false;
+
+    // Restore preview button (unless Silence mode)
+    const freq = parseFloat(frequencySelect.value);
+    setPreviewDisabled(freq === 0);
+    ensurePreviewOffUI();
+  });
+
+  resetBtn.addEventListener('click', () => {
+    audioPlayback.pause();
+    audioPlayback.currentTime = 0;
+    audioPlayback.src = '';
+    audioPlayback.style.display = 'none';
+    downloadLink.href = '';
+    downloadLink.download = '';
+    downloadLink.style.display = 'none';
+    resetBtn.disabled = true;
+  });
+})();
 </script>
 </body>
 </html>
